@@ -1,0 +1,31 @@
+category update-timer nsSearchService @mozilla.org/browser/search-service;1,getService,search-engine-update-timer,browser.search.update.interval,21600
+category update-timer nsBlocklistService @mozilla.org/extensions/blocklist;1,getService,blocklist-background-update-timer,extensions.blocklist.interval,86400
+category update-timer addonManager @mozilla.org/addons/integration;1,getService,addon-background-update-timer,extensions.update.interval,86400
+category addon-provider-module PluginProvider resource://gre/modules/addons/PluginProvider.jsm
+category addon-provider-module GMPProvider resource://gre/modules/addons/GMPProvider.jsm
+category update-timer nsUpdateService @mozilla.org/updates/update-service;1,getService,background-update-timer,app.update.interval,43200,86400
+category app-startup MainProcessSingleton service,@mozilla.org/main-process-singleton;1 process=main
+category app-startup ContentProcessSingleton service,@mozilla.org/content-process-singleton;1 process=content
+component {220cc253-b60f-41f6-b9cf-fdcb325f970f} HandlerService.js
+contract @mozilla.org/uriloader/handler-service;1 {220cc253-b60f-41f6-b9cf-fdcb325f970f} process=main
+resource services-sync resource://gre/modules/services-sync/
+resource services-common resource://gre/modules/services-common/
+resource services-settings resource://gre/modules/services-settings/
+category update-timer RemoteSettingsComponents @mozilla.org/services/settings;1,getService,services-settings-poll-changes,services.settings.poll_interval,86400
+resource services-crypto resource://gre/modules/services-crypto/
+category app-startup PushServiceParent @mozilla.org/push/Service;1 process=main
+category android-push-service PushServiceParent @mozilla.org/push/Service;1 process=main
+component {786a1369-dca5-4adc-8486-33d23c88010a} marionette.js
+contract @mozilla.org/remote/marionette;1 {786a1369-dca5-4adc-8486-33d23c88010a}
+category command-line-handler b-marionette @mozilla.org/remote/marionette;1
+category profile-after-change Marionette @mozilla.org/remote/marionette;1
+category webextension-modules toolkit chrome://extensions/content/ext-toolkit.json
+category webextension-scripts a-toolkit chrome://extensions/content/parent/ext-toolkit.js
+category webextension-scripts b-tabs-base chrome://extensions/content/parent/ext-tabs-base.js
+category webextension-scripts-content toolkit chrome://extensions/content/child/ext-toolkit.js
+category webextension-scripts-devtools toolkit chrome://extensions/content/child/ext-toolkit.js
+category webextension-scripts-addon toolkit chrome://extensions/content/child/ext-toolkit.js
+category webextension-schemas events chrome://extensions/content/schemas/events.json
+category webextension-schemas native_manifest chrome://extensions/content/schemas/native_manifest.json
+category webextension-schemas types chrome://extensions/content/schemas/types.json
+category profile-after-change nsTerminator @mozilla.org/toolkit/shutdown-terminator;1

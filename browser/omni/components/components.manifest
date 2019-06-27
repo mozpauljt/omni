@@ -1,0 +1,10 @@
+category app-startup nsBrowserGlue service,@mozilla.org/browser/browserglue;1 application={ec8030f7-c20a-464f-9b0e-13a3a9e97384} application={aa3c5121-dab2-40e2-81ca-7ea25febc110}
+component {ea4e1414-779b-458b-9d1f-d18e8efbc145} EnterprisePolicies.js process=main
+contract @mozilla.org/browser/enterprisepolicies;1 {ea4e1414-779b-458b-9d1f-d18e8efbc145} process=main
+component {dc6358f8-d167-4566-bf5b-4350b5e6a7a2} EnterprisePoliciesContent.js process=content
+contract @mozilla.org/browser/enterprisepolicies;1 {dc6358f8-d167-4566-bf5b-4350b5e6a7a2} process=content
+category webextension-modules browser chrome://browser/content/ext-browser.json
+category webextension-scripts c-browser chrome://browser/content/parent/ext-browser.js
+category webextension-scripts-content browser chrome://browser/content/child/ext-browser-content-only.js
+category webextension-scripts-devtools browser chrome://browser/content/child/ext-browser.js
+category webextension-scripts-addon browser chrome://browser/content/child/ext-browser.js
