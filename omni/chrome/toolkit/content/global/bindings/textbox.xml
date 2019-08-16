@@ -36,7 +36,6 @@
 
       <field name="mInputField">null</field>
       <field name="mIgnoreClick">false</field>
-      <field name="mIgnoreFocus">false</field>
       <field name="mEditor">null</field>
 
       <property name="inputField" readonly="true">
@@ -76,10 +75,6 @@
                                          if (val) this.setAttribute('readonly', 'true');
                                          else this.removeAttribute('readonly'); return val;"
                                   onget="return this.inputField.readOnly;"/>
-      <property name="clickSelectsAll"
-                onget="return this.getAttribute('clickSelectsAll') == 'true';"
-                onset="if (val) this.setAttribute('clickSelectsAll', 'true');
-                       else this.removeAttribute('clickSelectsAll'); return val;" />
 
       <property name="editor" readonly="true">
         <getter><![CDATA[
@@ -152,15 +147,6 @@
         ]]></body>
       </method>
 
-      <method name="_maybeSelectAll">
-        <body><![CDATA[
-          if (!this.mIgnoreClick && this.clickSelectsAll &&
-              document.activeElement == this.inputField &&
-              this.inputField.selectionStart == this.inputField.selectionEnd)
-            this.editor.selectAll();
-        ]]></body>
-      </method>
-
       <constructor><![CDATA[
         var str = this._cachedInputFieldValue;
         if (str) {
@@ -200,14 +186,6 @@
               this.setAttribute("focused", "true");
               break;
             case this.inputField:
-              if (this.mIgnoreFocus) {
-                this.mIgnoreFocus = false;
-              } else if (this.clickSelectsAll) {
-                try {
-                  if (!this.editor || !this.editor.composing)
-                    this.editor.selectAll();
-                } catch (e) {}
-              }
               this.setAttribute("focused", "true");
               break;
             default:
@@ -220,12 +198,6 @@
       <handler event="blur" phase="capturing">
         <![CDATA[
           this.removeAttribute("focused");
-
-          // don't trigger clickSelectsAll when switching application windows
-          if (window == window.top &&
-              window.isChromeWindow &&
-              document.activeElement == this.inputField)
-            this.mIgnoreFocus = true;
         ]]>
       </handler>
 
@@ -234,161 +206,11 @@
           this.mIgnoreClick = this.hasAttribute("focused");
 
           if (!this.mIgnoreClick) {
-            this.mIgnoreFocus = true;
             this.setSelectionRange(0, 0);
             if (event.originalTarget == this ||
                 event.originalTarget == this.inputField.parentNode)
               this.inputField.focus();
           }
-        ]]>
-      </handler>
-
-      <handler event="click" action="this._maybeSelectAll();"/>
-
-      <handler event="contextmenu">
-        // Only care about context clicks on the textbox itself.
-        if (event.target != this)
-          return;
-
-        if (!event.button) // context menu opened via keyboard shortcut
-          return;
-        this._maybeSelectAll();
-        // see bug 576135 comment 4
-        let box = this.inputField.parentNode;
-        box._doPopupItemEnabling(box.menupopup);
-      </handler>
-    </handlers>
-  </binding>
-
-  <binding id="search-textbox" extends="chrome://global/content/bindings/textbox.xml#textbox">
-    <content>
-      <children/>
-      <xul:moz-input-box anonid="moz-input-box" flex="1" xbl:inherits="context,spellcheck" align="center">
-        <xul:image class="textbox-search-sign"/>
-        <html:input class="textbox-input" anonid="input" mozactionhint="search"
-                    xbl:inherits="value,type,maxlength,disabled,size,readonly,placeholder,tabindex,accesskey,mozactionhint,spellcheck"/>
-        <xul:deck class="textbox-search-icons" anonid="search-icons">
-          <xul:image class="textbox-search-icon" anonid="searchbutton-icon"
-                     xbl:inherits="src=image,label=searchbuttonlabel,searchbutton,disabled"/>
-          <xul:image class="textbox-search-clear"
-                     onclick="document.getBindingParent(this)._clearSearch();"
-                     label="&searchTextBox.clear.label;"
-                     xbl:inherits="disabled"/>
-        </xul:deck>
-      </xul:moz-input-box>
-    </content>
-    <implementation>
-      <field name="_timer">null</field>
-      <field name="_searchIcons">
-        document.getAnonymousElementByAttribute(this, "anonid", "search-icons");
-      </field>
-      <field name="_searchButtonIcon">
-        document.getAnonymousElementByAttribute(this, "anonid", "searchbutton-icon");
-      </field>
-      <property name="timeout"
-                onset="this.setAttribute('timeout', val); return val;"
-                onget="return parseInt(this.getAttribute('timeout')) || 500;"/>
-      <property name="searchButton"
-                onget="return this.getAttribute('searchbutton') == 'true';">
-        <setter><![CDATA[
-          if (val) {
-            this.setAttribute("searchbutton", "true");
-            this.removeAttribute("aria-autocomplete");
-            // Hack for the button to get the right accessible:
-            this._searchButtonIcon.setAttribute("onclick", "true");
-          } else {
-            this.removeAttribute("searchbutton");
-            this._searchButtonIcon.removeAttribute("onclick");
-            this.setAttribute("aria-autocomplete", "list");
-          }
-          return val;
-        ]]></setter>
-      </property>
-      <property name="value"
-                onget="return this.inputField.value;">
-        <setter><![CDATA[
-          this.inputField.value = val;
-
-          if (val)
-            this._searchIcons.selectedIndex = this.searchButton ? 0 : 1;
-          else
-            this._searchIcons.selectedIndex = 0;
-
-          if (this._timer)
-            clearTimeout(this._timer);
-
-          return val;
-        ]]></setter>
-      </property>
-      <constructor><![CDATA[
-        // Ensure the button state is up to date:
-        this.searchButton = this.searchButton;
-        this._searchButtonIcon.addEventListener("click", (e) => this._iconClick(e));
-      ]]></constructor>
-      <method name="_fireCommand">
-        <parameter name="me"/>
-        <body><![CDATA[
-          if (me._timer)
-            clearTimeout(me._timer);
-          me._timer = null;
-          me.doCommand();
-        ]]></body>
-      </method>
-      <method name="_iconClick">
-        <body><![CDATA[
-          if (this.searchButton)
-            this._enterSearch();
-          else
-            this.focus();
-        ]]></body>
-      </method>
-      <method name="_enterSearch">
-        <body><![CDATA[
-          if (this.disabled)
-            return;
-          if (this.searchButton && this.value && !this.readOnly)
-            this._searchIcons.selectedIndex = 1;
-          this._fireCommand(this);
-        ]]></body>
-      </method>
-      <method name="_clearSearch">
-        <body><![CDATA[
-          if (!this.disabled && !this.readOnly && this.value) {
-            this.value = "";
-            this._fireCommand(this);
-            this._searchIcons.selectedIndex = 0;
-            return true;
-          }
-          return false;
-        ]]></body>
-      </method>
-    </implementation>
-    <handlers>
-      <handler event="input">
-        <![CDATA[
-          if (this.searchButton) {
-            this._searchIcons.selectedIndex = 0;
-            return;
-          }
-          if (this._timer)
-            clearTimeout(this._timer);
-          this._timer = this.timeout && setTimeout(this._fireCommand, this.timeout, this);
-          this._searchIcons.selectedIndex = this.value ? 1 : 0;
-        ]]>
-      </handler>
-      <handler event="keypress" keycode="VK_ESCAPE">
-        <![CDATA[
-          if (this._clearSearch()) {
-            event.preventDefault();
-            event.stopPropagation();
-          }
-        ]]>
-      </handler>
-      <handler event="keypress" keycode="VK_RETURN">
-        <![CDATA[
-          this._enterSearch();
-          event.preventDefault();
-          event.stopPropagation();
         ]]>
       </handler>
     </handlers>

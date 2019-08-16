@@ -3,13 +3,32 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
 
-const {Ci} = require("chrome");
-const {rootSpec} = require("devtools/shared/specs/root");
-const { FrontClassWithSpec, registerFront } = require("devtools/shared/protocol");
+const { Ci } = require("chrome");
+const { rootSpec } = require("devtools/shared/specs/root");
+const {
+  FrontClassWithSpec,
+  registerFront,
+} = require("devtools/shared/protocol");
 
 loader.lazyRequireGetter(this, "getFront", "devtools/shared/protocol", true);
-loader.lazyRequireGetter(this, "BrowsingContextTargetFront", "devtools/shared/fronts/targets/browsing-context", true);
-loader.lazyRequireGetter(this, "ContentProcessTargetFront", "devtools/shared/fronts/targets/content-process", true);
+loader.lazyRequireGetter(
+  this,
+  "ProcessDescriptorFront",
+  "devtools/shared/fronts/descriptors/process",
+  true
+);
+loader.lazyRequireGetter(
+  this,
+  "BrowsingContextTargetFront",
+  "devtools/shared/fronts/targets/browsing-context",
+  true
+);
+loader.lazyRequireGetter(
+  this,
+  "ContentProcessTargetFront",
+  "devtools/shared/fronts/targets/content-process",
+  true
+);
 
 class RootFront extends FrontClassWithSpec(rootSpec) {
   constructor(client, form) {
@@ -68,12 +87,12 @@ class RootFront extends FrontClassWithSpec(rootSpec) {
 
       // And then from the Child processes
       const { processes } = await this.listProcesses();
-      for (const process of processes) {
+      for (const processDescriptorFront of processes) {
         // Ignore parent process
-        if (process.parent) {
+        if (processDescriptorFront.isParent) {
           continue;
         }
-        const front = await this.getProcess(process.id);
+        const front = await processDescriptorFront.getTarget();
         const response = await front.listWorkers();
         workers = workers.concat(response.workers);
       }
@@ -95,6 +114,7 @@ class RootFront extends FrontClassWithSpec(rootSpec) {
       result.service.push({
         active: front.active,
         fetch: front.fetch,
+        id: front.id,
         lastUpdateTime: front.lastUpdateTime,
         name: front.url,
         registrationFront: front,
@@ -105,13 +125,16 @@ class RootFront extends FrontClassWithSpec(rootSpec) {
 
     workers.forEach(front => {
       const worker = {
+        id: front.id,
         name: front.url,
         url: front.url,
         workerTargetFront: front,
       };
       switch (front.type) {
         case Ci.nsIWorkerDebugger.TYPE_SERVICE:
-          const registration = result.service.find(r => r.scope === front.scope);
+          const registration = result.service.find(
+            r => r.scope === front.scope
+          );
           if (registration) {
             // XXX: Race, sometimes a ServiceWorkerRegistrationInfo doesn't
             // have a scriptSpec, but its associated WorkerDebugger does.
@@ -142,6 +165,24 @@ class RootFront extends FrontClassWithSpec(rootSpec) {
     return result;
   }
 
+  async listProcesses() {
+    const { processes } = await super.listProcesses();
+    const processDescriptors = processes.map(form => {
+      if (form.actor && form.actor.includes("processDescriptor")) {
+        return this._getProcessDescriptorFront(form);
+      }
+      // Support FF69 and older
+      return {
+        id: form.id,
+        isParent: form.parent,
+        getTarget: () => {
+          return this.getProcess(form.id);
+        },
+      };
+    });
+    return { processes: processDescriptors };
+  }
+
   /**
    * Fetch the ParentProcessTargetActor for the main process.
    *
@@ -153,10 +194,18 @@ class RootFront extends FrontClassWithSpec(rootSpec) {
   }
 
   async getProcess(id) {
+    const { form } = await super.getProcess(id);
+    if (form.actor && form.actor.includes("processDescriptor")) {
+      // The server currently returns a form, when we can drop backwards compatibility,
+      // we can use automatic marshalling here instead, making the next line unnecessary
+      const processDescriptorFront = this._getProcessDescriptorFront(form);
+      return processDescriptorFront.getTarget();
+    }
+
+    // Backwards compatibility for servers up to FF69.
     // Do not use specification automatic marshalling as getProcess may return
     // two different type: ParentProcessTargetActor or ContentProcessTargetActor.
     // Also, we do want to memoize the fronts and return already existing ones.
-    const { form } = await super.getProcess(id);
     let front = this.actor(form.actor);
     if (front) {
       return front;
@@ -178,6 +227,25 @@ class RootFront extends FrontClassWithSpec(rootSpec) {
     front.form(form);
     this.manage(front);
 
+    return front;
+  }
+
+  /**
+   * Get the previous process descriptor front if it exists, create a new one if not.
+   *
+   * If we are using a modern server, we will get a form for a processDescriptorFront.
+   * Until we can switch to auto marshalling, we need to marshal this into a process
+   * descriptor front ourselves.
+   */
+  _getProcessDescriptorFront(form) {
+    let front = this.actor(form.actor);
+    if (front) {
+      return front;
+    }
+    front = new ProcessDescriptorFront(this._client);
+    front.form(form);
+    front.actorID = form.actor;
+    this.manage(front);
     return front;
   }
 
@@ -208,15 +276,15 @@ class RootFront extends FrontClassWithSpec(rootSpec) {
   async getTab(filter) {
     const packet = {};
     if (filter) {
-      if (typeof (filter.outerWindowID) == "number") {
+      if (typeof filter.outerWindowID == "number") {
         packet.outerWindowID = filter.outerWindowID;
-      } else if (typeof (filter.tabId) == "number") {
+      } else if (typeof filter.tabId == "number") {
         packet.tabId = filter.tabId;
       } else if ("tab" in filter) {
         const browser = filter.tab.linkedBrowser;
-        if (browser.frameLoader.tabParent) {
+        if (browser.frameLoader.remoteTab) {
           // Tabs in child process
-          packet.tabId = browser.frameLoader.tabParent.tabId;
+          packet.tabId = browser.frameLoader.remoteTab.tabId;
         } else if (browser.outerWindowID) {
           // <xul:browser> tabs in parent process
           packet.outerWindowID = browser.outerWindowID;
@@ -247,6 +315,21 @@ class RootFront extends FrontClassWithSpec(rootSpec) {
     const addons = await this.listAddons();
     const addonTargetFront = addons.find(addon => addon.id === id);
     return addonTargetFront;
+  }
+
+  /**
+   * Fetch the target front for a given worker.
+   * This is just an helper on top of `listAllWorkers` request.
+   *
+   * @param id
+   */
+  async getWorker(id) {
+    const { service, shared, other } = await this.listAllWorkers();
+    const worker = [...service, ...shared, ...other].find(w => w.id === id);
+    if (!worker) {
+      return null;
+    }
+    return worker.workerTargetFront || worker.registrationFront;
   }
 
   /**

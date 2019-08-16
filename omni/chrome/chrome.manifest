@@ -1,3 +1,4 @@
+content remote remote/content/
 content marionette marionette/content/
 content extensions toolkit/content/extensions/
 content global toolkit/content/global/ contentaccessible=yes

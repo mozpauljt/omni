@@ -119,7 +119,8 @@
             "minItems": 1
           },
           "tabId": { "type": "integer", "optional": true },
-          "windowId": { "type": "integer", "optional": true }
+          "windowId": { "type": "integer", "optional": true },
+          "incognito": { "type": "boolean", "optional": true, "description": "If provided, requests that do not match the incognito state will be filtered out."}
         }
       },
       {
@@ -346,6 +347,28 @@
           }
         },
         "description": "Contains data uploaded in a URL request."
+      },
+      {
+        "id": "UrlClassificationFlags",
+        "type": "string",
+        "enum": ["fingerprinting", "fingerprinting_content", "cryptomining", "cryptomining_content",
+                 "tracking", "tracking_ad", "tracking_analytics", "tracking_social", "tracking_content",
+                 "any_basic_tracking", "any_strict_tracking", "any_social_tracking"],
+        "description": "Tracking flags that match our internal tracking classification"
+      },
+      {
+        "id": "UrlClassificationParty",
+        "type": "array",
+        "items": {"$ref": "UrlClassificationFlags"},
+        "description": "If the request has been classified this is an array of $(ref:UrlClassificationFlags)."
+      },
+      {
+        "id": "UrlClassification",
+        "type": "object",
+        "properties": {
+          "firstParty": {"$ref": "UrlClassificationParty", "description": "First party classification flags if the request has been classified."},
+          "thirdParty": {"$ref": "UrlClassificationParty", "description": "Third party classification flags if the request has been classified."}
+        }
       }
     ],
     "functions": [
@@ -425,6 +448,8 @@
               "method": {"type": "string", "description": "Standard HTTP method."},
               "frameId": {"type": "integer", "description": "The value 0 indicates that the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
               "parentFrameId": {"type": "integer", "description": "ID of frame that wraps the frame which sent the request. Set to -1 if no parent frame exists."},
+              "incognito": {"type": "boolean", "optional": true, "description": "True for private browsing requests."},
+              "cookieStoreId": {"type": "string", "optional": true, "description": "The cookie store ID of the contextual identity."},
               "originUrl": {"type": "string", "optional": true, "description": "URL of the resource that triggered this request."},
               "documentUrl": {"type": "string", "optional": true, "description": "URL of the page into which the requested resource will be loaded."},
               "requestBody": {
@@ -453,7 +478,8 @@
               },
               "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
               "type": {"$ref": "ResourceType", "description": "How the requested resource will be used."},
-              "timeStamp": {"type": "number", "description": "The time when this signal is triggered, in milliseconds since the epoch."}
+              "timeStamp": {"type": "number", "description": "The time when this signal is triggered, in milliseconds since the epoch."},
+              "urlClassification": {"$ref": "UrlClassification", "optional": true, "description": "Tracking classification if the request has been classified."}
             }
           }
         ],
@@ -493,12 +519,15 @@
               "method": {"type": "string", "description": "Standard HTTP method."},
               "frameId": {"type": "integer", "description": "The value 0 indicates that the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
               "parentFrameId": {"type": "integer", "description": "ID of frame that wraps the frame which sent the request. Set to -1 if no parent frame exists."},
+              "incognito": {"type": "boolean", "optional": true, "description": "True for private browsing requests."},
+              "cookieStoreId": {"type": "string", "optional": true, "description": "The cookie store ID of the contextual identity."},
               "originUrl": {"type": "string", "optional": true, "description": "URL of the resource that triggered this request."},
               "documentUrl": {"type": "string", "optional": true, "description": "URL of the page into which the requested resource will be loaded."},
               "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
               "type": {"$ref": "ResourceType", "description": "How the requested resource will be used."},
               "timeStamp": {"type": "number", "description": "The time when this signal is triggered, in milliseconds since the epoch."},
-              "requestHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP request headers that are going to be sent out with this request."}
+              "requestHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP request headers that are going to be sent out with this request."},
+              "urlClassification": {"$ref": "UrlClassification", "optional": true, "description": "Tracking classification if the request has been classified."}
             }
           }
         ],
@@ -538,12 +567,15 @@
               "method": {"type": "string", "description": "Standard HTTP method."},
               "frameId": {"type": "integer", "description": "The value 0 indicates that the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
               "parentFrameId": {"type": "integer", "description": "ID of frame that wraps the frame which sent the request. Set to -1 if no parent frame exists."},
+              "incognito": {"type": "boolean", "optional": true, "description": "True for private browsing requests."},
+              "cookieStoreId": {"type": "string", "optional": true, "description": "The cookie store ID of the contextual identity."},
               "originUrl": {"type": "string", "optional": true, "description": "URL of the resource that triggered this request."},
               "documentUrl": {"type": "string", "optional": true, "description": "URL of the page into which the requested resource will be loaded."},
               "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
               "type": {"$ref": "ResourceType", "description": "How the requested resource will be used."},
               "timeStamp": {"type": "number", "description": "The time when this signal is triggered, in milliseconds since the epoch."},
-              "requestHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP request headers that have been sent out with this request."}
+              "requestHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP request headers that have been sent out with this request."},
+              "urlClassification": {"$ref": "UrlClassification", "optional": true, "description": "Tracking classification if the request has been classified."}
             }
           }
         ],
@@ -578,6 +610,8 @@
               "method": {"type": "string", "description": "Standard HTTP method."},
               "frameId": {"type": "integer", "description": "The value 0 indicates that the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
               "parentFrameId": {"type": "integer", "description": "ID of frame that wraps the frame which sent the request. Set to -1 if no parent frame exists."},
+              "incognito": {"type": "boolean", "optional": true, "description": "True for private browsing requests."},
+              "cookieStoreId": {"type": "string", "optional": true, "description": "The cookie store ID of the contextual identity."},
               "originUrl": {"type": "string", "optional": true, "description": "URL of the resource that triggered this request."},
               "documentUrl": {"type": "string", "optional": true, "description": "URL of the page into which the requested resource will be loaded."},
               "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
@@ -585,7 +619,8 @@
               "timeStamp": {"type": "number", "description": "The time when this signal is triggered, in milliseconds since the epoch."},
               "statusLine": {"type": "string", "description": "HTTP status line of the response or the 'HTTP/0.9 200 OK' string for HTTP/0.9 responses (i.e., responses that lack a status line)."},
               "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that have been received with this response."},
-              "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."}
+              "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
+              "urlClassification": {"$ref": "UrlClassification", "optional": true, "description": "Tracking classification if the request has been classified."}
              }
           }
         ],
@@ -625,6 +660,8 @@
               "method": {"type": "string", "description": "Standard HTTP method."},
               "frameId": {"type": "integer", "description": "The value 0 indicates that the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
               "parentFrameId": {"type": "integer", "description": "ID of frame that wraps the frame which sent the request. Set to -1 if no parent frame exists."},
+              "incognito": {"type": "boolean", "optional": true, "description": "True for private browsing requests."},
+              "cookieStoreId": {"type": "string", "optional": true, "description": "The cookie store ID of the contextual identity."},
               "originUrl": {"type": "string", "optional": true, "description": "URL of the resource that triggered this request."},
               "documentUrl": {"type": "string", "optional": true, "description": "URL of the page into which the requested resource will be loaded."},
               "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
@@ -636,7 +673,8 @@
               "isProxy": {"type": "boolean", "description": "True for Proxy-Authenticate, false for WWW-Authenticate."},
               "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that were received along with this response."},
               "statusLine": {"type": "string", "description": "HTTP status line of the response or the 'HTTP/0.9 200 OK' string for HTTP/0.9 responses (i.e., responses that lack a status line) or an empty string if there are no headers."},
-              "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."}
+              "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
+              "urlClassification": {"$ref": "UrlClassification", "optional": true, "description": "Tracking classification if the request has been classified."}
             }
           },
           {
@@ -684,6 +722,8 @@
               "method": {"type": "string", "description": "Standard HTTP method."},
               "frameId": {"type": "integer", "description": "The value 0 indicates that the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
               "parentFrameId": {"type": "integer", "description": "ID of frame that wraps the frame which sent the request. Set to -1 if no parent frame exists."},
+              "incognito": {"type": "boolean", "optional": true, "description": "True for private browsing requests."},
+              "cookieStoreId": {"type": "string", "optional": true, "description": "The cookie store ID of the contextual identity."},
               "originUrl": {"type": "string", "optional": true, "description": "URL of the resource that triggered this request."},
               "documentUrl": {"type": "string", "optional": true, "description": "URL of the page into which the requested resource will be loaded."},
               "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
@@ -693,7 +733,8 @@
               "fromCache": {"type": "boolean", "description": "Indicates if this response was fetched from disk cache."},
               "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
               "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that were received along with this response."},
-              "statusLine": {"type": "string", "description": "HTTP status line of the response or the 'HTTP/0.9 200 OK' string for HTTP/0.9 responses (i.e., responses that lack a status line) or an empty string if there are no headers."}
+              "statusLine": {"type": "string", "description": "HTTP status line of the response or the 'HTTP/0.9 200 OK' string for HTTP/0.9 responses (i.e., responses that lack a status line) or an empty string if there are no headers."},
+              "urlClassification": {"$ref": "UrlClassification", "optional": true, "description": "Tracking classification if the request has been classified."}
             }
           }
         ],
@@ -728,6 +769,8 @@
               "method": {"type": "string", "description": "Standard HTTP method."},
               "frameId": {"type": "integer", "description": "The value 0 indicates that the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
               "parentFrameId": {"type": "integer", "description": "ID of frame that wraps the frame which sent the request. Set to -1 if no parent frame exists."},
+              "incognito": {"type": "boolean", "optional": true, "description": "True for private browsing requests."},
+              "cookieStoreId": {"type": "string", "optional": true, "description": "The cookie store ID of the contextual identity."},
               "originUrl": {"type": "string", "optional": true, "description": "URL of the resource that triggered this request."},
               "documentUrl": {"type": "string", "optional": true, "description": "URL of the page into which the requested resource will be loaded."},
               "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
@@ -738,7 +781,8 @@
               "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
               "redirectUrl": {"type": "string", "description": "The new URL."},
               "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that were received along with this redirect."},
-              "statusLine": {"type": "string", "description": "HTTP status line of the response or the 'HTTP/0.9 200 OK' string for HTTP/0.9 responses (i.e., responses that lack a status line) or an empty string if there are no headers."}
+              "statusLine": {"type": "string", "description": "HTTP status line of the response or the 'HTTP/0.9 200 OK' string for HTTP/0.9 responses (i.e., responses that lack a status line) or an empty string if there are no headers."},
+              "urlClassification": {"$ref": "UrlClassification", "optional": true, "description": "Tracking classification if the request has been classified."}
             }
           }
         ],
@@ -773,6 +817,8 @@
               "method": {"type": "string", "description": "Standard HTTP method."},
               "frameId": {"type": "integer", "description": "The value 0 indicates that the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
               "parentFrameId": {"type": "integer", "description": "ID of frame that wraps the frame which sent the request. Set to -1 if no parent frame exists."},
+              "incognito": {"type": "boolean", "optional": true, "description": "True for private browsing requests."},
+              "cookieStoreId": {"type": "string", "optional": true, "description": "The cookie store ID of the contextual identity."},
               "originUrl": {"type": "string", "optional": true, "description": "URL of the resource that triggered this request."},
               "documentUrl": {"type": "string", "optional": true, "description": "URL of the page into which the requested resource will be loaded."},
               "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
@@ -782,7 +828,8 @@
               "fromCache": {"type": "boolean", "description": "Indicates if this response was fetched from disk cache."},
               "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
               "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that were received along with this response."},
-              "statusLine": {"type": "string", "description": "HTTP status line of the response or the 'HTTP/0.9 200 OK' string for HTTP/0.9 responses (i.e., responses that lack a status line) or an empty string if there are no headers."}
+              "statusLine": {"type": "string", "description": "HTTP status line of the response or the 'HTTP/0.9 200 OK' string for HTTP/0.9 responses (i.e., responses that lack a status line) or an empty string if there are no headers."},
+              "urlClassification": {"$ref": "UrlClassification","description": "Tracking classification if the request has been classified."}
             }
           }
         ],
@@ -817,6 +864,8 @@
               "method": {"type": "string", "description": "Standard HTTP method."},
               "frameId": {"type": "integer", "description": "The value 0 indicates that the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
               "parentFrameId": {"type": "integer", "description": "ID of frame that wraps the frame which sent the request. Set to -1 if no parent frame exists."},
+              "incognito": {"type": "boolean", "optional": true, "description": "True for private browsing requests."},
+              "cookieStoreId": {"type": "string", "optional": true, "description": "The cookie store ID of the contextual identity."},
               "originUrl": {"type": "string", "optional": true, "description": "URL of the resource that triggered this request."},
               "documentUrl": {"type": "string", "optional": true, "description": "URL of the page into which the requested resource will be loaded."},
               "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
@@ -824,7 +873,8 @@
               "timeStamp": {"type": "number", "description": "The time when this signal is triggered, in milliseconds since the epoch."},
               "ip": {"type": "string", "optional": true, "description": "The server IP address that the request was actually sent to. Note that it may be a literal IPv6 address."},
               "fromCache": {"type": "boolean", "description": "Indicates if this response was fetched from disk cache."},
-              "error": {"type": "string", "description": "The error description. This string is <em>not</em> guaranteed to remain backwards compatible between releases. You must not parse and act based upon its content."}
+              "error": {"type": "string", "description": "The error description. This string is <em>not</em> guaranteed to remain backwards compatible between releases. You must not parse and act based upon its content."},
+              "urlClassification": {"$ref": "UrlClassification", "optional": true, "description": "Tracking classification if the request has been classified."}
             }
           }
         ],

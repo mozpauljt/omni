@@ -4,14 +4,14 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src chrome:" />
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width; user-scalable=false;">
-  <title>about:buildconfig</title>
+  <title>Build Configuration</title>
   <link rel="stylesheet" href="chrome://global/skin/about.css" type="text/css">
   <link rel="stylesheet" href="chrome://global/content/buildconfig.css" type="text/css">
 </head>
 <body class="aboutPageWideContainer">
-<h1>about:buildconfig</h1>
+<h1>Build Configuration</h1>
 <h2>Source</h2>
-<p>Built from <a href="https://hg.mozilla.org/releases/mozilla-release/rev/1a95e4b8b2d28e76ef63335f96f2b4cc151497f9">https://hg.mozilla.org/releases/mozilla-release/rev/1a95e4b8b2d28e76ef63335f96f2b4cc151497f9</a></p>
+<p>Built from <a href="https://hg.mozilla.org/mozilla-central/rev/b283a7ef186c216d765631f6cb1260a3fa2ee42c">https://hg.mozilla.org/mozilla-central/rev/b283a7ef186c216d765631f6cb1260a3fa2ee42c</a></p>
 <h2>Build platform</h2>
 <table>
   <tbody>
@@ -32,23 +32,23 @@
       <th>Compiler flags</th>
     </tr>
     <tr>
-      <td>/builds/worker/workspace/build/src/clang/bin/clang -std=gnu99</td>
-      <td>7.0.1</td>
+      <td>/builds/worker/fetches/clang/bin/clang -std=gnu99</td>
+      <td>8.0.0</td>
       <td>-fcrash-diagnostics-dir=/builds/worker/artifacts -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fno-strict-aliasing -ffunction-sections -fdata-sections -fno-math-errno -pthread -fPIC -pipe</td>
     </tr>
     <tr>
-      <td>/builds/worker/workspace/build/src/clang/bin/clang++</td>
-      <td>7.0.1</td>
-      <td>-Qunused-arguments -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -fstack-protector-strong -Qunused-arguments -Wall -Wbitfield-enum-conversion -Wempty-body -Wignored-qualifiers -Woverloaded-virtual -Wpointer-arith -Wshadow-field-in-constructor-modified -Wsign-compare -Wtype-limits -Wunreachable-code -Wunreachable-code-return -Wwrite-strings -Wno-invalid-offsetof -Wclass-varargs -Wfloat-overflow-conversion -Wfloat-zero-conversion -Wloop-analysis -Wc++1z-compat -Wc++2a-compat -Wcomma -Wimplicit-fallthrough -Werror=non-literal-null-conversion -Wstring-conversion -Wtautological-overlap-compare -Wtautological-unsigned-enum-zero-compare -Wtautological-unsigned-zero-compare -Wno-inline-new-delete -Wno-error=deprecated-declarations -Wno-error=array-bounds -Wno-error=return-std-move -Wno-error=atomic-alignment -Wformat -Wformat-security -Wno-gnu-zero-variadic-macro-arguments -Wno-unknown-warning-option -Wno-return-type-c-linkage -D_GLIBCXX_USE_CXX11_ABI=0 -fno-sized-deallocation -fcrash-diagnostics-dir=/builds/worker/artifacts -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fno-exceptions -fno-strict-aliasing -fno-rtti -ffunction-sections -fdata-sections -fno-exceptions -fno-math-errno -pthread -pipe -g -O3 -fomit-frame-pointer -funwind-tables</td>
+      <td>/builds/worker/fetches/clang/bin/clang++</td>
+      <td>8.0.0</td>
+      <td>-Qunused-arguments -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -fstack-protector-strong -Qunused-arguments -Wall -Wbitfield-enum-conversion -Wempty-body -Wignored-qualifiers -Woverloaded-virtual -Wpointer-arith -Wshadow-field-in-constructor-modified -Wsign-compare -Wtype-limits -Wunreachable-code -Wunreachable-code-return -Wwrite-strings -Wno-invalid-offsetof -Wclass-varargs -Wfloat-overflow-conversion -Wfloat-zero-conversion -Wloop-analysis -Wc++1z-compat -Wc++2a-compat -Wcomma -Wimplicit-fallthrough -Werror=non-literal-null-conversion -Wstring-conversion -Wtautological-overlap-compare -Wtautological-unsigned-enum-zero-compare -Wtautological-unsigned-zero-compare -Wno-inline-new-delete -Wno-error=deprecated-declarations -Wno-error=array-bounds -Wno-error=backend-plugin -Wno-error=return-std-move -Wno-error=atomic-alignment -Wformat -Wformat-security -Wno-gnu-zero-variadic-macro-arguments -Wno-unknown-warning-option -Wno-return-type-c-linkage -D_GLIBCXX_USE_CXX11_ABI=0 -fno-sized-deallocation -fno-aligned-new -fcrash-diagnostics-dir=/builds/worker/artifacts -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fno-exceptions -fno-strict-aliasing -fno-rtti -ffunction-sections -fdata-sections -fno-exceptions -fno-math-errno -pthread -pipe -g -O3 -fno-omit-frame-pointer -funwind-tables</td>
     </tr>
     <tr>
-      <td>/builds/worker/workspace/build/src/rustc/bin/rustc</td>
-      <td>1.32.0</td>
+      <td>/builds/worker/fetches/rustc/bin/rustc</td>
+      <td>1.37.0-beta.6</td>
       <td></td>
     </tr>
   </tbody>
 </table>
 <h2>Configure options</h2>
-<p>MOZ_AUTOMATION=1 MOZILLA_OFFICIAL=1 --enable-update-channel=release MOZ_PGO=1 CC=/builds/worker/workspace/build/src/clang/bin/clang CXX=/builds/worker/workspace/build/src/clang/bin/clang++ LLVM_PROFDATA=/builds/worker/workspace/build/src/clang/bin/llvm-profdata --enable-lto NASM=/builds/worker/workspace/build/src/nasm/nasm ENABLE_CLANG_PLUGIN=1 MOZ_STDCXX_COMPAT=1 AR=/builds/worker/workspace/build/src/clang/bin/llvm-ar MOZ_NO_PIE_COMPAT=1 RUSTC=/builds/worker/workspace/build/src/rustc/bin/rustc CARGO=/builds/worker/workspace/build/src/rustc/bin/cargo RUSTDOC=/builds/worker/workspace/build/src/rustc/bin/rustdoc CBINDGEN=/builds/worker/workspace/build/src/cbindgen/cbindgen RUSTFMT=/builds/worker/workspace/build/src/rustc/bin/rustfmt LLVM_CONFIG=/builds/worker/workspace/build/src/clang/bin/llvm-config --enable-js-shell NODEJS=/builds/worker/workspace/build/src/node/bin/node --with-mozilla-api-keyfile=/builds/mozilla-desktop-geoloc-api.key --with-google-location-service-api-keyfile=/builds/gls-gapi.data --with-google-safebrowsing-api-keyfile=/builds/sb-gapi.data --enable-rust-simd --enable-verify-mar MAKE=/usr/bin/make --enable-crashreporter --enable-official-branding</p>
+<p>MOZ_AUTOMATION=1 MOZILLA_OFFICIAL=1 --enable-update-channel=nightly MOZBUILD_STATE_PATH=/builds/worker/.mozbuild CC=/builds/worker/fetches/clang/bin/clang CXX=/builds/worker/fetches/clang/bin/clang++ NASM=/builds/worker/fetches/nasm/nasm ENABLE_CLANG_PLUGIN=1 MOZ_STDCXX_COMPAT=1 AR=/builds/worker/fetches/clang/bin/llvm-ar MOZ_NO_PIE_COMPAT=1 RUSTC=/builds/worker/fetches/rustc/bin/rustc CARGO=/builds/worker/fetches/rustc/bin/cargo RUSTDOC=/builds/worker/fetches/rustc/bin/rustdoc CBINDGEN=/builds/worker/fetches/cbindgen/cbindgen RUSTFMT=/builds/worker/fetches/rustc/bin/rustfmt LLVM_PROFDATA=/builds/worker/fetches/clang/bin/llvm-profdata --enable-profile-use=cross --with-pgo-profile-path=/builds/worker/fetches --with-pgo-jarlog=/builds/worker/fetches/en-US.log MOZ_LTO=cross --enable-js-shell NODEJS=/builds/worker/fetches/node/bin/node --enable-default-toolkit=cairo-gtk3-wayland --with-mozilla-api-keyfile=/builds/mozilla-desktop-geoloc-api.key --with-google-location-service-api-keyfile=/builds/gls-gapi.data --with-google-safebrowsing-api-keyfile=/builds/sb-gapi.data --enable-rust-simd MAKE=/usr/bin/make --enable-crashreporter --with-branding=browser/branding/nightly</p>
 </body>
 </html>

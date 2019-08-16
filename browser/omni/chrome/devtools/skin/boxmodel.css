@@ -129,6 +129,7 @@
   pointer-events: none;
   margin: 0;
   text-align: center;
+  direction: ltr;
 }
 
 .boxmodel-main > p > span,
@@ -291,6 +292,7 @@
 .boxmodel-legend {
   position: absolute;
   z-index: 1;
+  cursor: default;
 }
 
 .boxmodel-legend[data-box="margin"] {
@@ -337,6 +339,7 @@
   border: 1px dashed transparent;
   -moz-user-select: none;
   white-space: nowrap;
+  cursor: pointer;
 }
 
 .boxmodel-editable[data-box="border"] {
@@ -347,6 +350,12 @@
 
 .boxmodel-editable:hover {
   border-bottom-color: hsl(0, 0%, 50%);
+}
+
+.boxmodel-editable:focus,
+.boxmodel-editable:active {
+  border: 1px solid var(--blue-50);
+  outline: none;
 }
 
 .boxmodel-editable[data-box="margin"]:hover {
@@ -380,6 +389,8 @@
 
 .boxmodel-element-size {
   flex: 1;
+  direction: ltr;
+  text-align: match-parent;
 }
 
 .boxmodel-position-group {

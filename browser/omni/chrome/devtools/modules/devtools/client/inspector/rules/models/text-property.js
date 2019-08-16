@@ -8,7 +8,19 @@
 
 const { generateUUID } = require("devtools/shared/generate-uuid");
 
-loader.lazyRequireGetter(this, "escapeCSSComment", "devtools/shared/css/parsing-utils", true);
+loader.lazyRequireGetter(
+  this,
+  "escapeCSSComment",
+  "devtools/shared/css/parsing-utils",
+  true
+);
+
+loader.lazyRequireGetter(
+  this,
+  "hasCSSVariable",
+  "devtools/client/inspector/rules/utils/utils",
+  true
+);
 
 /**
  * TextProperty is responsible for the following:
@@ -155,7 +167,8 @@ class TextProperty {
       this.userProperties.setProperty(this.rule.domRule, this.name, value);
     }
 
-    return this.rule.setPropertyValue(this, value, priority)
+    return this.rule
+      .setPropertyValue(this, value, priority)
       .then(() => this.updateEditor());
   }
 
@@ -232,6 +245,23 @@ class TextProperty {
     return this.rule.domRule.declarations[selfIndex].isValid;
   }
 
+  isUsed() {
+    const selfIndex = this.rule.textProps.indexOf(this);
+    const declarations = this.rule.domRule.declarations;
+
+    // StyleRuleActor's declarations may have a isUsed flag (if the server is the right
+    // version). Just return true if the information is missing.
+    if (
+      !declarations ||
+      !declarations[selfIndex] ||
+      !declarations[selfIndex].isUsed
+    ) {
+      return { used: true };
+    }
+
+    return declarations[selfIndex].isUsed;
+  }
+
   /**
    * Validate the name of this property.
    *
@@ -249,6 +279,18 @@ class TextProperty {
     }
 
     return this.rule.domRule.declarations[selfIndex].isNameValid;
+  }
+
+  /**
+   * Returns true if the property value is a CSS variables and contains the given variable
+   * name, and false otherwise.
+   *
+   * @param {String}
+   *        CSS variable name (e.g. "--color")
+   * @return {Boolean}
+   */
+  hasCSSVariable(name) {
+    return hasCSSVariable(this.value, name);
   }
 }
 

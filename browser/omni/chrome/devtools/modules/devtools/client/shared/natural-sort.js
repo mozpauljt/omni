@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 /*
  * Natural Sort algorithm for Javascript - Version 0.8.1 - Released under MIT license
  * Author: Jim Palmer (based on chunking idea from Dave Koelle)
@@ -22,13 +26,11 @@ var ore = /^0/;
 var b0re = /^\0/;
 var e0re = /\0$/;
 
-exports.naturalSortCaseSensitive =
-function naturalSortCaseSensitive(a, b) {
+exports.naturalSortCaseSensitive = function naturalSortCaseSensitive(a, b) {
   return naturalSort(a, b, false);
 };
 
-exports.naturalSortCaseInsensitive =
-function naturalSortCaseInsensitive(a, b) {
+exports.naturalSortCaseInsensitive = function naturalSortCaseInsensitive(a, b) {
   return naturalSort(a, b, true);
 };
 
@@ -48,25 +50,37 @@ function naturalSortCaseInsensitive(a, b) {
  * @param  {Boolean} insensitive
  *         Should the search be case insensitive?
  */
+/* eslint-disable complexity */
 function naturalSort(a, b, insensitive) {
   // convert all to strings strip whitespace
   const i = function(s) {
-    return (insensitive && ("" + s).toLowerCase() || "" + s)
-                                   .replace(sre, "");
+    return ((insensitive && ("" + s).toLowerCase()) || "" + s).replace(sre, "");
   };
   const x = i(a) || "";
   const y = i(b) || "";
   // chunk/tokenize
-  const xN = x.replace(re, "\0$1\0").replace(e0re, "").replace(b0re, "").split("\0");
-  const yN = y.replace(re, "\0$1\0").replace(e0re, "").replace(b0re, "").split("\0");
+  const xN = x
+    .replace(re, "\0$1\0")
+    .replace(e0re, "")
+    .replace(b0re, "")
+    .split("\0");
+  const yN = y
+    .replace(re, "\0$1\0")
+    .replace(e0re, "")
+    .replace(b0re, "")
+    .split("\0");
   // numeric, hex or date detection
   const xD = parseInt(x.match(hre), 16) || (xN.length !== 1 && Date.parse(x));
-  const yD = parseInt(y.match(hre), 16) || xD && y.match(dre) && Date.parse(y) || null;
+  const yD =
+    parseInt(y.match(hre), 16) || (xD && y.match(dre) && Date.parse(y)) || null;
   const normChunk = function(s, l) {
     // normalize spaces; find floats not starting with '0', string or 0 if
     // not defined (Clint Priest)
-    return (!s.match(ore) || l == 1) &&
-           parseFloat(s) || s.replace(snre, " ").replace(sre, "") || 0;
+    return (
+      ((!s.match(ore) || l == 1) && parseFloat(s)) ||
+      s.replace(snre, " ").replace(sre, "") ||
+      0
+    );
   };
   let oFxNcL;
   let oFyNcL;
@@ -104,3 +118,4 @@ function naturalSort(a, b, insensitive) {
   }
   return null;
 }
+/* eslint-enable complexity */

@@ -24,8 +24,8 @@
     <html:link rel="localization" href="browser/aboutDialog.ftl"/>
   </linkset>
 
-  <script type="application/javascript" src="chrome://browser/content/aboutDialog.js"/>
-  <script type="application/javascript" src="chrome://browser/content/aboutDialog-appUpdater.js"/>
+  <script src="chrome://browser/content/aboutDialog.js"/>
+  <script src="chrome://browser/content/aboutDialog-appUpdater.js"/>
 
   <vbox id="aboutDialogContainer">
     <hbox id="clientBox">

@@ -1,24 +1,30 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 "use strict";
 
+const promise = require("promise");
 const {
   FrontClassWithSpec,
   types,
   registerFront,
 } = require("devtools/shared/protocol.js");
-
-const {
-  nodeSpec,
-  nodeListSpec,
-} = require("devtools/shared/specs/node");
-
-const promise = require("promise");
+const { nodeSpec, nodeListSpec } = require("devtools/shared/specs/node");
 const { SimpleStringFront } = require("devtools/shared/fronts/string");
 
-loader.lazyRequireGetter(this, "nodeConstants",
-  "devtools/shared/dom-node-constants");
+loader.lazyRequireGetter(
+  this,
+  "nodeConstants",
+  "devtools/shared/dom-node-constants"
+);
+
+loader.lazyRequireGetter(
+  this,
+  "BrowsingContextTargetFront",
+  "devtools/shared/fronts/targets/browsing-context",
+  true
+);
 
 const HIDDEN_CLASS = "__fx-devtools-hide-shortcut__";
 
@@ -107,8 +113,8 @@ class AttributeModificationList {
  * to traverse children.
  */
 class NodeFront extends FrontClassWithSpec(nodeSpec) {
-  constructor(conn, form) {
-    super(conn, form);
+  constructor(conn, targetFront, parentFront) {
+    super(conn, targetFront, parentFront);
     // The parent node
     this._parent = null;
     // The first child of this node.
@@ -146,7 +152,9 @@ class NodeFront extends FrontClassWithSpec(nodeSpec) {
       // Get the owner actor for this actor (the walker), and find the
       // parent node of this actor from it, creating a standin node if
       // necessary.
-      const parentNodeFront = ctx.marshallPool().ensureDOMNodeFront(form.parent);
+      const parentNodeFront = ctx
+        .marshallPool()
+        .ensureDOMNodeFront(form.parent);
       this.reparent(parentNodeFront);
     }
 
@@ -155,8 +163,9 @@ class NodeFront extends FrontClassWithSpec(nodeSpec) {
     }
 
     if (form.inlineTextChild) {
-      this.inlineTextChild =
-        types.getType("domnode").read(form.inlineTextChild, ctx);
+      this.inlineTextChild = types
+        .getType("domnode")
+        .read(form.inlineTextChild, ctx);
     } else {
       this.inlineTextChild = undefined;
     }
@@ -192,8 +201,10 @@ class NodeFront extends FrontClassWithSpec(nodeSpec) {
       let found = false;
       for (let i = 0; i < this.attributes.length; i++) {
         const attr = this.attributes[i];
-        if (attr.name == change.attributeName &&
-            attr.namespace == change.attributeNamespace) {
+        if (
+          attr.name == change.attributeName &&
+          attr.namespace == change.attributeNamespace
+        ) {
           if (change.newValue !== null) {
             attr.value = change.newValue;
           } else {
@@ -218,6 +229,8 @@ class NodeFront extends FrontClassWithSpec(nodeSpec) {
       this._form.pseudoClassLocks = change.pseudoClassLocks;
     } else if (change.type === "events") {
       this._form.hasEventListeners = change.hasEventListeners;
+    } else if (change.type === "mutationBreakpoint") {
+      this._form.mutationBreakpoints = change.mutationBreakpoints;
     }
   }
 
@@ -237,16 +250,19 @@ class NodeFront extends FrontClassWithSpec(nodeSpec) {
     return this._form.nodeName;
   }
   get displayName() {
-    const {displayName, nodeName} = this._form;
+    const { displayName, nodeName } = this._form;
 
     // Keep `nodeName.toLowerCase()` for backward compatibility
     return displayName || nodeName.toLowerCase();
   }
   get doctypeString() {
-    return "<!DOCTYPE " + this._form.name +
-     (this._form.publicId ? " PUBLIC \"" + this._form.publicId + "\"" : "") +
-     (this._form.systemId ? " \"" + this._form.systemId + "\"" : "") +
-     ">";
+    return (
+      "<!DOCTYPE " +
+      this._form.name +
+      (this._form.publicId ? ' PUBLIC "' + this._form.publicId + '"' : "") +
+      (this._form.systemId ? ' "' + this._form.systemId + '"' : "") +
+      ">"
+    );
   }
 
   get baseURI() {
@@ -263,10 +279,16 @@ class NodeFront extends FrontClassWithSpec(nodeSpec) {
   get numChildren() {
     return this._form.numChildren;
   }
+  get remoteFrame() {
+    return this._form.remoteFrame;
+  }
   get hasEventListeners() {
     return this._form.hasEventListeners;
   }
 
+  get isMarkerPseudoElement() {
+    return this._form.isMarkerPseudoElement;
+  }
   get isBeforePseudoElement() {
     return this._form.isBeforePseudoElement;
   }
@@ -274,7 +296,11 @@ class NodeFront extends FrontClassWithSpec(nodeSpec) {
     return this._form.isAfterPseudoElement;
   }
   get isPseudoElement() {
-    return this.isBeforePseudoElement || this.isAfterPseudoElement;
+    return (
+      this.isBeforePseudoElement ||
+      this.isAfterPseudoElement ||
+      this.isMarkerPseudoElement
+    );
   }
   get isAnonymous() {
     return this._form.isAnonymous;
@@ -327,7 +353,7 @@ class NodeFront extends FrontClassWithSpec(nodeSpec) {
   }
   hasAttribute(name) {
     this._cacheAttributes();
-    return (name in this._attrMap);
+    return name in this._attrMap;
   }
 
   get hidden() {
@@ -337,6 +363,10 @@ class NodeFront extends FrontClassWithSpec(nodeSpec) {
 
   get attributes() {
     return this._form.attrs;
+  }
+
+  get mutationBreakpoints() {
+    return this._form.mutationBreakpoints;
   }
 
   get pseudoClassLocks() {
@@ -367,6 +397,10 @@ class NodeFront extends FrontClassWithSpec(nodeSpec) {
       parent = parent.parentNode();
     }
     return true;
+  }
+
+  get walkerFront() {
+    return this.parentFront;
   }
 
   getNodeValue() {
@@ -467,7 +501,7 @@ class NodeFront extends FrontClassWithSpec(nodeSpec) {
       console.warn("Tried to use rawNode on a remote connection.");
       return null;
     }
-    const { DebuggerServer } = require("devtools/server/main");
+    const { DebuggerServer } = require("devtools/server/debugger-server");
     const actor = DebuggerServer.searchAllConnectionsForActor(this.actorID);
     if (!actor) {
       // Can happen if we try to get the raw node for an already-expired
@@ -475,6 +509,20 @@ class NodeFront extends FrontClassWithSpec(nodeSpec) {
       return null;
     }
     return actor.rawNode;
+  }
+
+  async connectToRemoteFrame() {
+    if (this._remoteFrameTarget) {
+      return this._remoteFrameTarget;
+    }
+    // First get the target actor form of this remote frame element
+    const form = await super.connectToRemoteFrame();
+    // Build the related Target object
+    this._remoteFrameTarget = new BrowsingContextTargetFront(this.conn);
+    this._remoteFrameTarget.actorID = form.actor;
+    this._remoteFrameTarget.form(form);
+    this._remoteFrameTarget.manage(this._remoteFrameTarget);
+    return this._remoteFrameTarget;
   }
 }
 

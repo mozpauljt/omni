@@ -6,20 +6,30 @@
 
 "use strict";
 
-const {Utils: WebConsoleUtils} = require("devtools/client/webconsole/utils");
+const { Utils: WebConsoleUtils } = require("devtools/client/webconsole/utils");
 const EventEmitter = require("devtools/shared/event-emitter");
-const defer = require("devtools/shared/defer");
 const Services = require("Services");
 const { gDevTools } = require("devtools/client/framework/devtools");
-const { WebConsoleConnectionProxy } = require("devtools/client/webconsole/webconsole-connection-proxy");
+const {
+  WebConsoleConnectionProxy,
+} = require("devtools/client/webconsole/webconsole-connection-proxy");
 const KeyShortcuts = require("devtools/client/shared/key-shortcuts");
 const { l10n } = require("devtools/client/webconsole/utils/messages");
 
-loader.lazyRequireGetter(this, "AppConstants", "resource://gre/modules/AppConstants.jsm", true);
+var ChromeUtils = require("ChromeUtils");
+const { BrowserLoader } = ChromeUtils.import(
+  "resource://devtools/client/shared/browser-loader.js"
+);
+
+loader.lazyRequireGetter(
+  this,
+  "AppConstants",
+  "resource://gre/modules/AppConstants.jsm",
+  true
+);
 
 const ZoomKeys = require("devtools/client/shared/zoom-keys");
 
-const PREF_MESSAGE_TIMESTAMP = "devtools.webconsole.timestampMessages";
 const PREF_SIDEBAR_ENABLED = "devtools.webconsole.sidebarToggle";
 
 /**
@@ -37,12 +47,14 @@ class WebConsoleUI {
   constructor(hud) {
     this.hud = hud;
     this.hudId = this.hud.hudId;
-    this.isBrowserConsole = this.hud._browserConsole;
+    this.isBrowserConsole = this.hud.isBrowserConsole;
+    this.fissionSupport = this.hud.fissionSupport;
     this.window = this.hud.iframeWindow;
 
-    this._onToolboxPrefChanged = this._onToolboxPrefChanged.bind(this);
     this._onPanelSelected = this._onPanelSelected.bind(this);
-    this._onChangeSplitConsoleState = this._onChangeSplitConsoleState.bind(this);
+    this._onChangeSplitConsoleState = this._onChangeSplitConsoleState.bind(
+      this
+    );
 
     EventEmitter.decorate(this);
   }
@@ -52,7 +64,39 @@ class WebConsoleUI {
    * @type object
    */
   get webConsoleClient() {
-    return this.proxy ? this.proxy.webConsoleClient : null;
+    const proxy = this.getProxy();
+
+    if (!proxy) {
+      return null;
+    }
+
+    return proxy.webConsoleClient;
+  }
+
+  /**
+   * Return the main target proxy, i.e. the proxy for MainProcessTarget in BrowserConsole,
+   * and the proxy for the target passed from the Toolbox to WebConsole.
+   *
+   * @returns {WebConsoleConnectionProxy}
+   */
+  getProxy() {
+    return this.proxy;
+  }
+
+  /**
+   * Return all the proxies we're currently managing (i.e. the "main" one, and the
+   * possible additional ones).
+   *
+   * @returns {Array<WebConsoleConnectionProxy>}
+   */
+  getAllProxies() {
+    let proxies = [this.getProxy()];
+
+    if (this.additionalProxies) {
+      proxies = proxies.concat(this.additionalProxies);
+    }
+
+    return proxies;
   }
 
   /**
@@ -60,30 +104,45 @@ class WebConsoleUI {
    * @return object
    *         A promise object that resolves once the frame is ready to use.
    */
-  async init() {
-    this._initUI();
-    await this._initConnection();
-    await this.wrapper.init();
-    // Toggle the timestamp on preference change
-    Services.prefs.addObserver(PREF_MESSAGE_TIMESTAMP, this._onToolboxPrefChanged);
-    this._onToolboxPrefChanged();
-
-    const id = WebConsoleUtils.supportsString(this.hudId);
-    if (Services.obs) {
-      Services.obs.notifyObservers(id, "web-console-created");
+  init() {
+    if (this._initializer) {
+      return this._initializer;
     }
+
+    this._initializer = (async () => {
+      this._initUI();
+      await this._initConnection();
+      await this.wrapper.init();
+
+      const id = WebConsoleUtils.supportsString(this.hudId);
+      if (Services.obs) {
+        Services.obs.notifyObservers(id, "web-console-created");
+      }
+    })();
+
+    return this._initializer;
   }
 
   destroy() {
-    if (this._destroyer) {
-      return this._destroyer.promise;
+    if (!this.hud) {
+      return;
     }
-    this._destroyer = defer();
-    Services.prefs.removeObserver(PREF_MESSAGE_TIMESTAMP, this._onToolboxPrefChanged);
+
     this.React = this.ReactDOM = this.FrameView = null;
+
+    if (this.outputNode) {
+      // We do this because it's much faster than letting React handle the ConsoleOutput
+      // unmounting.
+      this.outputNode.innerHTML = "";
+    }
+
     if (this.jsterm) {
       this.jsterm.destroy();
       this.jsterm = null;
+    }
+
+    if (this.wrapper) {
+      this.wrapper.destroy();
     }
 
     const toolbox = gDevTools.getToolbox(this.hud.target);
@@ -95,17 +154,11 @@ class WebConsoleUI {
 
     this.window = this.hud = this.wrapper = null;
 
-    const onDestroy = () => {
-      this._destroyer.resolve(null);
-    };
-    if (this.proxy) {
-      this.proxy.disconnect().then(onDestroy);
-      this.proxy = null;
-    } else {
-      onDestroy();
+    for (const proxy of this.getAllProxies()) {
+      proxy.disconnect();
     }
-
-    return this._destroyer.promise;
+    this.proxy = null;
+    this.additionalProxies = null;
   }
 
   /**
@@ -126,11 +179,23 @@ class WebConsoleUI {
     if (this.wrapper) {
       this.wrapper.dispatchMessagesClear();
     }
-    this.webConsoleClient.clearNetworkRequests();
+    this.clearNetworkRequests();
     if (clearStorage) {
-      this.webConsoleClient.clearMessagesCache();
+      this.clearMessagesCache();
     }
     this.emit("messages-cleared");
+  }
+
+  clearNetworkRequests() {
+    for (const proxy of this.getAllProxies()) {
+      proxy.webConsoleClient.clearNetworkRequests();
+    }
+  }
+
+  clearMessagesCache() {
+    for (const proxy of this.getAllProxies()) {
+      proxy.webConsoleClient.clearMessagesCache();
+    }
   }
 
   /**
@@ -146,18 +211,23 @@ class WebConsoleUI {
   }
 
   inspectObjectActor(objectActor) {
-    this.wrapper.dispatchMessageAdd({
-      helperResult: {
-        type: "inspectObject",
-        object: objectActor,
+    this.wrapper.dispatchMessageAdd(
+      {
+        helperResult: {
+          type: "inspectObject",
+          object: objectActor,
+        },
       },
-    }, true);
+      true
+    );
     return this.wrapper;
   }
 
   logWarningAboutReplacedAPI() {
-    return this.hud.target.logWarningInPage(l10n.getStr("ConsoleAPIDisabled"),
-      "ConsoleAPIDisabled");
+    return this.hud.target.logWarningInPage(
+      l10n.getStr("ConsoleAPIDisabled"),
+      "ConsoleAPIDisabled"
+    );
   }
 
   /**
@@ -186,27 +256,54 @@ class WebConsoleUI {
    *
    * @private
    * @return object
-   *         A promise object that is resolved/reject based on the connection
-   *         result.
+   *         A promise object that is resolved/reject based on the proxies connections.
    */
-  _initConnection() {
-    if (this._initDefer) {
-      return this._initDefer.promise;
+  async _initConnection() {
+    this.proxy = new WebConsoleConnectionProxy(
+      this,
+      this.hud.target,
+      this.isBrowserConsole,
+      this.fissionSupport
+    );
+
+    if (
+      this.fissionSupport &&
+      this.hud.target.chrome &&
+      !this.hud.target.isAddon
+    ) {
+      const { mainRoot } = this.hud.target.client;
+      const { processes } = await mainRoot.listProcesses();
+
+      this.additionalProxies = [];
+      for (const processDescriptor of processes) {
+        const targetFront = await processDescriptor.getTarget();
+
+        // Don't create a proxy for the "main" target,
+        // as we already created it in this.proxy.
+        if (targetFront === this.hud.target) {
+          continue;
+        }
+
+        if (!targetFront) {
+          console.warn(
+            "Can't retrieve the target front for process",
+            processDescriptor
+          );
+          continue;
+        }
+
+        this.additionalProxies.push(
+          new WebConsoleConnectionProxy(
+            this,
+            targetFront,
+            this.isBrowserConsole,
+            this.fissionSupport
+          )
+        );
+      }
     }
 
-    this._initDefer = defer();
-    this.proxy = new WebConsoleConnectionProxy(this, this.hud.target);
-
-    this.proxy.connect().then(() => {
-      // on success
-      this._initDefer.resolve(this);
-    }, (reason) => {
-      // on failure
-      // TODO Print a message to console
-      this._initDefer.reject(reason);
-    });
-
-    return this._initDefer.promise;
+    return Promise.all(this.getAllProxies().map(proxy => proxy.connect()));
   }
 
   _initUI() {
@@ -217,8 +314,19 @@ class WebConsoleUI {
 
     const toolbox = gDevTools.getToolbox(this.hud.target);
 
-    this.wrapper = new this.window.WebConsoleWrapper(
-      this.outputNode, this, toolbox, this.document);
+    // Initialize module loader and load all the WebConsoleWrapper. The entire code-base
+    // doesn't need any extra privileges and runs entirely in content scope.
+    const WebConsoleWrapper = BrowserLoader({
+      baseURI: "resource://devtools/client/webconsole/",
+      window: this.window,
+    }).require("./webconsole-wrapper");
+
+    this.wrapper = new WebConsoleWrapper(
+      this.outputNode,
+      this,
+      toolbox,
+      this.document
+    );
 
     this._initShortcuts();
     this._initOutputSyntaxHighlighting();
@@ -237,21 +345,28 @@ class WebConsoleUI {
       const editor = this.jsterm && this.jsterm.editor;
       if (node && editor) {
         node.classList.add("cm-s-mozilla");
-        editor.CodeMirror.runMode(node.textContent, "application/javascript", node);
+        editor.CodeMirror.runMode(
+          node.textContent,
+          "application/javascript",
+          node
+        );
       }
     };
 
     // Use a Custom Element to handle syntax highlighting to avoid
     // dealing with refs or innerHTML from React.
     const win = this.window;
-    win.customElements.define("syntax-highlighted", class extends win.HTMLElement {
-      connectedCallback() {
-        if (!this.connected) {
-          this.connected = true;
-          syntaxHighlightNode(this);
+    win.customElements.define(
+      "syntax-highlighted",
+      class extends win.HTMLElement {
+        connectedCallback() {
+          if (!this.connected) {
+            this.connected = true;
+            syntaxHighlightNode(this);
+          }
         }
       }
-    });
+    );
   }
 
   _initShortcuts() {
@@ -259,16 +374,14 @@ class WebConsoleUI {
       window: this.window,
     });
 
-    shortcuts.on(l10n.getStr("webconsole.find.key"),
-                 event => {
-                   this.filterBox.focus();
-                   event.preventDefault();
-                 });
-
     let clearShortcut;
     if (AppConstants.platform === "macosx") {
-      const alternativaClearShortcut = l10n.getStr("webconsole.clear.alternativeKeyOSX");
-      shortcuts.on(alternativaClearShortcut, event => this.clearOutput(true, event));
+      const alternativaClearShortcut = l10n.getStr(
+        "webconsole.clear.alternativeKeyOSX"
+      );
+      shortcuts.on(alternativaClearShortcut, event =>
+        this.clearOutput(true, event)
+      );
       clearShortcut = l10n.getStr("webconsole.clear.keyOSX");
     } else {
       clearShortcut = l10n.getStr("webconsole.clear.key");
@@ -281,10 +394,12 @@ class WebConsoleUI {
       // the Browser Console (Bug 1461366).
       this.window.focus();
 
-      shortcuts.on(l10n.getStr("webconsole.close.key"),
-                   this.window.top.close.bind(this.window.top));
+      shortcuts.on(
+        l10n.getStr("webconsole.close.key"),
+        this.window.top.close.bind(this.window.top)
+      );
 
-      ZoomKeys.register(this.window);
+      ZoomKeys.register(this.window, shortcuts);
       shortcuts.on("CmdOrCtrl+Alt+R", quickRestart);
     } else if (Services.prefs.getBoolPref(PREF_SIDEBAR_ENABLED)) {
       shortcuts.on("Esc", event => {
@@ -297,39 +412,31 @@ class WebConsoleUI {
   }
 
   /**
-   * Handler for page location changes.
-   *
-   * @param string uri
-   *        New page location.
-   * @param string title
-   *        New page title.
-   */
-  onLocationChange(uri, title) {
-    this.contentLocation = uri;
-    if (this.hud.onLocationChange) {
-      this.hud.onLocationChange(uri, title);
-    }
-  }
-
-  /**
    * Release an actor.
    *
    * @private
    * @param string actor
    *        The actor ID you want to release.
    */
-  _releaseObject(actor) {
-    if (this.proxy) {
-      this.proxy.releaseActor(actor);
+  releaseActor(actor) {
+    const proxy = this.getProxy();
+    if (!proxy) {
+      return null;
     }
+
+    return proxy.releaseActor(actor);
   }
 
   /**
-   * Called when the message timestamp pref changes.
+   * @param {String} expression
+   * @param {Object} options
+   * @returns {Promise}
    */
-  _onToolboxPrefChanged() {
-    const newValue = Services.prefs.getBoolPref(PREF_MESSAGE_TIMESTAMP);
-    this.wrapper.dispatchTimestampsToggle(newValue);
+  evaluateJSAsync(expression, options) {
+    return this.getProxy().webConsoleClient.evaluateJSAsync(
+      expression,
+      options
+    );
   }
 
   /**
@@ -358,10 +465,6 @@ class WebConsoleUI {
    *        Notification packet received from the server.
    */
   async handleTabNavigated(packet) {
-    if (packet.url) {
-      this.onLocationChange(packet.url, packet.title);
-    }
-
     if (!packet.nativeConsoleAPI) {
       this.logWarningAboutReplacedAPI();
     }
@@ -374,9 +477,6 @@ class WebConsoleUI {
 
   handleTabWillNavigate(packet) {
     this.wrapper.dispatchTabWillNavigate(packet);
-    if (packet.url) {
-      this.onLocationChange(packet.url, packet.title);
-    }
   }
 }
 
@@ -387,10 +487,13 @@ class WebConsoleUI {
 function quickRestart() {
   const { Cc, Ci } = require("chrome");
   Services.obs.notifyObservers(null, "startupcache-invalidate");
-  const env = Cc["@mozilla.org/process/environment;1"]
-            .getService(Ci.nsIEnvironment);
+  const env = Cc["@mozilla.org/process/environment;1"].getService(
+    Ci.nsIEnvironment
+  );
   env.set("MOZ_DISABLE_SAFE_MODE_KEY", "1");
-  Services.startup.quit(Ci.nsIAppStartup.eAttemptQuit | Ci.nsIAppStartup.eRestart);
+  Services.startup.quit(
+    Ci.nsIAppStartup.eAttemptQuit | Ci.nsIAppStartup.eRestart
+  );
 }
 
 exports.WebConsoleUI = WebConsoleUI;

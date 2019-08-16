@@ -1,5 +1,6 @@
 content branding browser/content/branding/ contentaccessible=yes
 content browser browser/content/browser/ contentaccessible=yes
+content payments browser/content/payments/
 content pocket browser/content/pocket/ contentaccessible=yes
 skin browser classic/1.0 browser/skin/classic/browser/
 content webide webide/content/
@@ -16,10 +17,13 @@ locale devtools-startup en-US en-US/locale/en-US/devtools/startup/
 locale pdf.js en-US en-US/locale/pdfviewer/
 override chrome://global/content/license.html chrome://browser/content/license.html
 override chrome://global/content/netError.xhtml chrome://browser/content/aboutNetError.xhtml
+override chrome://global/locale/app-extension-fields.properties chrome://browser/locale/app-extension-fields.properties
 override chrome://global/locale/appstrings.properties chrome://browser/locale/appstrings.properties
 override chrome://global/locale/netError.dtd chrome://browser/locale/netError.dtd
 override chrome://mozapps/locale/downloads/settingsChange.dtd chrome://browser/locale/downloads/settingsChange.dtd
 resource activity-stream browser/res/activity-stream/ contentaccessible=yes
+resource payments browser/res/payments/
+resource search-extensions browser/search-extensions/ contentaccessible=yes
 resource search-plugins browser/searchplugins/ contentaccessible=yes
 resource usercontext-content browser/content/ contentaccessible=yes
 resource pdf.js pdfjs/content/

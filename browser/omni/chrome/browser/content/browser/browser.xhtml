@@ -23,7 +23,6 @@
 <?xml-stylesheet href="chrome://browser/skin/searchbar.css" type="text/css"?>
 <?xml-stylesheet href="chrome://browser/skin/places/tree-icons.css" type="text/css"?>
 <?xml-stylesheet href="chrome://browser/skin/places/editBookmark.css" type="text/css"?>
-<?xml-stylesheet href="chrome://browser/skin/compacttheme.css" type="text/css" alternate="yes" title="Light/Dark"?>
 
 <!DOCTYPE window [
 <!ENTITY % brandDTD SYSTEM "chrome://branding/locale/brand.dtd" >
@@ -40,12 +39,10 @@
 %downloadsDTD;
 <!ENTITY % placesDTD SYSTEM "chrome://browser/locale/places/places.dtd">
 %placesDTD;
-<!ENTITY % safebrowsingDTD SYSTEM "chrome://browser/locale/safebrowsing/phishing-afterload-warning-message.dtd">
-%safebrowsingDTD;
 <!ENTITY % syncBrandDTD SYSTEM "chrome://browser/locale/syncBrand.dtd">
 %syncBrandDTD;
-<!ENTITY % reportphishDTD SYSTEM "chrome://browser/locale/safebrowsing/report-phishing.dtd">
-%reportphishDTD;
+<!ENTITY % brandingsDTD SYSTEM "chrome://browser/locale/brandings.dtd">
+%brandingsDTD;
 <!ENTITY % editBookmarkOverlayDTD SYSTEM "chrome://browser/locale/places/editBookmarkOverlay.dtd">
 %editBookmarkOverlayDTD;
 ]>
@@ -70,10 +67,15 @@
         screenX="4" screenY="4"
         fullscreenbutton="true"
         sizemode="normal"
-        retargetdocumentfocus="urlbar"
+        retargetdocumentfocus="urlbar-input"
         persist="screenX screenY width height sizemode"
-        mozpersist=""
-        >
+        data-l10n-sync="true">
+
+<linkset>
+  <html:link rel="localization" href="branding/brand.ftl"/>
+  <html:link rel="localization" href="browser/branding/sync-brand.ftl"/>
+  <html:link rel="localization" href="browser/menubar.ftl"/>
+</linkset>
 
 
 
@@ -84,22 +86,32 @@ var {Services} = ChromeUtils.import("resource://gre/modules/Services.jsm");
 Services.scriptloader.loadSubScript("chrome://browser/content/browser.js", this);
 Services.scriptloader.loadSubScript("chrome://browser/content/browser-places.js", this);
 Services.scriptloader.loadSubScript("chrome://global/content/globalOverlay.js", this);
+Services.scriptloader.loadSubScript("chrome://global/content/editMenuOverlay.js", this);
 Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js", this);
+if (AppConstants.platform == "macosx") {
+  Services.scriptloader.loadSubScript("chrome://global/content/macWindowMenu.js", this);
+}
 
 </script>
 
-<script type="application/javascript">
+<script>
+  /* eslint-env mozilla/browser-window */
   Services.scriptloader.loadSubScript("chrome://global/content/contentAreaUtils.js", this);
   Services.scriptloader.loadSubScript("chrome://browser/content/browser-captivePortal.js", this);
-  Services.scriptloader.loadSubScript("chrome://browser/content/browser-compacttheme.js", this);
-  Services.scriptloader.loadSubScript("chrome://browser/content/browser-contentblocking.js", this);
-  Services.scriptloader.loadSubScript("chrome://browser/content/browser-data-submission-info-bar.js", this);
+  if (AppConstants.MOZ_DATA_REPORTING) {
+    Services.scriptloader.loadSubScript("chrome://browser/content/browser-data-submission-info-bar.js", this);
+  }
+  if (!AppConstants.MOZILLA_OFFICIAL) {
+    Services.scriptloader.loadSubScript("chrome://browser/content/browser-development-helpers.js", this);
+  }
   Services.scriptloader.loadSubScript("chrome://browser/content/browser-media.js", this);
   Services.scriptloader.loadSubScript("chrome://browser/content/browser-pageActions.js", this);
-  Services.scriptloader.loadSubScript("chrome://browser/content/browser-plugins.js", this);
   Services.scriptloader.loadSubScript("chrome://browser/content/browser-sidebar.js", this);
   Services.scriptloader.loadSubScript("chrome://browser/content/browser-tabsintitlebar.js", this);
   Services.scriptloader.loadSubScript("chrome://browser/content/tabbrowser.js", this);
+  Services.scriptloader.loadSubScript("chrome://browser/content/tabbrowser-tab.js", this);
+  Services.scriptloader.loadSubScript("chrome://browser/content/tabbrowser-tabs.js", this);
+  Services.scriptloader.loadSubScript("chrome://browser/content/places/places-menupopup.js", this);
   Services.scriptloader.loadSubScript("chrome://browser/content/search/autocomplete-popup.js", this);
   Services.scriptloader.loadSubScript("chrome://browser/content/search/searchbar.js", this);
 
@@ -151,24 +163,6 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
     <command id="cmd_toggleOfflineStatus" oncommand="BrowserOffline.toggleOfflineStatus();"/>
     <command id="cmd_quitApplication" oncommand="goQuitApplication()"/>
 
-<script type="application/javascript" src="chrome://global/content/editMenuOverlay.js"/>
-<commandset id="editMenuCommands">
-  <commandset id="editMenuCommandSetAll" commandupdater="true" events="focus,select"
-              oncommandupdate="goUpdateGlobalEditMenuItems()"/>
-  <commandset id="editMenuCommandSetUndo" commandupdater="true" events="undo"
-              oncommandupdate="goUpdateUndoEditMenuItems()"/>
-  <commandset id="editMenuCommandSetPaste" commandupdater="true" events="clipboard"
-              oncommandupdate="goUpdatePasteMenuItems()"/>
-  <command id="cmd_undo" oncommand="goDoCommand('cmd_undo')"/>
-  <command id="cmd_redo" oncommand="goDoCommand('cmd_redo')"/>
-  <command id="cmd_cut" oncommand="goDoCommand('cmd_cut')"/>
-  <command id="cmd_copy" oncommand="goDoCommand('cmd_copy')"/>
-  <command id="cmd_paste" oncommand="goDoCommand('cmd_paste')"/>
-  <command id="cmd_delete" oncommand="goDoCommand('cmd_delete')"/>
-  <command id="cmd_selectAll" oncommand="goDoCommand('cmd_selectAll')"/>
-  <command id="cmd_switchTextDirection" oncommand="goDoCommand('cmd_switchTextDirection');"/>
-</commandset>
-
     <command id="View:PageSource" oncommand="BrowserViewSource(window.gBrowser.selectedBrowser);"/>
     <command id="View:PageInfo" oncommand="BrowserPageInfo();"/>
     <command id="View:FullScreen" oncommand="BrowserFullScreen();"/>
@@ -210,8 +204,7 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
     <command id="Browser:OpenLocation" oncommand="openLocation();"/>
     <command id="Browser:RestoreLastSession" oncommand="SessionStore.restoreLastSession();" disabled="true"/>
     <command id="Browser:NewUserContextTab" oncommand="openNewUserContextTab(event.sourceEvent);"/>
-    <command id="Browser:OpenAboutContainers" oncommand="openPreferences('paneContainers', {origin: 'ContainersCommand'});"/>
-
+    <command id="Browser:OpenAboutContainers" oncommand="openPreferences('paneContainers');"/>
     <command id="Tools:Search" oncommand="BrowserSearch.webSearch();"/>
     <command id="Tools:Downloads" oncommand="BrowserDownloadsUI();"/>
     <command id="Tools:Addons" oncommand="BrowserOpenAddonsMgr();"/>
@@ -221,7 +214,10 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
     <command id="History:UndoCloseTab" oncommand="undoCloseTab();"/>
     <command id="History:UndoCloseWindow" oncommand="undoCloseWindow();"/>
 
+    <command id="wrCaptureCmd" oncommand="gGfxUtils.webrenderCapture();"/>
+    <command id="windowRecordingCmd" oncommand="gGfxUtils.toggleWindowRecording();"/>
   </commandset>
+
 
 <commandset id="placesCommands"
             commandupdater="true"
@@ -321,7 +317,7 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
     <key id="key_fullScreen" keycode="VK_F11" command="View:FullScreen"/>
     <key id="key_toggleReaderMode" key="&toggleReaderMode.key;" command="View:ReaderView" modifiers="accel,alt" disabled="true"/>
     <key key="&reloadCmd.commandkey;" command="Browser:Reload" modifiers="accel" id="key_reload"/>
-    <key key="&reloadCmd.commandkey;" command="Browser:ReloadSkipCache" modifiers="accel,shift"/>
+    <key key="&reloadCmd.commandkey;" command="Browser:ReloadSkipCache" modifiers="accel,shift" id="key_reload_skip_cache"/>
     <key id="key_viewSource" key="&pageSourceCmd.commandkey;" command="View:PageSource" modifiers="accel"/>
     <key id="key_viewInfo"   key="&pageInfoCmd.commandkey;"   command="View:PageInfo"   modifiers="accel"/>
     <key id="key_find" key="&findOnCmd.commandkey;" command="cmd_find" modifiers="accel"/>
@@ -377,75 +373,64 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
 <key id="key_selectTab8" oncommand="gBrowser.selectTabAtIndex(7, event);" key="8" modifiers="alt"/>
 <key id="key_selectLastTab" oncommand="gBrowser.selectTabAtIndex(-1, event);" key="9" modifiers="alt"/>
 
+    <key id="key_wrCaptureCmd"
+    key="#" modifiers="control"
+    command="wrCaptureCmd"/>
+    <key id="key_windowRecordingCmd"
+    key="$" modifiers="control"
+    command="windowRecordingCmd"/>
   </keyset>
 
   <popupset id="mainPopupSet">
     <menupopup id="tabContextMenu"
                onpopupshowing="if (event.target == this) TabContextMenu.updateContextMenu(this);"
                onpopuphidden="if (event.target == this) TabContextMenu.contextTab = null;">
-      <menuitem id="context_reloadTab" label="&reloadTab.label;" accesskey="&reloadTab.accesskey;"
+      <menuitem id="context_reloadTab" data-lazy-l10n-id="reload-tab"
                 oncommand="gBrowser.reloadTab(TabContextMenu.contextTab);"/>
-      <menuitem id="context_reloadSelectedTabs" label="&reloadTabs.label;" hidden="true"
-                accesskey="&reloadTabs.accesskey;"
+      <menuitem id="context_reloadSelectedTabs" data-lazy-l10n-id="reload-tabs" hidden="true"
                 oncommand="gBrowser.reloadMultiSelectedTabs();"/>
       <menuitem id="context_toggleMuteTab" oncommand="TabContextMenu.contextTab.toggleMuteAudio();"/>
       <menuitem id="context_toggleMuteSelectedTabs" hidden="true"
                 oncommand="gBrowser.toggleMuteAudioOnMultiSelectedTabs(TabContextMenu.contextTab);"/>
-      <menuitem id="context_pinTab" label="&pinTab.label;"
-                accesskey="&pinTab.accesskey;"
+      <menuitem id="context_pinTab" data-lazy-l10n-id="pin-tab"
                 oncommand="gBrowser.pinTab(TabContextMenu.contextTab);"/>
-      <menuitem id="context_unpinTab" label="&unpinTab.label;" hidden="true"
-                accesskey="&unpinTab.accesskey;"
+      <menuitem id="context_unpinTab" data-lazy-l10n-id="unpin-tab" hidden="true"
                 oncommand="gBrowser.unpinTab(TabContextMenu.contextTab);"/>
-      <menuitem id="context_pinSelectedTabs" label="&pinSelectedTabs.label;" hidden="true"
-                accesskey="&pinSelectedTabs.accesskey;"
+      <menuitem id="context_pinSelectedTabs" data-lazy-l10n-id="pin-selected-tabs" hidden="true"
                 oncommand="gBrowser.pinMultiSelectedTabs();"/>
-      <menuitem id="context_unpinSelectedTabs" label="&unpinSelectedTabs.label;" hidden="true"
-                accesskey="&unpinSelectedTabs.accesskey;"
+      <menuitem id="context_unpinSelectedTabs" data-lazy-l10n-id="unpin-selected-tabs" hidden="true"
                 oncommand="gBrowser.unpinMultiSelectedTabs();"/>
-      <menuitem id="context_duplicateTab" label="&duplicateTab.label;"
-                accesskey="&duplicateTab.accesskey;"
+      <menuitem id="context_duplicateTab" data-lazy-l10n-id="duplicate-tab"
                 oncommand="duplicateTabIn(TabContextMenu.contextTab, 'tab');"/>
-      <menuitem id="context_duplicateTabs" label="&duplicateTabs.label;"
-                accesskey="&duplicateTabs.accesskey;"
+      <menuitem id="context_duplicateTabs" data-lazy-l10n-id="duplicate-tabs"
                 oncommand="TabContextMenu.duplicateSelectedTabs();"/>
       <menuseparator/>
-      <menuitem id="context_selectAllTabs" label="&selectAllTabs.label;" accesskey="&selectAllTabs.accesskey;"
+      <menuitem id="context_selectAllTabs" data-lazy-l10n-id="select-all-tabs"
                 oncommand="gBrowser.selectAllTabs();"/>
       <menuitem id="context_bookmarkSelectedTabs"
                 hidden="true"
-                label="&bookmarkSelectedTabs.label;"
-                accesskey="&bookmarkSelectedTabs.accesskey;"
+                data-lazy-l10n-id="bookmark-selected-tabs"
                 oncommand="PlacesCommandHook.bookmarkPages(PlacesCommandHook.uniqueSelectedPages);"/>
       <menuitem id="context_bookmarkTab"
-                label="&bookmarkTab.label;"
-                accesskey="&bookmarkTab.accesskey;"
+                data-lazy-l10n-id="bookmark-tab"
                 oncommand="PlacesCommandHook.bookmarkPages(PlacesCommandHook.getUniquePages([TabContextMenu.contextTab]));"/>
       <menu id="context_reopenInContainer"
-            label="&reopenInContainer.label;"
-            accesskey="&reopenInContainer.accesskey;"
+            data-lazy-l10n-id="reopen-in-container"
             hidden="true">
         <menupopup oncommand="TabContextMenu.reopenInContainer(event);"
                    onpopupshowing="TabContextMenu.createReopenInContainerMenu(event);"/>
       </menu>
-      <menu id="context_moveTabOptions"
-            multiselectcontextlabel="&moveSelectedTabOptions.label;"
-            multiselectcontextaccesskey="&moveSelectedTabOptions.accesskey;"
-            nonmultiselectcontextlabel="&moveTabOptions.label;"
-            nonmultiselectcontextaccesskey="&moveTabOptions.accesskey;">
+      <menu id="context_moveTabOptions">
         <menupopup id="moveTabOptionsMenu">
           <menuitem id="context_moveToStart"
-                    label="&moveToStart.label;"
-                    accesskey="&moveToStart.accesskey;"
+                    data-lazy-l10n-id="move-to-start"
                     tbattr="tabbrowser-multiple"
                     oncommand="gBrowser.moveTabsToStart(TabContextMenu.contextTab);"/>
           <menuitem id="context_moveToEnd"
-                    label="&moveToEnd.label;"
-                    accesskey="&moveToEnd.accesskey;"
+                    data-lazy-l10n-id="move-to-end"
                     tbattr="tabbrowser-multiple"
                     oncommand="gBrowser.moveTabsToEnd(TabContextMenu.contextTab);"/>
-          <menuitem id="context_openTabInWindow" label="&moveToNewWindow.label;"
-                    accesskey="&moveToNewWindow.accesskey;"
+          <menuitem id="context_openTabInWindow" data-lazy-l10n-id="move-to-new-window"
                     tbattr="tabbrowser-multiple"
                     oncommand="gBrowser.replaceTabsWithWindow(TabContextMenu.contextTab);"/>
         </menupopup>
@@ -456,18 +441,17 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                    onpopupshowing="gSync.populateSendTabToDevicesMenu(event.target, TabContextMenu.contextTab.linkedBrowser.currentURI.spec, TabContextMenu.contextTab.linkedBrowser.contentTitle, TabContextMenu.contextTab.multiselected);"/>
       </menu>
       <menuseparator/>
-      <menuitem id="context_closeTabsToTheEnd" label="&closeTabsToTheEnd.label;" accesskey="&closeTabsToTheEnd.accesskey;"
+      <menuitem id="context_closeTabsToTheEnd" data-lazy-l10n-id="close-tabs-to-the-end"
                 oncommand="gBrowser.removeTabsToTheEndFrom(TabContextMenu.contextTab, {animate: true});"/>
-      <menuitem id="context_closeOtherTabs" label="&closeOtherTabs.label;" accesskey="&closeOtherTabs.accesskey;"
+      <menuitem id="context_closeOtherTabs" data-lazy-l10n-id="close-other-tabs"
                 oncommand="gBrowser.removeAllTabsBut(TabContextMenu.contextTab);"/>
       <menuitem id="context_undoCloseTab"
-                label="&undoCloseTab.label;"
-                accesskey="&undoCloseTab.accesskey;"
+                data-lazy-l10n-id="undo-close-tab"
                 observes="History:UndoCloseTab"/>
-      <menuitem id="context_closeTab" label="&closeTab.label;" accesskey="&closeTab.accesskey;"
+      <menuitem id="context_closeTab" data-lazy-l10n-id="close-tab"
                 oncommand="gBrowser.removeTab(TabContextMenu.contextTab, { animate: true });"/>
-      <menuitem id="context_closeSelectedTabs" label="&closeTabs.label;"
-                hidden="true" accesskey="&closeTabs.accesskey;"
+      <menuitem id="context_closeSelectedTabs" data-lazy-l10n-id="close-tabs"
+                hidden="true"
                 oncommand="gBrowser.removeMultiSelectedTabs();"/>
     </menupopup>
 
@@ -500,16 +484,6 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
            noautofocus="true"
            hidden="true" />
 
-    <!-- for url bar autocomplete -->
-    <panel type="autocomplete-richlistbox"
-           id="PopupAutoCompleteRichResult"
-           role="group"
-           noautofocus="true"
-           hidden="true"
-           flip="none"
-           level="parent"
-           overflowpadding="15" />
-
     <!-- for date/time picker. consumeoutsideclicks is set to never, so that
          clicks on the anchored input box are never consumed. -->
     <panel id="DateTimePickerPanel"
@@ -540,6 +514,7 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
     </panel>
 
     <panel id="editBookmarkPanel"
+           class="panel-no-padding"
            type="arrow"
            orient="vertical"
            ignorekeys="true"
@@ -548,11 +523,18 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
            aria-labelledby="editBookmarkPanelTitle">
       <box class="panel-header">
         <label id="editBookmarkPanelTitle"/>
+        <toolbarbutton id="editBookmarkPanelInfoButton" class="panel-info-button" oncommand="StarUI.toggleRecommendation();" >
+          <image/>
+        </toolbarbutton>
       </box>
-      <html:div id="editBookmarkPanelFaviconContainer">
-        <html:img id="editBookmarkPanelFavicon"/>
+      <html:div id="editBookmarkPanelInfoArea">
+        <html:div id="editBookmarkPanelRecommendation"></html:div>
+        <html:div id="editBookmarkPanelFaviconContainer">
+          <html:img id="editBookmarkPanelFavicon"/>
+        </html:div>
+        <html:div id="editBookmarkPanelImage"></html:div>
       </html:div>
-      <box id="editBookmarkPanelImage"/>
+
 <vbox id="editBookmarkPanelContent" flex="1">
   <hbox id="editBMPanel_selectionCount" pack="center">
     <label id="editBMPanel_itemsCountText"/>
@@ -565,7 +547,7 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
              accesskey="&editBookmarkOverlay.name.accesskey;"
              control="editBMPanel_namePicker"/>
       <textbox id="editBMPanel_namePicker"
-               onchange="gEditItemOverlay.onNamePickerChange().catch(Components.utils.reportError);"/>
+               onchange="gEditItemOverlay.onNamePickerChange().catch(Cu.reportError);"/>
     </vbox>
 
     <vbox id="editBMPanel_locationRow"
@@ -586,7 +568,7 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
         <menulist id="editBMPanel_folderMenuList"
                   class="folder-icon panel-button"
                   flex="1"
-                  oncommand="gEditItemOverlay.onFolderMenuListCommand(event).catch(Components.utils.reportError);">
+                  oncommand="gEditItemOverlay.onFolderMenuListCommand(event).catch(Cu.reportError);">
           <menupopup>
             <!-- Static item for special folders -->
             <menuitem id="editBMPanel_toolbarFolderItem"
@@ -618,7 +600,7 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
         <button label="&editBookmarkOverlay.newFolderButton.label;"
                 id="editBMPanel_newFolderButton"
                 accesskey="&editBookmarkOverlay.newFolderButton.accesskey;"
-                oncommand="gEditItemOverlay.newFolder().catch(Components.utils.reportError);"/>
+                oncommand="gEditItemOverlay.newFolder().catch(Cu.reportError);"/>
       </hbox>
     </vbox>
 
@@ -770,6 +752,11 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                 label="&customizeMenu.removeExtension.label;"
                 contexttype="toolbaritem"
                 class="customize-context-removeExtension"/>
+      <menuitem oncommand="ToolbarContextMenu.reportExtensionForContextAction(this.parentElement, 'toolbar_context_menu')"
+                accesskey="&customizeMenu.reportExtension.accesskey;"
+                label="&customizeMenu.reportExtension.label;"
+                contexttype="toolbaritem"
+                class="customize-context-reportExtension"/>
       <menuseparator/>
       <menuitem oncommand="gCustomizeMode.addToPanel(document.popupNode)"
                 accesskey="&customizeMenu.pinToOverflowMenu.accesskey;"
@@ -790,32 +777,26 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
       <menuitem id="toolbar-context-reloadSelectedTab"
                 contexttype="tabbar"
                 oncommand="gBrowser.reloadMultiSelectedTabs();"
-                label="&toolbarContextMenu.reloadSelectedTab.label;"
-                accesskey="&toolbarContextMenu.reloadSelectedTab.accesskey;"/>
+                data-lazy-l10n-id="toolbar-context-menu-reload-selected-tab"/>
       <menuitem id="toolbar-context-reloadSelectedTabs"
                 contexttype="tabbar"
                 oncommand="gBrowser.reloadMultiSelectedTabs();"
-                label="&toolbarContextMenu.reloadSelectedTabs.label;"
-                accesskey="&toolbarContextMenu.reloadSelectedTabs.accesskey;"/>
+                data-lazy-l10n-id="toolbar-context-menu-reload-selected-tabs"/>
       <menuitem id="toolbar-context-bookmarkSelectedTab"
                 contexttype="tabbar"
                 oncommand="PlacesCommandHook.bookmarkPages(PlacesCommandHook.uniqueSelectedPages);"
-                label="&toolbarContextMenu.bookmarkSelectedTab.label;"
-                accesskey="&toolbarContextMenu.bookmarkSelectedTab.accesskey;"/>
+                data-lazy-l10n-id="toolbar-context-menu-bookmark-selected-tab"/>
       <menuitem id="toolbar-context-bookmarkSelectedTabs"
                 contexttype="tabbar"
                 oncommand="PlacesCommandHook.bookmarkPages(PlacesCommandHook.uniqueSelectedPages);"
-                label="&toolbarContextMenu.bookmarkSelectedTabs.label;"
-                accesskey="&toolbarContextMenu.bookmarkSelectedTabs.accesskey;"/>
+                data-lazy-l10n-id="toolbar-context-menu-bookmark-selected-tabs"/>
       <menuitem id="toolbar-context-selectAllTabs"
                 contexttype="tabbar"
                 oncommand="gBrowser.selectAllTabs();"
-                label="&toolbarContextMenu.selectAllTabs.label;"
-                accesskey="&toolbarContextMenu.selectAllTabs.accesskey;"/>
+                data-lazy-l10n-id="toolbar-context-menu-select-all-tabs"/>
       <menuitem id="toolbar-context-undoCloseTab"
                 contexttype="tabbar"
-                label="&toolbarContextMenu.undoCloseTab.label;"
-                accesskey="&toolbarContextMenu.undoCloseTab.accesskey;"
+                data-lazy-l10n-id="toolbar-context-menu-undo-close-tab"
                 observes="History:UndoCloseTab"/>
       <menuseparator/>
       <menuseparator id="viewToolbarsMenuSeparator"/>
@@ -1044,6 +1025,11 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                 accesskey="&leaveDOMFullScreen.accesskey;"
                 label="&leaveDOMFullScreen.label;"
                 oncommand="gContextMenu.leaveDOMFullScreen();"/>
+      <menuitem id="context-video-pictureinpicture"
+                accesskey="&pictureInPicture.accesskey;"
+                label="&pictureInPicture.label;"
+                type="checkbox"
+                oncommand="gContextMenu.mediaCommand('pictureinpicture');"/>
       <menuseparator id="context-media-sep-commands"/>
       <menuitem id="context-reloadimage"
                 label="&reloadImageCmd.label;"
@@ -1182,7 +1168,7 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                 accesskey="&keywordfield.accesskey;"
                 oncommand="AddKeywordForSearchField();"/>
       <menuitem id="context-searchselect"
-                oncommand="BrowserSearch.loadSearchFromContext(this.searchTerms, this.principal);"/>
+                oncommand="BrowserSearch.loadSearchFromContext(this.searchTerms, this.principal, this.csp);"/>
       <menuseparator id="context-sep-sendlinktodevice" class="sync-ui-item"
                      hidden="true"/>
       <menu id="context-sendlinktodevice"
@@ -1236,6 +1222,9 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                     label="&viewFrameInfoCmd.label;"
                     accesskey="&viewFrameInfoCmd.accesskey;"
                     oncommand="gContextMenu.viewFrameInfo();"/>
+          <menuitem id="context-frameOsPid"
+                    label="PID: Unknown"
+                    disabled="true"/>
         </menupopup>
       </menu>
       <menuitem id="context-viewpartialsource-selection"
@@ -1297,6 +1286,12 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                     label="&noLoginSuggestions.label;"
                     disabled="true"
                     hidden="true"/>
+          <menuseparator id="generated-password-separator"/>
+          <menuitem id="fill-login-generated-password"
+                    label="&fillGeneratedPassword.label;"
+                    accesskey="&fillGeneratedPassword.accesskey;"
+                    hidden="true"
+                    oncommand="gContextMenu.fillGeneratedPassword();"/>
           <menuseparator id="saved-logins-separator"/>
           <menuitem id="fill-login-saved-passwords"
                     label="&viewSavedLogins.label;"
@@ -1323,10 +1318,17 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                 onclick="checkForMiddleClick(this, event);"/>
     </menupopup>
 
+    <menupopup id="pictureInPictureToggleContextMenu">
+      <menuitem label="&pictureInPictureHideToggle.label;"
+                accesskey="&pictureInPictureHideToggle.accesskey;"
+                oncommand="PictureInPicture.hideToggle();" />
+    </menupopup>
+
+
 <menupopup id="placesContext"
            onpopupshowing="this._view = PlacesUIUtils.getViewForNode(document.popupNode);
                            if (!PlacesUIUtils.openInTabClosesMenu) {
-                             document.getElementById ('placesContext_open:newtab')
+                             document.getElementById('placesContext_open:newtab')
                              .setAttribute('closemenu', 'single');
                            }
                            return this._view.buildContextMenu(this);"
@@ -1337,7 +1339,8 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
             accesskey="&cmd.open.accesskey;"
             default="true"
             selectiontype="single"
-            selection="link"/>
+            selection="link"
+            forcehideintabbrowser="true"/>
   <menuitem id="placesContext_open:newtab"
             command="placesCmd_open:tab"
             label="&cmd.open_tab.label;"
@@ -1459,12 +1462,11 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
     </panel>
 
     <panel id="pageActionPanel"
-           class="cui-widget-panel"
+           class="cui-widget-panel panel-no-padding"
            role="group"
            type="arrow"
            hidden="true"
            flip="slide"
-           photon="true"
            position="bottomcenter topright"
            tabspecific="true"
            noautofocus="true"
@@ -1523,6 +1525,7 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                 label="&pageAction.manageExtension.label;"
                 oncommand="BrowserPageActions.openAboutAddonsForContextAction();"/>
     </menupopup>
+
 
 <!-- Bookmarks and history tooltip -->
 <tooltip id="bhTooltip" noautohide="true"
@@ -1629,6 +1632,15 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
       </popupnotificationcontent>
     </popupnotification>
 
+    <popupnotification id="addon-install-blocked-notification" hidden="true">
+      <popupnotificationcontent id="addon-install-blocked-content" orient="vertical">
+        <description id="addon-install-blocked-message" class="popup-notification-description"></description>
+        <hbox>
+          <label id="addon-install-blocked-info" class="popup-notification-learnmore-link" is="text-link"/>
+        </hbox>
+      </popupnotificationcontent>
+    </popupnotification>
+
     <popupnotification id="contextual-feature-recommendation-notification" hidden="true">
       <popupnotificationheader id="cfr-notification-header">
         <stack id="cfr-notification-header-stack">
@@ -1670,18 +1682,24 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
       </popupnotificationcontent>
     </popupnotification>
 
+    <popupnotification id="socialblock-notification" hidden="true">
+      <popupnotificationcontent id="socialblock-content" orient="vertical">
+        <description id="socialblock-message"></description>
+      </popupnotificationcontent>
+    </popupnotification>
+
 <!-- This Source Code Form is subject to the terms of the Mozilla Public
    - License, v. 2.0. If a copy of the MPL was not distributed with this
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 
 <panel id="widget-overflow"
+       class="panel-no-padding"
        role="group"
        type="arrow"
        noautofocus="true"
        position="bottomcenter topright"
-       photon="true"
        hidden="true">
-  <panelmultiview mainViewId="widget-overflow-mainView" disablekeynav="true">
+  <panelmultiview mainViewId="widget-overflow-mainView">
     <panelview id="widget-overflow-mainView"
                context="toolbar-context-menu">
       <vbox class="panel-subview-body">
@@ -1712,6 +1730,11 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
               label="&customizeMenu.removeExtension.label;"
               contexttype="toolbaritem"
               class="customize-context-removeExtension"/>
+    <menuitem oncommand="ToolbarContextMenu.reportExtensionForContextAction(this.parentElement, 'toolbar_context_menu')"
+              accesskey="&customizeMenu.reportExtension.accesskey;"
+              label="&customizeMenu.reportExtension.label;"
+              contexttype="toolbaritem"
+              class="customize-context-reportExtension"/>
     <menuseparator/>
     <menuitem oncommand="gCustomizeMode.addToPanel(document.popupNode)"
               id="customizationPanelItemContextMenuPin"
@@ -1757,7 +1780,7 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
 </panel>
 
 <panel id="appMenu-notification-popup"
-       class="popup-notification-panel"
+       class="popup-notification-panel panel-no-padding"
        type="arrow"
        position="after_start"
        hidden="true"
@@ -1769,54 +1792,59 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
        role="alert">
   <popupnotification id="appMenu-update-available-notification"
                      popupid="update-available"
-                     label="&updateAvailable.header.message;"
-                     buttonlabel="&updateAvailable.acceptButton.label;"
-                     buttonaccesskey="&updateAvailable.acceptButton.accesskey;"
+                     data-lazy-l10n-id="appmenu-update-available"
+                     data-l10n-attrs="buttonlabel, buttonaccesskey, secondarybuttonlabel, secondarybuttonaccesskey"
                      closebuttonhidden="true"
-                     secondarybuttonlabel="&updateAvailable.cancelButton.label;"
-                     secondarybuttonaccesskey="&updateAvailable.cancelButton.accesskey;"
                      dropmarkerhidden="true"
                      checkboxhidden="true"
                      buttonhighlight="true"
                      hidden="true">
     <popupnotificationcontent id="update-available-notification-content" orient="vertical">
-      <description id="update-available-description">&updateAvailable.message;</description>
-      <label id="update-available-whats-new" is="text-link" value="&updateAvailable.whatsnew.label;" />
+      <description id="update-available-description" data-lazy-l10n-id="appmenu-update-available-message"></description>
+      <label id="update-available-whats-new" is="text-link" data-lazy-l10n-id="appmenu-update-whats-new"/>
     </popupnotificationcontent>
   </popupnotification>
 
   <popupnotification id="appMenu-update-manual-notification"
                      popupid="update-manual"
-                     label="&updateManual.header.message;"
-                     buttonlabel="&updateManual.acceptButton.label;"
-                     buttonaccesskey="&updateManual.acceptButton.accesskey;"
+                     data-lazy-l10n-id="appmenu-update-manual"
+                     data-l10n-attrs="buttonlabel, buttonaccesskey, secondarybuttonlabel, secondarybuttonaccesskey"
                      closebuttonhidden="true"
-                     secondarybuttonlabel="&updateManual.cancelButton.label;"
-                     secondarybuttonaccesskey="&updateManual.cancelButton.accesskey;"
                      dropmarkerhidden="true"
                      checkboxhidden="true"
                      buttonhighlight="true"
                      hidden="true">
     <popupnotificationcontent id="update-manual-notification-content" orient="vertical">
-      <description id="update-manual-description">&updateManual.message;</description>
-      <label id="update-manual-whats-new" is="text-link" value="&updateManual.whatsnew.label;" />
+      <description id="update-manual-description" data-lazy-l10n-id="appmenu-update-manual-message"></description>
+      <label id="update-manual-whats-new" is="text-link"  data-lazy-l10n-id="appmenu-update-whats-new"/>
+    </popupnotificationcontent>
+  </popupnotification>
+
+  <popupnotification id="appMenu-update-unsupported-notification"
+                     popupid="update-unsupported"
+                     data-lazy-l10n-id="appmenu-update-unsupported"
+                     data-l10n-attrs="buttonlabel, buttonaccesskey, secondarybuttonlabel, secondarybuttonaccesskey"
+                     closebuttonhidden="true"
+                     dropmarkerhidden="true"
+                     checkboxhidden="true"
+                     buttonhighlight="true"
+                     hidden="true">
+    <popupnotificationcontent id="update-unsupported-notification-content" orient="vertical">
+      <description id="update-unsupported-description" data-lazy-l10n-id="appmenu-update-unsupported-message"></description>
     </popupnotificationcontent>
   </popupnotification>
 
   <popupnotification id="appMenu-update-restart-notification"
                      popupid="update-restart"
-                     label="&updateRestart.header.message2;"
-                     buttonlabel="&updateRestart.acceptButton.label;"
-                     buttonaccesskey="&updateRestart.acceptButton.accesskey;"
+                     data-lazy-l10n-id="appmenu-update-restart"
+                     data-l10n-attrs="buttonlabel, buttonaccesskey, secondarybuttonlabel, secondarybuttonaccesskey"
                      closebuttonhidden="true"
-                     secondarybuttonlabel="&updateRestart.cancelButton.label;"
-                     secondarybuttonaccesskey="&updateRestart.cancelButton.accesskey;"
                      dropmarkerhidden="true"
                      checkboxhidden="true"
                      buttonhighlight="true"
                      hidden="true">
     <popupnotificationcontent id="update-restart-notification-content" orient="vertical">
-      <description id="update-restart-description">&updateRestart.message2;</description>
+      <description id="update-restart-description" data-lazy-l10n-id="appmenu-update-restart-message"></description>
     </popupnotificationcontent>
   </popupnotification>
 
@@ -1824,37 +1852,36 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                      popupid="addon-installed"
                      closebuttonhidden="true"
                      secondarybuttonhidden="true"
-                     buttonlabel="&addonPrivateBrowsing.okButton.label;"
-                     buttonaccesskey="&addonPrivateBrowsing.okButton.accesskey;"
+                     data-lazy-l10n-id="appmenu-addon-private-browsing-installed"
+                     data-l10n-attrs="buttonlabel, buttonaccesskey"
                      dropmarkerhidden="true"
                      checkboxhidden="true"
                      buttonhighlight="true"
                      hidden="true">
     <popupnotificationcontent class="addon-installed-notification-content" orient="vertical">
-      <description>&addonPostInstallMessage.label;</description>
+      <description id="addon-install-description" data-lazy-l10n-id="appmenu-addon-post-install-message">
+        <image data-l10n-name="addon-install-icon" class="addon-addon-icon"></image>
+        <image data-l10n-name="addon-menu-icon" class="addon-toolbar-icon"></image>
+      </description>
       <checkbox id="addon-incognito-checkbox"
-                label="&addonPostInstall.incognito.checkbox.label;"
-                accesskey="&addonPostInstall.incognito.checkbox.accesskey;"/>
+                data-lazy-l10n-id="appmenu-addon-post-install-incognito-checkbox"/>
     </popupnotificationcontent>
   </popupnotification>
 
   <popupnotification id="appMenu-addon-private-browsing-notification"
                      popupid="addon-private-browsing"
-                     label="&addonPrivateBrowsing.header2.label;"
+                     data-lazy-l10n-id="appmenu-addon-private-browsing"
+                     data-l10n-attrs="buttonlabel, buttonaccesskey, secondarybuttonlabel, secondarybuttonaccesskey"
                      closebuttonhidden="true"
                      secondarybuttonhidden="false"
-                     buttonlabel="&addonPrivateBrowsing.manageButton.label;"
-                     buttonaccesskey="&addonPrivateBrowsing.manageButton.accesskey;"
-                     secondarybuttonlabel="&addonPrivateBrowsing.okButton.label;"
-                     secondarybuttonaccesskey="&addonPrivateBrowsing.okButton.accesskey;"
                      dropmarkerhidden="true"
                      checkboxhidden="true"
                      buttonhighlight="true"
                      hidden="true">
     <popupnotificationcontent class="addon-private-browsing-notification-content" orient="vertical">
-      <description>&addonPrivateBrowsing.body2.label;</description>
+      <description id="addon-private-browsing-description" data-lazy-l10n-id="appmenu-addon-private-browsing-message"></description>
       <label id="addon-private-browsing-learn-more"
-             class="text-link" is="text-link">&addonPrivateBrowsing.learnMore.label;</label>
+             class="text-link" is="text-link" data-lazy-l10n-id="appmenu-addon-private-browsing-learn-more"></label>
     </popupnotificationcontent>
   </popupnotification>
 </panel>
@@ -1878,7 +1905,7 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
 </menupopup>
 
 <panel id="appMenu-popup"
-       class="cui-widget-panel"
+       class="cui-widget-panel panel-no-padding"
        role="group"
        type="arrow"
        hidden="true"
@@ -1894,40 +1921,29 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
         <toolbarbutton class="panel-banner-item"
                        label-update-available="&updateAvailable.panelUI.label;"
                        label-update-manual="&updateManual.panelUI.label;"
+                       label-update-unsupported="&updateUnsupported.panelUI.label;"
                        label-update-restart="&updateRestart.panelUI.label2;"
                        oncommand="PanelUI._onBannerItemSelected(event)"
                        wrap="true"
                        hidden="true"/>
-        <toolbaritem id="appMenu-fxa-container" class="toolbaritem-combined-buttons sync-ui-item">
-          <hbox id="appMenu-fxa-status"
-                flex="1"
-                defaultlabel="&fxaSignIn.label;"
-                signedinTooltiptext="&fxaSignedIn.tooltip;"
-                tooltiptext="&fxaSignedIn.tooltip;"
-                errorlabel="&fxaSignInError.label;"
-                unverifiedlabel="&fxaUnverified.label;"
-                onclick="if (event.which == 1) gSync.onMenuPanelCommand();">
-            <image id="appMenu-fxa-avatar"/>
-            <toolbarbutton id="appMenu-fxa-label"
-                           class="subviewbutton subviewbutton-iconic"
-                           label="&fxaSignIn.label;"
-                           fxabrandname="&syncBrand.fxAccount.label;"/>
-          </hbox>
-          <toolbarseparator orient="vertical"/>
-          <toolbarbutton id="appMenu-fxa-icon"
-                         class="subviewbutton subviewbutton-iconic"
-                         onmouseover="gSync.refreshSyncButtonsTooltip();"
-                         oncommand="gSync.doSync();"
-                         closemenu="none"/>
+        <toolbaritem id="appMenu-fxa-status"
+                     class="sync-ui-item"
+                     defaultlabel="&fxa.menu.signin.label;"
+                     flex="1">
+          <image id="appMenu-fxa-avatar"/>
+          <toolbarbutton id="appMenu-fxa-label"
+                        class="subviewbutton subviewbutton-iconic subviewbutton-nav"
+                        label="&fxa.menu.signin.label;"
+                        closemenu="none"
+                        oncommand="gSync.toggleAccountPanel('PanelUI-fxa', this, event)"/>
         </toolbaritem>
         <toolbarseparator class="sync-ui-item"/>
         <toolbaritem>
-          <toolbarbutton id="appMenu-tp-button"
+          <toolbarbutton id="appMenu-protection-report-button"
                class="subviewbutton subviewbutton-iconic"
-               oncommand="ContentBlocking.openPreferences('appMenu-trackingprotection');">
-            <image id="appMenu-tp-icon" class="toolbarbutton-icon"/>
-            <label id="appMenu-tp-label" class="toolbarbutton-text"/>
-            <label id="appMenu-tp-category"/>
+               oncommand="gProtectionsHandler.openProtections();">
+            <image id="appMenu-protection-report-icon" class="toolbarbutton-icon"/>
+            <label id="appMenu-protection-report-text" class="toolbarbutton-text">Privacy Protections</label>
           </toolbarbutton>
         </toolbaritem>
         <toolbarseparator id="appMenu-tp-separator"/>
@@ -2002,7 +2018,7 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
         <toolbarbutton id="appMenu-logins-button"
                        class="subviewbutton subviewbutton-iconic"
                        label="&logins.label;"
-                       oncommand="LoginHelper.openPasswordManager(window)"
+                       oncommand="LoginHelper.openPasswordManager(window, { entryPoint: 'mainmenu' })"
                        />
         <toolbarbutton id="appMenu-addons-button"
                        class="subviewbutton subviewbutton-iconic"
@@ -2054,6 +2070,11 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                        label="&webDeveloperMenu.label;"
                        closemenu="none"
                        oncommand="PanelUI.showSubView('PanelUI-developer', this)"/>
+       <toolbarbutton id="appMenu-whatsnew-button"
+                      class="subviewbutton subviewbutton-iconic subviewbutton-nav"
+                      hidden="true"
+                      closemenu="none"
+                      oncommand="PanelUI.showSubView('PanelUI-whatsNew', this)"/>
         <toolbarbutton id="appMenu-help-button"
                        class="subviewbutton subviewbutton-iconic subviewbutton-nav"
                        label="&appMenuHelp.label;"
@@ -2071,6 +2092,8 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
       <vbox class="panel-subview-body">
         <toolbarbutton id="appMenuViewHistorySidebar"
                        label="&appMenuHistory.viewSidebar.label;"
+                       label-checked="&appMenuHistory.hideSidebar.label;"
+                       label-unchecked="&appMenuHistory.viewSidebar.label;"
                        type="checkbox"
                        class="subviewbutton subviewbutton-iconic"
                        key="key_gotoHistory"
@@ -2122,7 +2145,9 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
             <toolbarbutton id="PanelUI-remotetabs-view-sidebar"
                            class="subviewbutton subviewbutton-iconic"
                            label="&appMenuRemoteTabs.sidebar.label;"
-                           oncommand="SidebarUI.toggle('viewTabsSidebar');"/>
+                           label-checked="&appMenuRemoteTabs.hidesidebar.label;"
+                           label-unchecked="&appMenuRemoteTabs.sidebar.label;"
+                           oncommand="SidebarUI.toggle('viewTabsSidebar', this);"/>
             <toolbarbutton id="PanelUI-remotetabs-view-managedevices"
                            class="subviewbutton subviewbutton-iconic"
                            label="&appMenuRemoteTabs.managedevices.label;"
@@ -2268,6 +2293,10 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
       <vbox id="PanelUI-developerItems" class="panel-subview-body"/>
     </panelview>
 
+    <panelview id="PanelUI-profiler" flex="1">
+      <iframe id="PanelUI-profilerIframe" className="PanelUI-developer-iframe" />
+    </panelview>
+
     <panelview id="PanelUI-characterEncodingView" flex="1">
       <vbox class="panel-subview-body">
         <vbox id="PanelUI-characterEncodingView-pinned"
@@ -2286,34 +2315,7 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
 
     <panelview id="PanelUI-panicView" flex="1"
                descriptionheightworkaround="true">
-      <vbox class="panel-subview-body">
-        <hbox id="PanelUI-panic-timeframe">
-          <image id="PanelUI-panic-timeframe-icon" alt=""/>
-          <vbox flex="1">
-            <description id="PanelUI-panic-mainDesc">&panicButton.view.mainTimeframeDesc;</description>
-            <radiogroup id="PanelUI-panic-timeSpan" aria-labelledby="PanelUI-panic-mainDesc" closemenu="none">
-              <radio id="PanelUI-panic-5min" label="&panicButton.view.5min;" selected="true"
-                     value="5" class="subviewradio"/>
-              <radio id="PanelUI-panic-2hr" label="&panicButton.view.2hr;"
-                     value="2" class="subviewradio"/>
-              <radio id="PanelUI-panic-day" label="&panicButton.view.day;"
-                     value="6" class="subviewradio"/>
-            </radiogroup>
-          </vbox>
-        </hbox>
-        <vbox id="PanelUI-panic-explanations">
-          <label id="PanelUI-panic-actionlist-main-label">&panicButton.view.mainActionDesc;</label>
-
-          <label id="PanelUI-panic-actionlist-windows" class="PanelUI-panic-actionlist">&panicButton.view.deleteTabsAndWindows;</label>
-          <label id="PanelUI-panic-actionlist-cookies" class="PanelUI-panic-actionlist">&panicButton.view.deleteCookies;</label>
-          <label id="PanelUI-panic-actionlist-history" class="PanelUI-panic-actionlist">&panicButton.view.deleteHistory;</label>
-          <label id="PanelUI-panic-actionlist-newwindow" class="PanelUI-panic-actionlist">&panicButton.view.openNewWindow;</label>
-
-          <label id="PanelUI-panic-warning">&panicButton.view.undoWarning;</label>
-        </vbox>
-        <button id="PanelUI-panic-view-button"
-                label="&panicButton.view.forgetButton;"/>
-      </vbox>
+      <!-- This is constructed in CustomizableWidgets.jsm -->
     </panelview>
 
     <panelview id="appMenu-moreView" title="&moreMenu.label;" class="PanelUI-subView">
@@ -2375,56 +2377,68 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
       </vbox>
     </panelview>
 
-    <panelview id="PanelUI-fxa" class="PanelUI-subView" descriptionheightworkaround="true">
-      <vbox class="panel-subview-body">
-        <vbox id="PanelUI-fxa-signin">
-          <image class="fxaChooseWhatToSyncDevices"/>
-          <label class="PanelUI-fxa-signin-instruction-callout">&fxa.signin.callout.label;</label>
-          <label class="PanelUI-fxa-signin-instruction-label">&fxa.signin.description.label;</label>
-          <toolbarbutton class="PanelUI-fxa-signin-button" label="&fxa.signin.button.label;" oncommand="gSync.openFxAEmailFirstPage('fxa_discoverability_native');"/>
-        </vbox>
-        <vbox id="PanelUI-fxa-unverified" class="PanelUI-fxa-unverified-instruction-box">
-          <image class="fxaGraphicMail"/>
-          <label class="PanelUI-fxa-signin-instruction-callout">&fxa.unverified.callout.label;</label>
-          <label class="PanelUI-fxa-signin-instruction-label">&fxa.unverified.description.label;</label>
-          <toolbarbutton class="PanelUI-fxa-signin-button" label="&fxa.unverified.button.label;" oncommand="gSync.openPrefs('fxa_discoverability_native');"/>
-        </vbox>
-        <vbox id="PanelUI-fxa-menu">
-          <hbox flex="1" align="center" class="fxa-avatar-subpanel">
-            <image role="presentation" id="fxa-menu-avatar"/>
-            <vbox flex="1">
-              <label class="fxa-avatar-subpanel-description" >&fxa.menu.signedInAs.label;</label>
-              <label id="fxa-menu-email"></label>
-            </vbox>
-          </hbox>
-          <toolbarseparator/>
-          <toolbarbutton id="PanelUI-fxa-menu-sendtab-button"
-                         class="subviewbutton subviewbutton-iconic subviewbutton-nav"
-                         closemenu="none"
-                         oncommand="gSync.showSendToDeviceView(this);"/>
-          <toolbarbutton id="PanelUI-fxa-menu-remotetabs-button"
-                         class="subviewbutton subviewbutton-iconic subviewbutton-nav"
-                         label="&appMenuRemoteTabs.label;"
-                         closemenu="none"
-                         oncommand="PanelUI.showSubView('PanelUI-remotetabs', this)"/>
-          <toolbarbutton id="PanelUI-fxa-menu-view-sidebar"
-                         class="subviewbutton subviewbutton-iconic"
-                         label="&appMenuRemoteTabs.sidebar.label;"
-                         oncommand="SidebarUI.toggle('viewTabsSidebar');">
-            <observes element="sidebar-box" attribute="positionend"/>
-          </toolbarbutton>
-          <toolbarseparator/>
-          <toolbarbutton class="subviewbutton" label="&fxa.menu.connectAnotherDevice.label;" oncommand="gSync.openConnectAnotherDevice('fxa_discoverability_native');"/>
-          <toolbarbutton class="subviewbutton" label="&fxa.menu.manageAccount.label;" oncommand="gSync.openFxAManagePage('fxa_discoverability_native');"/>
-          <toolbarbutton class="subviewbutton" label="&fxa.menu.syncSettings.label;" oncommand="gSync.openPrefs('fxa_discoverability_native');"/>
-          <toolbarseparator/>
-          <toolbarbutton id="PanelUI-fxa-menu-syncnow-button"
-                         label="&syncSyncNowItem.label;"
-                         syncinglabel="&syncSyncNowItemSyncing.label;"
-                         class="subviewbutton subviewbutton-iconic"
-                         oncommand="gSync.doSync();"
-                         closemenu="none"/>
-        </vbox>
+    <panelview id="PanelUI-fxa" title="&fxa.menu.account.label;" class="PanelUI-subView" descriptionheightworkaround="true">
+      <vbox id="PanelUI-fxa-menu" class="panel-subview-body">
+        <toolbarbutton id="fxa-manage-account-button" flex="1"
+                       align="center"
+                       class="fxa-menu-header subviewbutton"
+                       oncommand="gSync.clickFxAMenuHeaderButton(this);">
+          <image role="presentation" id="fxa-menu-avatar"/>
+          <vbox flex="1">
+            <label id="fxa-menu-header-title"
+                   defaultLabel="&fxa.menu.signin.label;">&fxa.menu.signin.label;</label>
+            <label id="fxa-menu-header-description"
+                   crop="end"
+                   defaultLabel="&fxa.menu.turnOnSync.label;">&fxa.menu.turnOnSync.label;</label>
+          </vbox>
+        </toolbarbutton>
+        <toolbarseparator/>
+        <toolbarbutton id="PanelUI-fxa-menu-sendtab-button"
+                        class="subviewbutton subviewbutton-iconic subviewbutton-nav"
+                        closemenu="none"
+                        oncommand="gSync.showSendToDeviceViewFromFxaMenu(this);"/>
+        <toolbarbutton id="PanelUI-fxa-menu-remotetabs-button"
+                        class="subviewbutton subviewbutton-iconic subviewbutton-nav"
+                        label="&appMenuRemoteTabs.label;"
+                        closemenu="none"
+                        oncommand="gSync.showRemoteTabsFromFxaMenu(this);"/>
+        <!-- The `Connect Another Device` button is disabled by default until the user logs into Sync. -->
+        <toolbarbutton id="PanelUI-fxa-menu-connect-device-button"
+                        class="subviewbutton subviewbutton-iconic"
+                        label="&fxa.menu.connectAnotherDevice2.label;"
+                        disabled="true"
+                        oncommand="gSync.openConnectAnotherDeviceFromFxaMenu(this);"/>
+        <toolbarbutton id="PanelUI-fxa-menu-sync-prefs-button"
+                        class="subviewbutton subviewbutton-iconic"
+                        label="&fxa.menu.syncSettings.label;"
+                        oncommand="gSync.openPrefsFromFxaMenu('sync_settings', this);"/>
+        <toolbarseparator/>
+        <!-- The `Sync Now` button is disabled by default until the user logs into Sync. -->
+        <toolbarbutton id="PanelUI-fxa-menu-syncnow-button"
+                        label="&syncSyncNowItem.label;"
+                        syncinglabel="&syncSyncNowItemSyncing.label;"
+                        disabled="true"
+                        class="subviewbutton subviewbutton-iconic"
+                        oncommand="gSync.doSyncFromFxaMenu(this);"
+                        closemenu="none"/>
+        <toolbarseparator/>
+        <toolbarbutton id="PanelUI-fxa-menu-logins-button"
+                        class="subviewbutton subviewbutton-iconic"
+                        label="&logins.label;"
+                        oncommand="LoginHelper.openPasswordManager(window, { entryPoint: 'fxamenu' })"/>
+        <toolbarseparator id="fxa-menu-service-separator"/>
+        <label value="&fxa.menu.firefoxServices.label;"
+               class="subview-subheader"/>
+        <toolbarbutton id="PanelUI-fxa-menu-monitor-button"
+                       class="subviewbutton subviewbutton-iconic"
+                       label="&monitorFullName;"
+                       type="open-to-new"
+                       oncommand="gSync.openMonitorFromFxaMenu(this);"/>
+        <toolbarbutton id="PanelUI-fxa-menu-send-button"
+                       class="subviewbutton subviewbutton-iconic"
+                       label="&sendFullName;"
+                       type="open-to-new"
+                       oncommand="gSync.openSendFromFxaMenu(this);"/>
       </vbox>
     </panelview>
     <!-- This panelview is used to contain the dynamically created buttons for send tab to devices -->
@@ -2433,6 +2447,26 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
         <toolbarbutton id="PanelUI-sendTabToDevice-syncingDevices" class="subviewbutton subviewbutton-iconic pageAction-sendToDevice-notReady"
                        label="&sendToDevice.syncNotReady.label;"
                        disabled="true"/>
+      </vbox>
+    </panelview>
+    <panelview id="PanelUI-fxa-menu-sendtab-not-configured" flex="1" class="PanelUI-subView">
+      <vbox id="PanelUI-fxa-sendtab-not-configured" align="center" class="panel-subview-body">
+        <image class="fxaSendToDeviceLogo" role="presentation"/>
+        <label class="PanelUI-fxa-service-description-label">&fxa.service.sendTab.description;</label>
+        <toolbarbutton id="PanelUI-fxa-menu-sendtab-not-configured-button"
+                       class="PanelUI-fxa-signin-button"
+                       label="&fxa.menu.signin.label;"
+                       oncommand="gSync.openFxAEmailFirstPageFromFxaMenu(this);"/>
+      </vbox>
+    </panelview>
+    <panelview id="PanelUI-fxa-menu-sendtab-no-devices" flex="1" class="PanelUI-subView">
+      <vbox id="PanelUI-fxa-sendtab-no-devices" align="center" class="panel-subview-body">
+        <image class="fxaSendToDeviceLogo" role="presentation"/>
+        <label class="PanelUI-fxa-service-description-label">&fxa.service.sendTab.description;</label>
+        <toolbarbutton id="PanelUI-fxa-menu-sendtab-connect-device-button"
+                       class="PanelUI-fxa-signin-button"
+                       label="&appMenuRemoteTabs.connectdevice.label;"
+                       oncommand="gSync.openConnectAnotherDeviceFromFxaMenu(this);"/>
       </vbox>
     </panelview>
 
@@ -2458,6 +2492,23 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                        oncommand="BookmarkingUI.toggleBookmarksToolbar();"/>
       </vbox>
     </panelview>
+
+    <panelview id="PanelUI-whatsNew" class="PanelUI-subView">
+      <vbox class="panel-subview-body">
+        <box id="PanelUI-whatsNew-title" class="panel-header">
+          <label/>
+        </box>
+        <toolbaritem id="PanelUI-whatsNew-content"
+                     orient="vertical"
+                     smoothscroll="false"
+                     flatList="true"
+                     tooltip="bhTooltip">
+          <html:div id="PanelUI-whatsNew-message-container" role="document">
+            <!-- What's New messages will be rendered here -->
+          </html:div>
+        </toolbaritem>
+      </vbox>
+    </panelview>
   </panelmultiview>
 </panel>
 
@@ -2476,6 +2527,7 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
 </panel>
 
 <panel id="extension-notification-panel"
+       class="panel-no-padding"
        role="group"
        type="arrow"
        hidden="true"
@@ -2536,9 +2588,9 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 
 <panel id="identity-popup"
+       class="panel-no-padding"
        type="arrow"
        hidden="true"
-       photon="true"
        role="alertdialog"
        aria-labelledby="identity-popup-mainView-panel-header-span"
        onpopupshown="gIdentityHandler.onPopupShown(event);"
@@ -2546,8 +2598,7 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
        orient="vertical">
 
   <panelmultiview id="identity-popup-multiView"
-                  mainViewId="identity-popup-mainView"
-                  disablekeynav="true">
+                  mainViewId="identity-popup-mainView">
     <panelview id="identity-popup-mainView"
                descriptionheightworkaround="true">
       <vbox id="identity-popup-mainView-panel-header">
@@ -2559,106 +2610,39 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
       <!-- Security Section -->
       <hbox id="identity-popup-security" class="identity-popup-section">
         <vbox class="identity-popup-security-content" flex="1">
-          <label class="plain">
-            <label class="identity-popup-headline">&identity.connection;</label>
-          </label>
-          <description class="identity-popup-connection-not-secure"
-                       when-connection="not-secure secure-cert-user-overridden">&identity.connectionNotSecure;</description>
-          <description class="identity-popup-connection-secure"
-                       when-connection="secure secure-ev">&identity.connectionSecure;</description>
-          <description when-connection="chrome">&identity.connectionInternal;</description>
-          <description when-connection="file">&identity.connectionFile;</description>
-          <description when-connection="extension">&identity.extensionPage;</description>
 
-          <vbox id="identity-popup-security-descriptions">
-            <description class="identity-popup-warning-gray"
+          <vbox class="identity-popup-security-connection">
+            <description class="identity-popup-connection-not-secure"
+                         when-connection="not-secure secure-cert-user-overridden secure-custom-root">&identity.connectionNotSecure;</description>
+            <description class="identity-popup-connection-secure"
+                         when-connection="secure secure-ev">&identity.connectionSecure2;</description>
+            <description when-connection="chrome">&identity.connectionInternal;</description>
+            <description when-connection="file">&identity.connectionFile;</description>
+            <description when-connection="extension">&identity.extensionPage;</description>
+          </vbox>
+
+          <vbox id="identity-popup-security-description">
+            <description id="identity-popup-security-ev-content-owner"
+                         when-connection="secure-ev"/>
+            <description class="identity-popup-warning-box identity-popup-warning-gray"
                          when-mixedcontent="active-blocked">&identity.activeBlocked;</description>
-            <description class="identity-popup-warning-yellow"
+            <description id="identity-popup-security-decription-custom-root"
+                         class="identity-popup-warning-box identity-popup-warning-gray"
+                         when-customroot="true">&identity.customRoot;</description>
+            <description class="identity-popup-warning-box identity-popup-warning-yellow"
                          when-mixedcontent="passive-loaded">&identity.passiveLoaded;</description>
-            <description when-mixedcontent="active-loaded">&identity.activeLoaded;</description>
-            <description class="identity-popup-warning-yellow"
+            <description class="identity-popup-warning-box identity-popup-warning-yellow"
+                         when-mixedcontent="active-loaded">&identity.activeLoaded;</description>
+            <description class="identity-popup-warning-box identity-popup-warning-yellow"
                          when-ciphers="weak">&identity.weakEncryption;</description>
-            <description when-loginforms="insecure">&identity.insecureLoginForms2;</description>
+            <description class="identity-popup-warning-box identity-popup-warning-yellow"
+                         when-loginforms="insecure">&identity.insecureLoginForms2;</description>
           </vbox>
         </vbox>
         <button id="identity-popup-security-expander"
                 class="identity-popup-expander"
                 when-connection="not-secure secure secure-ev secure-cert-user-overridden"
                 oncommand="gIdentityHandler.showSecuritySubView(); gIdentityHandler.recordClick('security_subview_btn');"/>
-      </hbox>
-
-      <!-- Tracking Protection Section -->
-      <hbox id="tracking-protection-container"
-            class="identity-popup-section"
-            when-connection="not-secure secure secure-ev secure-cert-user-overridden extension">
-        <vbox id="identity-popup-content-blocking-content" flex="1">
-          <hbox align="start">
-            <label id="content-blocking-label"
-                   class="identity-popup-headline"
-                   flex="1">&contentBlocking.title;</label>
-            <toolbarbutton id="tracking-protection-preferences-button"
-                           class="identity-popup-preferences-button subviewbutton"
-                           tooltiptext="&identity.contentBlockingPreferences.tooltip;"
-                           oncommand="ContentBlocking.openPreferences('identityPopup-TP-preferencesButton'); gIdentityHandler.recordClick('cb_prefs_button');" />
-          </hbox>
-
-          <description id="identity-popup-content-blocking-detected"
-                       crop="end">&contentBlocking.detected;</description>
-          <description id="identity-popup-content-blocking-not-detected"
-                       crop="end">&contentBlocking.notDetected;</description>
-
-          <vbox id="identity-popup-content-blocking-category-list">
-            <toolbarbutton id="identity-popup-content-blocking-category-tracking-protection"
-                           onclick="ContentBlocking.showTrackersSubview(); gIdentityHandler.recordClick('trackers_subview_btn');"
-                           class="identity-popup-content-blocking-category" align="center">
-              <image class="identity-popup-content-blocking-category-icon tracking-protection-icon"/>
-              <label flex="1" class="identity-popup-content-blocking-category-label">&contentBlocking.trackingProtection3.label;</label>
-              <label flex="1" id="identity-popup-content-blocking-tracking-protection-state-label" class="identity-popup-content-blocking-category-state-label"/>
-            </toolbarbutton>
-            <toolbarbutton id="identity-popup-content-blocking-category-cookies"
-                           onclick="ContentBlocking.showCookiesSubview(); gIdentityHandler.recordClick('cookies_subview_btn');"
-                           class="identity-popup-content-blocking-category" align="center">
-              <image class="identity-popup-content-blocking-category-icon thirdpartycookies-icon"/>
-              <label flex="1" id="identity-popup-content-blocking-category-label-default"
-                     class="identity-popup-content-blocking-category-label">&contentBlocking.cookies.label;</label>
-              <label flex="1" id="identity-popup-content-blocking-cookies-state-label" class="identity-popup-content-blocking-category-state-label"/>
-            </toolbarbutton>
-            <toolbarbutton id="identity-popup-content-blocking-category-cryptominers"
-                           onclick="ContentBlocking.showCryptominersSubview();"
-                           class="identity-popup-content-blocking-category" align="center">
-              <image class="identity-popup-content-blocking-category-icon cryptominers-icon"/>
-              <label flex="1" class="identity-popup-content-blocking-category-label">&contentBlocking.cryptominers.label;</label>
-              <label flex="1" id="identity-popup-content-blocking-cryptominers-state-label" class="identity-popup-content-blocking-category-state-label"/>
-            </toolbarbutton>
-            <toolbarbutton id="identity-popup-content-blocking-category-fingerprinters"
-                           onclick="ContentBlocking.showFingerprintersSubview();"
-                           class="identity-popup-content-blocking-category" align="center">
-              <image class="identity-popup-content-blocking-category-icon fingerprinters-icon"/>
-              <label flex="1" class="identity-popup-content-blocking-category-label">&contentBlocking.fingerprinters.label;</label>
-              <label flex="1" id="identity-popup-content-blocking-fingerprinters-state-label" class="identity-popup-content-blocking-category-state-label"/>
-            </toolbarbutton>
-          </vbox>
-
-          <button id="tracking-action-unblock"
-                  class="panel-button tracking-protection-button"
-                  label="&trackingProtection.unblock5.label;"
-                  accesskey="&trackingProtection.unblock5.accesskey;"
-                  oncommand="ContentBlocking.disableForCurrentPage(); gIdentityHandler.recordClick('unblock');" />
-          <button id="tracking-action-unblock-private"
-                  class="panel-button tracking-protection-button"
-                  label="&trackingProtection.unblockPrivate5.label;"
-                  accesskey="&trackingProtection.unblockPrivate5.accesskey;"
-                  oncommand="ContentBlocking.disableForCurrentPage(); gIdentityHandler.recordClick('unblock_private');" />
-          <button id="tracking-action-block"
-                  class="panel-button tracking-protection-button"
-                  label="&trackingProtection.block6.label;"
-                  accesskey="&trackingProtection.block6.accesskey;"
-                  oncommand="ContentBlocking.enableForCurrentPage(); gIdentityHandler.recordClick('block');" />
-          <label id="identity-popup-content-blocking-report-breakage"
-                 onclick="ContentBlocking.showReportBreakageSubview(); gIdentityHandler.recordClick('report_breakage');"
-                 class="text-link subviewkeynav"
-                 flex="1">&contentBlocking.openBreakageReportView2.label;</label>
-        </vbox>
       </hbox>
 
       <!-- Permissions Section -->
@@ -2668,13 +2652,8 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
               aria-labelledby="identity-popup-permissions-headline">
           <hbox>
             <label id="identity-popup-permissions-headline"
-                   class="identity-popup-headline"
                    flex="1"
-                   value="&identity.permissions;"/>
-            <toolbarbutton id="identity-popup-permission-preferences-button"
-                           class="identity-popup-preferences-button subviewbutton"
-                           tooltiptext="&identity.permissionsPreferences.tooltip;"
-                           oncommand="gIdentityHandler.openPermissionPreferences(); gIdentityHandler.recordClick('permission_prefs_btn');" />
+                   value="&identity.permissions2;"/>
           </hbox>
           <vbox id="identity-popup-permission-list"/>
           <description id="identity-popup-permission-reload-hint">&identity.permissionsReloadHint;</description>
@@ -2694,22 +2673,21 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
 
     <!-- Security SubView -->
     <panelview id="identity-popup-securityView"
-               title="&identity.securityView.label;"
+               title="&identity.securityView.label2;"
                descriptionheightworkaround="true">
       <vbox class="identity-popup-security-content">
-        <label class="plain">
-          <label class="identity-popup-headline" id="identity-popup-host"></label>
-        </label>
-        <description class="identity-popup-connection-not-secure"
-                     when-connection="not-secure secure-cert-user-overridden">&identity.connectionNotSecure;</description>
-        <description class="identity-popup-connection-secure"
-                     when-connection="secure secure-ev">&identity.connectionSecure;</description>
+        <vbox class="identity-popup-security-connection">
+          <description class="identity-popup-connection-not-secure"
+                       when-connection="not-secure secure-cert-user-overridden">&identity.connectionNotSecureSecurityView;</description>
+          <description class="identity-popup-connection-secure"
+                       when-connection="secure secure-ev">&identity.connectionVerified3;</description>
+        </vbox>
       </vbox>
 
       <vbox id="identity-popup-securityView-body" class="panel-view-body-unscrollable">
         <!-- (EV) Certificate Information -->
-        <description id="identity-popup-content-verified-by"
-                     when-connection="secure-ev">&identity.connectionVerified2;</description>
+        <description id="identity-popup-content-owner-label"
+                     when-connection="secure-ev">&identity.evOwnerLabel;</description>
         <description id="identity-popup-content-owner"
                      when-connection="secure-ev"
                      class="header"/>
@@ -2717,6 +2695,9 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                      when-connection="secure-ev"/>
         <description id="identity-popup-content-verifier"
                      when-connection="secure secure-ev secure-cert-user-overridden"/>
+        <description id="identity-popup-content-verifier-unknown"
+                     class="identity-popup-warning-box identity-popup-warning-gray"
+                     when-customroot="true">&identity.description.customRoot; <label id="identity-popup-custom-root-learn-more" is="text-link" class="plain" value="&identity.learnMore;"/></description>
 
         <!-- Remove Certificate Exception -->
         <button when-connection="secure-cert-user-overridden"
@@ -2730,36 +2711,41 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                      and-when-loginforms="secure">&identity.description.insecure;</description>
 
         <!-- Insecure login forms -->
-        <description when-loginforms="insecure">&identity.description.insecureLoginForms; <label id="identity-popup-insecure-login-forms-learn-more" is="text-link" class="plain" value="&identity.learnMore;"/></description>
+        <description when-loginforms="insecure">&identity.description.insecureLoginForms;</description>
+        <label when-loginforms="insecure" id="identity-popup-insecure-login-forms-learn-more" is="text-link" value="&identity.learnMore;"/>
 
         <!-- Weak Cipher -->
         <description when-ciphers="weak">&identity.description.weakCipher;</description>
-        <description class="identity-popup-warning-yellow"
+        <description class="identity-popup-warning-box identity-popup-warning-yellow"
                      when-ciphers="weak">&identity.description.weakCipher2;</description>
 
         <!-- Active Mixed Content Blocked -->
-        <description class="identity-popup-warning-gray"
+        <description class="identity-popup-warning-box identity-popup-warning-gray"
                      when-mixedcontent="active-blocked">&identity.description.activeBlocked; <label is="text-link" class="identity-popup-mcb-learn-more plain" value="&identity.learnMore;"/></description>
 
         <!-- Passive Mixed Content Loaded -->
         <description when-mixedcontent="passive-loaded">&identity.description.passiveLoaded;</description>
-        <description class="identity-popup-warning-yellow"
+        <description class="identity-popup-warning-box identity-popup-warning-yellow"
                      when-mixedcontent="passive-loaded">&identity.description.passiveLoaded2; <label is="text-link" class="identity-popup-mcb-learn-more plain" value="&identity.learnMore;"/></description>
 
         <!-- Passive Mixed Content Loaded, Active Mixed Content Blocked -->
         <description when-mixedcontent="passive-loaded active-blocked">&identity.description.passiveLoaded;</description>
         <description when-mixedcontent="passive-loaded active-blocked"
-                     class="identity-popup-warning-yellow">&identity.description.passiveLoaded3; <label is="text-link" class="identity-popup-mcb-learn-more plain" value="&identity.learnMore;"/></description>
+                     class="identity-popup-warning-box identity-popup-warning-yellow">&identity.description.passiveLoaded3; <label is="text-link" class="identity-popup-mcb-learn-more plain" value="&identity.learnMore;"/></description>
 
         <!-- Active Mixed Content Blocking Disabled -->
         <description when-mixedcontent="active-loaded"
                      and-when-loginforms="secure">&identity.description.activeLoaded;</description>
         <description when-mixedcontent="active-loaded"
-                     and-when-loginforms="secure">&identity.description.activeLoaded2; <label is="text-link" class="identity-popup-mcb-learn-more plain" value="&identity.learnMore;"/></description>
+                     and-when-loginforms="secure">&identity.description.activeLoaded2;</description>
+        <label when-mixedcontent="active-loaded"
+                     and-when-loginforms="secure" is="text-link" class="identity-popup-mcb-learn-more" value="&identity.learnMore;"/>
         <!-- Show only the first message when there are insecure login forms,
              and make sure the Learn More link is included. -->
         <description when-mixedcontent="active-loaded"
-                     and-when-loginforms="insecure">&identity.description.activeLoaded; <label is="text-link" class="identity-popup-mcb-learn-more plain" value="&identity.learnMore;"/></description>
+                     and-when-loginforms="insecure">&identity.description.activeLoaded;</description>
+        <label when-mixedcontent="active-loaded"
+                     and-when-loginforms="insecure" is="text-link" class="identity-popup-mcb-learn-more" value="&identity.learnMore;"/>
 
         <!-- Buttons to enable/disable mixed content blocking. -->
         <button when-mixedcontent="active-blocked"
@@ -2782,99 +2768,309 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
       </vbox>
 
     </panelview>
+  </panelmultiview>
+</panel>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+
+<panel id="protections-popup"
+       class="panel-no-padding"
+       type="arrow"
+       hidden="true"
+       role="alertdialog"
+       aria-labelledby="protections-popup-main-header-label"
+       onpopupshown="gProtectionsHandler.onPopupShown(event);"
+       onpopuphidden="gProtectionsHandler.onPopupHidden(event);"
+       orient="vertical">
+
+  <panelmultiview id="protections-popup-multiView"
+                  mainViewId="protections-popup-mainView">
+    <panelview id="protections-popup-mainView"
+               role="document"
+               descriptionheightworkaround="true">
+      <hbox id="protections-popup-mainView-panel-header"
+            onclick="gProtectionsHandler.onHeaderClicked(event);">
+        <label id="protections-popup-main-header-label" flex="1"
+               role="heading" aria-level="1">
+          <html:span id="protections-popup-mainView-panel-header-span"/>
+        </label>
+        <toolbarbutton id="protections-popup-info-button" class="panel-info-button"
+                       aria-label="&protections.etpMoreInfo.label;">
+          <image/>
+        </toolbarbutton>
+        <description id="protections-popup-toast-panel-tp-on-desc">&protections.etpON.header;</description>
+        <description id="protections-popup-toast-panel-tp-off-desc">&protections.etpOFF.header;</description>
+      </hbox>
+
+      <html:div id="messaging-system-message-container" disabled="true">
+        <!-- Messaging System Messages will render in this container -->
+      </html:div>
+
+      <hbox id="protections-popup-tp-switch-section" class="protections-popup-section">
+        <vbox class="protections-popup-tp-switch-label-box" flex="1">
+          <label class="protections-popup-tp-switch-on-header"
+                 role="heading"
+                 aria-level="2">&protections.etpON.header;</label>
+          <label class="protections-popup-tp-switch-off-header"
+                 role="heading"
+                 aria-level="2">&protections.etpOFF.header;</label>
+          <label id="protections-popup-tp-switch-breakage-link"
+                 class="text-link"
+                 onclick="gProtectionsHandler.showSiteNotWorkingView();">&protections.siteNotWorking.label;</label>
+        </vbox>
+        <vbox class="protections-popup-tp-switch-box">
+          <toolbarbutton id="protections-popup-tp-switch"
+                         class="protections-popup-tp-switch"
+                         enabled="false"
+                         oncommand="gProtectionsHandler.onTPSwitchCommand();" />
+        </vbox>
+      </hbox>
+
+      <!-- Tracking Protection Section -->
+      <vbox id="tracking-protection-container" class="protections-popup-section">
+        <description id="protections-popup-no-trackers-found-description">&protections.noTrackersFound.description;</description>
+        <tooltip id="protections-popup-not-blocking-why-etp-on-tooltip">&protections.notBlocking.why.etpOn.tooltip;</tooltip>
+        <tooltip id="protections-popup-not-blocking-why-etp-off-tooltip">&protections.notBlocking.why.etpOff.tooltip;</tooltip>
+        <vbox id="protections-popup-content" flex="1">
+          <vbox id="protections-popup-category-list">
+            <toolbarbutton id="protections-popup-category-tracking-protection"
+                           onclick="gProtectionsHandler.showTrackersSubview();"
+                           class="protections-popup-category" align="center"
+                           wrap="true">
+              <image class="protections-popup-category-icon tracking-protection-icon"/>
+              <label flex="1" class="protections-popup-category-label">&contentBlocking.trackingProtection4.label;</label>
+            </toolbarbutton>
+            <toolbarbutton id="protections-popup-category-socialblock"
+                           onclick="gProtectionsHandler.showSocialblockerSubview();"
+                           class="protections-popup-category" align="center">
+              <image class="protections-popup-category-icon socialblock-icon"/>
+              <label flex="1"
+              class="protections-popup-category-label">&contentBlocking.socialblock.label;</label>
+            </toolbarbutton>
+            <toolbarbutton id="protections-popup-category-cookies"
+                           onclick="gProtectionsHandler.showCookiesSubview();"
+                           class="protections-popup-category" align="center"
+                           wrap="true">
+              <image class="protections-popup-category-icon thirdpartycookies-icon"/>
+              <label flex="1" id="protections-popup-cookies-category-label-disabled"
+                     class="protections-popup-category-label">&contentBlocking.cookies2.label;</label>
+              <label flex="1" id="protections-popup-cookies-category-label-enabled"
+                     class="protections-popup-category-label"
+                     hidden="true"></label>
+            </toolbarbutton>
+            <toolbarbutton id="protections-popup-category-cryptominers"
+                           onclick="gProtectionsHandler.showCryptominersSubview();"
+                           class="protections-popup-category" align="center"
+                           wrap="true">
+              <image class="protections-popup-category-icon cryptominers-icon"/>
+              <label flex="1" class="protections-popup-category-label">&contentBlocking.cryptominers.label;</label>
+            </toolbarbutton>
+            <toolbarbutton id="protections-popup-category-fingerprinters"
+                           onclick="gProtectionsHandler.showFingerprintersSubview();"
+                           class="protections-popup-category" align="center"
+                           wrap="true">
+              <image class="protections-popup-category-icon fingerprinters-icon"/>
+              <label flex="1" class="protections-popup-category-label">&contentBlocking.fingerprinters.label;</label>
+            </toolbarbutton>
+            <description id="protections-popup-blocking-section-header"
+                         hidden="true"
+                         role="heading"
+                         aria-level="2">&protections.blocking.label;</description>
+            <hbox id="protections-popup-not-blocking-section-header" hidden="true">
+              <description id="protections-popup-not-blocking-section-description">&protections.notBlocking.label;</description>
+              <label id="protections-popup-not-blocking-section-why"
+                     class="text-link"
+                     onmouseover="document.getElementById(event.target.tooltip).openPopup(event.target);"
+                     onmouseout="document.getElementById(event.target.tooltip).hidePopup()">&protections.notBlocking.why.label;</label>
+            </hbox>
+          </vbox>
+        </vbox>
+      </vbox>
+
+      <vbox id="protections-popup-footer" class="protections-popup-section">
+        <toolbarbutton id="protections-popup-settings-button"
+                       class="protections-popup-footer-button"
+                       oncommand="gProtectionsHandler.openPreferences();">
+          <image class="protections-popup-footer-icon protections-popup-settings-icon"/>
+          <label class="protections-popup-footer-button-label" flex="1">&protections.settings.label;</label>
+        </toolbarbutton>
+        <stack id="protections-popup-show-report-stack">
+          <toolbarbutton id="protections-popup-show-report-button"
+                         class="protections-popup-footer-button"
+                         oncommand="gProtectionsHandler.openProtections(true);">
+            <image class="protections-popup-footer-icon protections-popup-show-report-icon"/>
+            <label class="protections-popup-footer-button-label" flex="1">&protections.report.label;</label>
+          </toolbarbutton>
+          <hbox id="protections-popup-trackers-blocked-counter-box"
+                align="center"
+                end="0">
+            <description id="protections-popup-trackers-blocked-counter-description"
+                         onclick="gProtectionsHandler.openProtections(true);"/>
+          </hbox>
+        </stack>
+      </vbox>
+    </panelview>
+
+    <!-- Site Not Working? SubView -->
+    <panelview id="protections-popup-siteNotWorkingView"
+               role="document"
+               title="&protections.siteNotWorkingView.title;"
+               descriptionheightworkaround="true"
+               flex="1">
+        <hbox id="protections-popup-siteNotWorkingView-header">
+          <vbox class="protections-popup-tp-switch-label-box" flex="1">
+            <label class="protections-popup-tp-switch-on-header"
+                   role="heading"
+                   aria-level="1">&protections.etpON.header;</label>
+            <label class="protections-popup-tp-switch-off-header"
+                   role="heading"
+                   aria-level="1">&protections.etpOFF.header;</label>
+          </vbox>
+          <vbox class="protections-popup-tp-switch-box">
+            <toolbarbutton id="protections-popup-siteNotWorking-tp-switch"
+                           class="protections-popup-tp-switch"
+                           enabled="false"
+                           oncommand="gProtectionsHandler.onTPSwitchCommand();" />
+          </vbox>
+        </hbox>
+        <vbox id="protections-popup-siteNotWorkingView-body">
+          <label role="heading" aria-level="2">&protections.siteNotWorkingView.header;</label>
+          <label>
+            <html:ul id="protections-popup-siteNotWorkingView-body-issue-list">
+              <html:li>&protections.siteNotWorkingView.issueList.logInFields;</html:li>
+              <html:li>&protections.siteNotWorkingView.issueList.forms;</html:li>
+              <html:li>&protections.siteNotWorkingView.issueList.payments;</html:li>
+              <html:li>&protections.siteNotWorkingView.issueList.comments;</html:li>
+              <html:li>&protections.siteNotWorkingView.issueList.videos;</html:li>
+            </html:ul>
+          </label>
+          <label id="protections-popup-siteNotWorkingView-siteStillBroken">&protections.siteNotWorkingView.siteStillBroken.label;</label>
+          <label id="protections-popup-siteNotWorkingView-sendReport"
+            onclick="gProtectionsHandler.showSendReportView();"
+            class="text-link">&protections.siteNotWorkingView.sendReport.label;</label>
+        </vbox>
+    </panelview>
 
     <!-- Trackers SubView -->
-    <panelview id="identity-popup-trackersView"
+    <panelview id="protections-popup-trackersView"
                role="document"
-               title="&contentBlocking.trackersView.label;"
                descriptionheightworkaround="true">
-        <vbox id="identity-popup-trackersView-list" class="identity-popup-content-blocking-list">
+        <vbox id="protections-popup-trackersView-description" class="protections-popup-description">
+          <description>&protections.trackingContent.description;</description>
         </vbox>
-        <hbox id="identity-popup-trackersView-strict-info">
+        <vbox id="protections-popup-trackersView-list" class="protections-popup-list">
+        </vbox>
+        <hbox id="protections-popup-trackersView-strict-info">
           <image/>
           <label>&contentBlocking.trackersView.strictInfo.label;</label>
         </hbox>
         <vbox class="panel-footer">
-          <button id="identity-popup-trackersView-settings-button"
-                  label="&contentBlocking.manageSettings.label;"
+          <button id="protections-popup-trackersView-settings-button"
+                  label="&contentBlocking.manageSettings2.label;"
                   accesskey="&contentBlocking.manageSettings.accesskey;"
-                  oncommand="ContentBlocking.openPreferences(); gIdentityHandler.recordClick('trackers_prefs_btn');"/>
+                  oncommand="gProtectionsHandler.openPreferences();"/>
+        </vbox>
+    </panelview>
+
+    <!-- Social Block SubView -->
+    <panelview id="protections-popup-socialblockView"
+               role="document"
+               descriptionheightworkaround="true">
+        <vbox id="protections-popup-socialblockView-heading" class="protections-popup-description">
+          <description>&protections.socialMediaTrackers.description;</description>
+        </vbox>
+        <vbox id="protections-popup-socialblockView-list" class="protections-popup-list">
+        </vbox>
+        <vbox class="panel-footer">
+          <button id="protections-popup-socialblockView-settings-button"
+                  label="&contentBlocking.manageSettings2.label;"
+                  accesskey="&contentBlocking.manageSettings.accesskey;"
+                  oncommand="gProtectionsHandler.openPreferences();"/>
         </vbox>
     </panelview>
 
     <!-- Cookies SubView -->
-    <panelview id="identity-popup-cookiesView"
+    <panelview id="protections-popup-cookiesView"
                role="document"
-               title="&contentBlocking.cookiesView.label;"
                descriptionheightworkaround="true">
-        <vbox id="identity-popup-cookiesView-list" class="identity-popup-content-blocking-list">
+        <vbox id="protections-popup-cookiesView-heading" class="protections-popup-description">
+          <description>&protections.crossSiteTrackingCookies.description;</description>
+        </vbox>
+        <vbox id="protections-popup-cookiesView-list" class="protections-popup-list">
         </vbox>
         <vbox class="panel-footer">
-          <button id="identity-popup-cookiesView-settings-button"
-                  label="&contentBlocking.manageSettings.label;"
+          <button id="protections-popup-cookiesView-settings-button"
+                  label="&contentBlocking.manageSettings2.label;"
                   accesskey="&contentBlocking.manageSettings.accesskey;"
-                  oncommand="ContentBlocking.openPreferences(); gIdentityHandler.recordClick('cookies_prefs_btn');"/>
+                  oncommand="gProtectionsHandler.openPreferences();"/>
         </vbox>
     </panelview>
 
     <!-- Fingerprinters SubView -->
-    <panelview id="identity-popup-fingerprintersView"
+    <panelview id="protections-popup-fingerprintersView"
                role="document"
-               title="&contentBlocking.fingerprintersView.label;"
                descriptionheightworkaround="true">
-        <vbox id="identity-popup-fingerprintersView-list" class="identity-popup-content-blocking-list">
+        <vbox id="protections-popup-fingerprinters-heading" class="protections-popup-description">
+          <description>&protections.fingerprinters.description;</description>
+        </vbox>
+        <vbox id="protections-popup-fingerprintersView-list" class="protections-popup-list">
         </vbox>
         <vbox class="panel-footer">
-          <button id="identity-popup-fingerprintersView-settings-button"
-                  label="&contentBlocking.manageSettings.label;"
+          <button id="protections-popup-fingerprintersView-settings-button"
+                  label="&contentBlocking.manageSettings2.label;"
                   accesskey="&contentBlocking.manageSettings.accesskey;"
-                  oncommand="ContentBlocking.openPreferences();"/>
+                  oncommand="gProtectionsHandler.openPreferences();"/>
         </vbox>
     </panelview>
 
     <!-- Cryptominers SubView -->
-    <panelview id="identity-popup-cryptominersView"
+    <panelview id="protections-popup-cryptominersView"
                role="document"
-               title="&contentBlocking.cryptominersView.label;"
                descriptionheightworkaround="true">
-        <vbox id="identity-popup-cryptominersView-list" class="identity-popup-content-blocking-list">
+        <vbox id="protections-popup-cryptominers-heading" class="protections-popup-description">
+          <description>&protections.cryptominers.description;</description>
+        </vbox>
+        <vbox id="protections-popup-cryptominersView-list" class="protections-popup-list">
         </vbox>
         <vbox class="panel-footer">
-          <button id="identity-popup-cryptominersView-settings-button"
-                  label="&contentBlocking.manageSettings.label;"
+          <button id="protections-popup-cryptominersView-settings-button"
+                  label="&contentBlocking.manageSettings2.label;"
                   accesskey="&contentBlocking.manageSettings.accesskey;"
-                  oncommand="ContentBlocking.openPreferences();"/>
+                  oncommand="gProtectionsHandler.openPreferences();"/>
         </vbox>
     </panelview>
 
-    <!-- Report Breakage SubView -->
-    <panelview id="identity-popup-breakageReportView"
-               title="&contentBlocking.breakageReportView.label;"
+    <!-- Send Report SubView -->
+    <panelview id="protections-popup-sendReportView"
+               title="&contentBlocking.breakageReportView.title;"
                descriptionheightworkaround="true">
-        <vbox id="identity-popup-breakageReportView-heading">
-          <description>&contentBlocking.breakageReportView2.description;</description>
-          <label id="identity-popup-breakageReportView-learn-more"
-                 is="text-link">&contentBlocking.breakageReportView.learnMore;</label>
+        <vbox id="protections-popup-sendReportView-heading">
+          <description>
+            &contentBlocking.breakageReportView3.description;
+            <label id="protections-popup-sendReportView-learn-more"
+                   is="text-link">&contentBlocking.breakageReportView2.learnMore;</label>
+          </description>
         </vbox>
-        <vbox id="identity-popup-breakageReportView-body" class="panel-view-body-unscrollable">
-          <vbox class="identity-popup-breakageReportView-collection-section">
-            <label>&contentBlocking.breakageReportView.collection.url.label;</label>
-            <textbox readonly="true" id="identity-popup-breakageReportView-collection-url"/>
+        <vbox id="protections-popup-sendReportView-body" class="panel-view-body-unscrollable">
+          <vbox class="protections-popup-sendReportView-collection-section">
+            <label control="protections-popup-sendReportView-collection-url">&contentBlocking.breakageReportView.collection.url.label;</label>
+            <html:input readonly="readonly" id="protections-popup-sendReportView-collection-url" aria-label="&contentBlocking.breakageReportView.collection.url.label;"/>
           </vbox>
-          <vbox class="identity-popup-breakageReportView-collection-section">
-            <label>&contentBlocking.breakageReportView.collection.comments.label;</label>
-            <html:textarea id="identity-popup-breakageReportView-collection-comments"/>
+          <vbox class="protections-popup-sendReportView-collection-section">
+            <label control="protections-popup-sendReportView-collection-comments">&contentBlocking.breakageReportView2.collection.comments.label;</label>
+            <html:textarea id="protections-popup-sendReportView-collection-comments" aria-label="&contentBlocking.breakageReportView2.collection.comments.label;"/>
           </vbox>
         </vbox>
-        <vbox id="identity-popup-breakageReportView-footer"
+        <vbox id="protections-popup-sendReportView-footer"
               class="panel-footer">
-          <button id="identity-popup-breakageReportView-cancel"
+          <button id="protections-popup-sendReportView-cancel"
                   label="&contentBlocking.breakageReportView.cancel.label;"
-                  oncommand="ContentBlocking.backToMainView();"/>
-          <button id="identity-popup-breakageReportView-submit"
+                  oncommand="gProtectionsHandler._protectionsPopupMultiView.goBack();"/>
+          <button id="protections-popup-sendReportView-submit"
                   default="true"
                   label="&contentBlocking.breakageReportView.sendReport.label;"
-                  oncommand="ContentBlocking.submitBreakageReport();"/>
+                  oncommand="gProtectionsHandler.onSendReportClicked();"/>
         </vbox>
     </panelview>
   </panelmultiview>
@@ -2882,6 +3078,7 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
 <!-- This Source Code Form is subject to the terms of the Mozilla Public
    - License, v. 2.0. If a copy of the MPL was not distributed with this
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+
 
 
 <stringbundleset id="downloadsStrings"
@@ -2933,6 +3130,7 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
      panel can also be displayed without an anchor. -->
 <panel id="downloadsPanel"
        aria-label="&downloads.title;"
+       class="panel-no-padding"
        role="group"
        type="arrow"
        orient="vertical"
@@ -3152,31 +3350,23 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
              onpopupshowing="UpdateDynamicShortcutTooltipText(this);"/>
 
     <menupopup id="SyncedTabsSidebarContext">
-      <menuitem label="&syncedTabs.context.open.label;"
-                accesskey="&syncedTabs.context.open.accesskey;"
+      <menuitem data-lazy-l10n-id="synced-tabs-context-open"
                 id="syncedTabsOpenSelected" where="current"/>
-      <menuitem label="&syncedTabs.context.openInNewTab.label;"
-                accesskey="&syncedTabs.context.openInNewTab.accesskey;"
+      <menuitem data-lazy-l10n-id="synced-tabs-context-open-in-new-tab"
                 id="syncedTabsOpenSelectedInTab" where="tab"/>
-      <menuitem label="&syncedTabs.context.openInNewWindow.label;"
-                accesskey="&syncedTabs.context.openInNewWindow.accesskey;"
+      <menuitem data-lazy-l10n-id="synced-tabs-context-open-in-new-window"
                 id="syncedTabsOpenSelectedInWindow" where="window"/>
-      <menuitem label="&syncedTabs.context.openInNewPrivateWindow.label;"
-                accesskey="&syncedTabs.context.openInNewPrivateWindow.accesskey;"
+      <menuitem data-lazy-l10n-id="synced-tabs-context-open-in-new-private-window"
                 id="syncedTabsOpenSelectedInPrivateWindow" where="window" private="true"/>
       <menuseparator/>
-      <menuitem label="&syncedTabs.context.bookmarkSingleTab.label;"
-                accesskey="&syncedTabs.context.bookmarkSingleTab.accesskey;"
+      <menuitem data-lazy-l10n-id="synced-tabs-context-bookmark-single-tab"
                 id="syncedTabsBookmarkSelected"/>
-      <menuitem label="&syncedTabs.context.copy.label;"
-                accesskey="&syncedTabs.context.copy.accesskey;"
+      <menuitem data-lazy-l10n-id="synced-tabs-context-copy"
                 id="syncedTabsCopySelected"/>
       <menuseparator/>
-      <menuitem label="&syncedTabs.context.openAllInTabs.label;"
-                accesskey="&syncedTabs.context.openAllInTabs.accesskey;"
+      <menuitem data-lazy-l10n-id="synced-tabs-context-open-all-in-tabs"
                 id="syncedTabsOpenAllInTabs"/>
-      <menuitem label="&syncedTabs.context.managedevices.label;"
-                accesskey="&syncedTabs.context.managedevices.accesskey;"
+      <menuitem data-lazy-l10n-id="synced-tabs-context-manage-devices"
                 id="syncedTabsManageDevices"
                 oncommand="gSync.openDevicesManagementPage('syncedtabs-sidebar');"/>
       <menuitem label="&syncSyncNowItem.label;"
@@ -3211,7 +3401,7 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                 id="syncedTabsRefreshFilter"/>
     </menupopup>
 
-    <hbox id="statuspanel" inactive="true" layer="true">
+    <hbox id="statuspanel" inactive="true" renderroot="content">
       <hbox id="statuspanel-inner">
         <label id="statuspanel-label"
                role="status"
@@ -3242,86 +3432,59 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                                     !('@mozilla.org/widget/nativemenuservice;1' in Cc))
                                   this.setAttribute('openedwithkey',
                                                     event.target.parentNode.openedWithKey);">
-            <menu id="file-menu" label="&fileMenu.label;"
-                  accesskey="&fileMenu.accesskey;">
+            <menu id="file-menu" data-l10n-id="menu-file">
               <menupopup id="menu_FilePopup"
                          onpopupshowing="updateFileMenuUserContextUIVisibility('menu_newUserContext');
                                          updateFileMenuImportUIVisibility('cmd_importFromAnotherBrowser');">
                 <menuitem id="menu_newNavigatorTab"
-                          label="&tabCmd.label;"
                           command="cmd_newNavigatorTab"
-                          key="key_newNavigatorTab"
-                          accesskey="&tabCmd.accesskey;"/>
+                          key="key_newNavigatorTab" data-l10n-id="menu-file-new-tab"/>
                 <menu id="menu_newUserContext"
-                      label="&newUserContext.label;"
-                      accesskey="&newUserContext.accesskey;"
-                      hidden="true">
+                      hidden="true" data-l10n-id="menu-file-new-container-tab">
                   <menupopup onpopupshowing="return createUserContextMenu(event);" />
                 </menu>
                 <menuitem id="menu_newNavigator"
-                          label="&newNavigatorCmd.label;"
-                          accesskey="&newNavigatorCmd.accesskey;"
                           key="key_newNavigator"
-                          command="cmd_newNavigator"/>
+                          command="cmd_newNavigator" data-l10n-id="menu-file-new-window"/>
                 <menuitem id="menu_newPrivateWindow"
-                          label="&newPrivateWindow.label;"
-                          accesskey="&newPrivateWindow.accesskey;"
                           command="Tools:PrivateBrowsing"
-                          key="key_privatebrowsing"/>
+                          key="key_privatebrowsing" data-l10n-id="menu-file-new-private-window"/>
                 <menuitem id="menu_openLocation"
                           hidden="true"
-                          label="&openLocationCmd.label;"
                           command="Browser:OpenLocation"
-                          key="focusURLBar"/>
+                          key="focusURLBar" data-l10n-id="menu-file-open-location"/>
                 <menuitem id="menu_openFile"
-                          label="&openFileCmd.label;"
                           command="Browser:OpenFile"
-                          key="openFileKb"
-                          accesskey="&openFileCmd.accesskey;"/>
+                          key="openFileKb" data-l10n-id="menu-file-open-file"/>
                 <menuitem id="menu_close"
                           class="show-only-for-keyboard"
-                          label="&closeCmd.label;"
                           key="key_close"
-                          accesskey="&closeCmd.accesskey;"
-                          command="cmd_close"/>
+                          command="cmd_close" data-l10n-id="menu-file-close"/>
                 <menuitem id="menu_closeWindow"
                           class="show-only-for-keyboard"
                           hidden="true"
                           command="cmd_closeWindow"
-                          key="key_closeWindow"
-                          label="&closeWindow.label;"
-                          accesskey="&closeWindow.accesskey;"/>
+                          key="key_closeWindow" data-l10n-id="menu-file-close-window"/>
                 <menuseparator/>
                 <menuitem id="menu_savePage"
-                          label="&savePageCmd.label;"
-                          accesskey="&savePageCmd.accesskey;"
                           key="key_savePage"
-                          command="Browser:SavePage"/>
+                          command="Browser:SavePage" data-l10n-id="menu-file-save-page"/>
                 <menuitem id="menu_sendLink"
-                          label="&emailPageCmd.label;"
-                          accesskey="&emailPageCmd.accesskey;"
-                          command="Browser:SendLink"/>
+                          command="Browser:SendLink" data-l10n-id="menu-file-email-link"/>
                 <menuseparator/>
                 <menuitem id="menu_printPreview"
-                          label="&printPreviewCmd.label;"
-                          accesskey="&printPreviewCmd.accesskey;"
-                          command="cmd_printPreview"/>
+                          command="cmd_printPreview" data-l10n-id="menu-file-print-preview"/>
                 <menuitem id="menu_print"
-                          label="&printCmd.label;"
-                          accesskey="&printCmd.accesskey;"
                           key="printKb"
-                          command="cmd_print"/>
+                          command="cmd_print" data-l10n-id="menu-file-print"/>
                 <menuseparator/>
                 <menuitem id="menu_importFromAnotherBrowser"
-                          label="&importFromAnotherBrowserCmd.label;"
-                          accesskey="&importFromAnotherBrowserCmd.accesskey;"
-                          command="cmd_importFromAnotherBrowser"/>
+                          command="cmd_importFromAnotherBrowser" data-l10n-id="menu-file-import-from-another-browser"/>
                 <menuseparator/>
                 <menuitem id="goOfflineMenuitem"
-                          label="&goOfflineCmd.label;"
-                          accesskey="&goOfflineCmd.accesskey;"
                           type="checkbox"
-                          command="cmd_toggleOfflineStatus"/>
+                          command="cmd_toggleOfflineStatus" data-l10n-id="menu-file-go-offline"/>
+<!-- We need to leave those strings in DTD until bug 1568133 is fixed. -->
                 <menuitem id="menu_FileQuitItem"
                           label="&quitApplicationCmd.label;"
                           accesskey="&quitApplicationCmd.accesskey;"
@@ -3330,199 +3493,141 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
               </menupopup>
             </menu>
 
-            <menu id="edit-menu" label="&editMenu.label;"
-                  accesskey="&editMenu.accesskey;">
+            <menu id="edit-menu" data-l10n-id="menu-edit">
               <menupopup id="menu_EditPopup"
                          onpopupshowing="updateEditUIVisibility()"
                          onpopuphidden="updateEditUIVisibility()">
                 <menuitem id="menu_undo"
-                          label="&undoCmd.label;"
                           key="key_undo"
-                          accesskey="&undoCmd.accesskey;"
-                          command="cmd_undo"/>
+                          command="cmd_undo" data-l10n-id="menu-edit-undo"/>
                 <menuitem id="menu_redo"
-                          label="&redoCmd.label;"
                           key="key_redo"
-                          accesskey="&redoCmd.accesskey;"
-                          command="cmd_redo"/>
+                          command="cmd_redo" data-l10n-id="menu-edit-redo"/>
                 <menuseparator/>
                 <menuitem id="menu_cut"
-                          label="&cutCmd.label;"
                           key="key_cut"
-                          accesskey="&cutCmd.accesskey;"
-                          command="cmd_cut"/>
+                          command="cmd_cut" data-l10n-id="menu-edit-cut"/>
                 <menuitem id="menu_copy"
-                          label="&copyCmd.label;"
                           key="key_copy"
-                          accesskey="&copyCmd.accesskey;"
-                          command="cmd_copy"/>
+                          command="cmd_copy" data-l10n-id="menu-edit-copy"/>
                 <menuitem id="menu_paste"
-                          label="&pasteCmd.label;"
                           key="key_paste"
-                          accesskey="&pasteCmd.accesskey;"
-                          command="cmd_paste"/>
+                          command="cmd_paste" data-l10n-id="menu-edit-paste"/>
                 <menuitem id="menu_delete"
-                          label="&deleteCmd.label;"
                           key="key_delete"
-                          accesskey="&deleteCmd.accesskey;"
-                          command="cmd_delete"/>
+                          command="cmd_delete" data-l10n-id="menu-edit-delete"/>
                 <menuseparator/>
                 <menuitem id="menu_selectAll"
-                          label="&selectAllCmd.label;"
                           key="key_selectAll"
-                          accesskey="&selectAllCmd.accesskey;"
-                          command="cmd_selectAll"/>
+                          command="cmd_selectAll" data-l10n-id="menu-edit-select-all"/>
                 <menuseparator/>
                 <menuitem id="menu_find"
-                          label="&findOnCmd.label;"
-                          accesskey="&findOnCmd.accesskey;"
                           key="key_find"
-                          command="cmd_find"/>
+                          command="cmd_find" data-l10n-id="menu-edit-find-on"/>
                 <menuitem id="menu_findAgain"
                           class="show-only-for-keyboard"
-                          label="&findAgainCmd.label;"
-                          accesskey="&findAgainCmd.accesskey;"
                           key="key_findAgain"
-                          command="cmd_findAgain"/>
+                          command="cmd_findAgain" data-l10n-id="menu-edit-find-again"/>
                 <menuseparator hidden="true" id="textfieldDirection-separator"/>
                 <menuitem id="textfieldDirection-swap"
                           command="cmd_switchTextDirection"
                           key="key_switchTextDirection"
-                          label="&bidiSwitchTextDirectionItem.label;"
-                          accesskey="&bidiSwitchTextDirectionItem.accesskey;"
-                          hidden="true"/>
+                          hidden="true" data-l10n-id="menu-edit-bidi-switch-text-direction"/>
                 <menuseparator/>
                 <menuitem id="menu_preferences"
-                          label="&preferencesCmdUnix.label;"
-                          accesskey="&preferencesCmdUnix.accesskey;"
-                          oncommand="openPreferences(undefined, {origin: 'menubar'});"/>
+                          oncommand="openPreferences(undefined);" data-l10n-id="menu-preferences"/>
               </menupopup>
             </menu>
 
-            <menu id="view-menu" label="&viewMenu.label;"
-                  accesskey="&viewMenu.accesskey;">
+            <menu id="view-menu" data-l10n-id="menu-view">
               <menupopup id="menu_viewPopup"
                          onpopupshowing="updateCharacterEncodingMenuState();">
-                <menu id="viewToolbarsMenu"
-                      label="&viewToolbarsMenu.label;"
-                      accesskey="&viewToolbarsMenu.accesskey;">
+                <menu id="viewToolbarsMenu" data-l10n-id="menu-view-toolbars-menu">
                   <menupopup onpopupshowing="onViewToolbarsPopupShowing(event);">
                     <menuseparator/>
                     <menuitem id="menu_customizeToolbars"
-                              label="&viewCustomizeToolbar.label;"
-                              accesskey="&viewCustomizeToolbar.accesskey;"
-                              command="cmd_CustomizeToolbars"/>
+                              command="cmd_CustomizeToolbars" data-l10n-id="menu-view-customize-toolbar"/>
                   </menupopup>
                 </menu>
-                <menu id="viewSidebarMenuMenu"
-                      label="&viewSidebarMenu.label;"
-                      accesskey="&viewSidebarMenu.accesskey;">
+                <menu id="viewSidebarMenuMenu" data-l10n-id="menu-view-sidebar">
                   <menupopup id="viewSidebarMenu">
                     <menuitem id="menu_bookmarksSidebar"
                               type="checkbox"
                               key="viewBookmarksSidebarKb"
-                              oncommand="SidebarUI.toggle('viewBookmarksSidebar');"
-                              label="&bookmarksButton.label;"/>
+                              oncommand="SidebarUI.toggle('viewBookmarksSidebar');" data-l10n-id="menu-view-bookmarks"/>
                     <menuitem id="menu_historySidebar"
                               type="checkbox"
                               key="key_gotoHistory"
-                              oncommand="SidebarUI.toggle('viewHistorySidebar');"
-                              label="&historyButton.label;"/>
+                              oncommand="SidebarUI.toggle('viewHistorySidebar');" data-l10n-id="menu-view-history-button"/>
                     <menuitem id="menu_tabsSidebar"
                               type="checkbox"
                               class="sync-ui-item"
-                              oncommand="SidebarUI.toggle('viewTabsSidebar');"
-                              label="&syncedTabs.sidebar.label;"/>
+                              oncommand="SidebarUI.toggle('viewTabsSidebar');" data-l10n-id="menu-view-synced-tabs-sidebar"/>
                   </menupopup>
                 </menu>
                 <menuseparator/>
-                <menu id="viewFullZoomMenu" label="&fullZoom.label;"
-                      accesskey="&fullZoom.accesskey;"
-                      onpopupshowing="FullZoom.updateMenu();">
+                <menu id="viewFullZoomMenu"
+                      onpopupshowing="FullZoom.updateMenu();" data-l10n-id="menu-view-full-zoom">
                   <menupopup>
                     <menuitem id="menu_zoomEnlarge"
                               key="key_fullZoomEnlarge"
-                              label="&fullZoomEnlargeCmd.label;"
-                              accesskey="&fullZoomEnlargeCmd.accesskey;"
-                              command="cmd_fullZoomEnlarge"/>
+                              command="cmd_fullZoomEnlarge" data-l10n-id="menu-view-full-zoom-enlarge"/>
                     <menuitem id="menu_zoomReduce"
                               key="key_fullZoomReduce"
-                              label="&fullZoomReduceCmd.label;"
-                              accesskey="&fullZoomReduceCmd.accesskey;"
-                              command="cmd_fullZoomReduce"/>
+                              command="cmd_fullZoomReduce" data-l10n-id="menu-view-full-zoom-reduce"/>
                     <menuseparator/>
                     <menuitem id="menu_zoomReset"
                               key="key_fullZoomReset"
-                              label="&fullZoomResetCmd.label;"
-                              accesskey="&fullZoomResetCmd.accesskey;"
-                              command="cmd_fullZoomReset"/>
+                              command="cmd_fullZoomReset" data-l10n-id="menu-view-full-zoom-reset"/>
                     <menuseparator/>
                     <menuitem id="toggle_zoom"
-                              label="&fullZoomToggleCmd.label;"
-                              accesskey="&fullZoomToggleCmd.accesskey;"
                               type="checkbox"
                               command="cmd_fullZoomToggle"
-                              checked="false"/>
+                              checked="false" data-l10n-id="menu-view-full-zoom-toggle"/>
                   </menupopup>
                 </menu>
-                <menu id="pageStyleMenu" label="&pageStyleMenu.label;"
-                      accesskey="&pageStyleMenu.accesskey;">
+                <menu id="pageStyleMenu" data-l10n-id="menu-view-page-style-menu">
                   <menupopup onpopupshowing="gPageStyleMenu.fillPopup(this);">
                     <menuitem id="menu_pageStyleNoStyle"
-                              label="&pageStyleNoStyle.label;"
-                              accesskey="&pageStyleNoStyle.accesskey;"
                               oncommand="gPageStyleMenu.disableStyle();"
-                              type="radio"/>
+                              type="radio" data-l10n-id="menu-view-page-style-no-style"/>
                     <menuitem id="menu_pageStylePersistentOnly"
-                              label="&pageStylePersistentOnly.label;"
-                              accesskey="&pageStylePersistentOnly.accesskey;"
                               oncommand="gPageStyleMenu.switchStyleSheet('');"
                               type="radio"
-                              checked="true"/>
+                              checked="true" data-l10n-id="menu-view-page-basic-style"/>
                     <menuseparator/>
                   </menupopup>
                 </menu>
                 <menu id="charsetMenu"
-                    label="&charsetMenu2.label;"
-                    accesskey="&charsetMenu2.accesskey;"
                     oncommand="BrowserSetForcedCharacterSet(event.target.getAttribute('charset'));"
-                    onpopupshowing="CharsetMenu.build(event.target); UpdateCurrentCharset(this);">
+                    onpopupshowing="CharsetMenu.build(event.target); UpdateCurrentCharset(this);" data-l10n-id="menu-view-charset">
                   <menupopup>
                   </menupopup>
                 </menu>
                 <menuseparator/>
                 <menuitem id="fullScreenItem"
-                          accesskey="&fullScreenCmd.accesskey;"
-                          label="&fullScreenCmd.label;"
                           key="key_fullScreen"
                           type="checkbox"
-                          observes="View:FullScreen"/>
+                          observes="View:FullScreen" data-l10n-id="menu-view-full-screen"/>
                 <menuitem id="menu_readerModeItem"
                           observes="View:ReaderView"
                           key="key_toggleReaderMode"
                           hidden="true"/>
                 <menuitem id="menu_showAllTabs"
                           hidden="true"
-                          accesskey="&showAllTabsCmd.accesskey;"
-                          label="&showAllTabsCmd.label;"
                           command="Browser:ShowAllTabs"
-                          key="key_showAllTabs"/>
+                          key="key_showAllTabs" data-l10n-id="menu-view-show-all-tabs"/>
                 <menuseparator hidden="true" id="documentDirection-separator"/>
                 <menuitem id="documentDirection-swap"
                           hidden="true"
-                          label="&bidiSwitchPageDirectionItem.label;"
-                          accesskey="&bidiSwitchPageDirectionItem.accesskey;"
-                          oncommand="gBrowser.selectedBrowser
-                                             .messageManager
-                                             .sendAsyncMessage('SwitchDocumentDirection');"/>
+                          oncommand="gBrowser.selectedBrowser.sendMessageToActor('SwitchDocumentDirection', {}, 'SwitchDocumentDirection', true);" data-l10n-id="menu-view-bidi-switch-page-direction"/>
               </menupopup>
             </menu>
 
-            <menu id="history-menu"
-                  label="&historyMenu.label;"
-                  accesskey="&historyMenu.accesskey;">
+            <menu id="history-menu" data-l10n-id="menu-history">
               <menupopup id="goPopup"
                          placespopup="true"
+                         is="places-popup"
                          oncommand="this.parentNode._placesView._onCommand(event);"
                          onclick="checkForMiddleClick(this, event);"
                          onpopupshowing="if (!this.parentNode._placesView)
@@ -3530,37 +3635,32 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                          tooltip="bhTooltip"
                          popupsinherittooltip="true">
                 <menuitem id="menu_showAllHistory"
-                          label="&showAllHistoryCmd2.label;"
                           key="showAllHistoryKb"
-                          command="Browser:ShowAllHistory"/>
+                          command="Browser:ShowAllHistory" data-l10n-id="menu-history-show-all-history"/>
                 <menuitem id="sanitizeItem"
-                          label="&clearRecentHistory.label;"
                           key="key_sanitize"
-                          command="Tools:Sanitize"/>
+                          command="Tools:Sanitize" data-l10n-id="menu-history-clear-recent-history"/>
                 <menuseparator id="sanitizeSeparator"/>
                 <menuitem id="sync-tabs-menuitem"
-                          label="&syncTabsMenu3.label;"
                           oncommand="gSync.openSyncedTabsPanel();"
-                          hidden="true"/>
+                          hidden="true" data-l10n-id="menu-history-synced-tabs"/>
                 <menuitem id="historyRestoreLastSession"
-                          label="&historyRestoreLastSession.label;"
-                          command="Browser:RestoreLastSession"/>
+                          command="Browser:RestoreLastSession" data-l10n-id="menu-history-restore-last-session"/>
                 <menuitem id="hiddenTabsMenu"
-                          label="&hiddenTabs.label;"
                           oncommand="gTabsPanel.showHiddenTabsPanel();"
-                          hidden="true"/>
+                          hidden="true" data-l10n-id="menu-history-hidden-tabs"/>
                 <menu id="historyUndoMenu"
-                      label="&historyUndoMenu.label;"
-                      disabled="true">
+                      disabled="true" data-l10n-id="menu-history-undo-menu">
                   <menupopup id="historyUndoPopup"
                              placespopup="true"
+                             is="places-popup"
                              onpopupshowing="document.getElementById('history-menu')._placesView.populateUndoSubmenu();"/>
                 </menu>
                 <menu id="historyUndoWindowMenu"
-                      label="&historyUndoWindowMenu.label;"
-                      disabled="true">
+                      disabled="true" data-l10n-id="menu-history-undo-window-menu">
                   <menupopup id="historyUndoWindowPopup"
                              placespopup="true"
+                             is="places-popup"
                              onpopupshowing="document.getElementById('history-menu')._placesView.populateUndoWindowSubmenu();"/>
                 </menu>
                 <menuseparator id="startHistorySeparator"
@@ -3569,13 +3669,12 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
             </menu>
 
   <menu id="bookmarksMenu"
-        label="&bookmarksMenu.label;"
-        accesskey="&bookmarksMenu.accesskey;"
         ondragenter="PlacesMenuDNDHandler.onDragEnter(event);"
         ondragover="PlacesMenuDNDHandler.onDragOver(event);"
-        ondrop="PlacesMenuDNDHandler.onDrop(event);">
+        ondrop="PlacesMenuDNDHandler.onDrop(event);" data-l10n-id="menu-bookmarks-menu">
     <menupopup id="bookmarksMenuPopup"
                placespopup="true"
+               is="places-popup"
                context="placesContext"
                openInTabs="children"
                onmouseup="BookmarksEventHandler.onMouseUp(event);"
@@ -3586,46 +3685,44 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                                  new PlacesMenu(event, `place:parent=${PlacesUtils.bookmarks.menuGuid}`);"
                tooltip="bhTooltip" popupsinherittooltip="true">
       <menuitem id="bookmarksShowAll"
-                label="&showAllBookmarks2.label;"
                 command="Browser:ShowAllBookmarks"
-                key="manBookmarkKb"/>
+                key="manBookmarkKb" data-l10n-id="menu-bookmarks-show-all"/>
       <menuseparator id="organizeBookmarksSeparator"/>
       <menuitem id="menu_bookmarkThisPage"
                 command="Browser:AddBookmarkAs"
                 key="addBookmarkAsKb"/>
       <menuitem id="menu_bookmarkAllTabs"
-                label="&addCurPagesCmd.label;"
                 class="show-only-for-keyboard"
                 command="Browser:BookmarkAllTabs"
-                key="bookmarkAllTabsKb"/>
+                key="bookmarkAllTabsKb" data-l10n-id="menu-bookmarks-all-tabs"/>
       <menuseparator id="bookmarksToolbarSeparator"/>
       <menu id="bookmarksToolbarFolderMenu"
             class="menu-iconic bookmark-item"
-            label="&personalbarCmd.label;"
-            container="true">
+            container="true" data-l10n-id="menu-bookmarks-toolbar">
         <menupopup id="bookmarksToolbarFolderPopup"
                    placespopup="true"
+                   is="places-popup"
                    context="placesContext"
                    onpopupshowing="if (!this.parentNode._placesView)
                                      new PlacesMenu(event, `place:parent=${PlacesUtils.bookmarks.toolbarGuid}`);"/>
       </menu>
       <menu id="menu_unsortedBookmarks"
             class="menu-iconic bookmark-item"
-            label="&otherBookmarksCmd.label;"
-            container="true">
+            container="true" data-l10n-id="menu-bookmarks-other">
         <menupopup id="otherBookmarksFolderPopup"
                    placespopup="true"
+                   is="places-popup"
                    context="placesContext"
                    onpopupshowing="if (!this.parentNode._placesView)
                                      new PlacesMenu(event, `place:parent=${PlacesUtils.bookmarks.unfiledGuid}`);"/>
       </menu>
       <menu id="menu_mobileBookmarks"
             class="menu-iconic bookmark-item"
-            label="&mobileBookmarksCmd.label;"
             hidden="true"
-            container="true">
+            container="true" data-l10n-id="menu-bookmarks-mobile">
         <menupopup id="mobileBookmarksFolderPopup"
                    placespopup="true"
+                   is="places-popup"
                    context="placesContext"
                    onpopupshowing="if (!this.parentNode._placesView)
                                      new PlacesMenu(event, `place:parent=${PlacesUtils.bookmarks.mobileGuid}`);"/>
@@ -3635,111 +3732,72 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
     </menupopup>
   </menu>
 
-            <menu id="tools-menu"
-                  label="&toolsMenu.label;"
-                  accesskey="&toolsMenu.accesskey;">
+            <menu id="tools-menu" data-l10n-id="menu-tools">
               <menupopup id="menu_ToolsPopup">
               <menuitem id="menu_openDownloads"
-                        label="&downloads.label;"
-                        accesskey="&downloads.accesskey;"
                         key="key_openDownloads"
-                        command="Tools:Downloads"/>
+                        command="Tools:Downloads" data-l10n-id="menu-tools-downloads"/>
               <menuitem id="menu_openAddons"
-                        label="&addons.label;"
-                        accesskey="&addons.accesskey;"
                         key="key_openAddons"
-                        command="Tools:Addons"/>
+                        command="Tools:Addons" data-l10n-id="menu-tools-addons"/>
 
               <!-- only one of sync-setup, sync-unverifieditem, sync-syncnowitem or sync-reauthitem will be showing at once -->
               <menuitem id="sync-setup"
                         class="sync-ui-item"
-                        label="&syncSignIn.label;"
-                        accesskey="&syncSignIn.accesskey;"
                         hidden="true"
-                        oncommand="gSync.openPrefs('menubar')"/>
+                        oncommand="gSync.openPrefs('menubar')" data-l10n-id="menu-tools-sync-sign-in"/>
               <menuitem id="sync-unverifieditem"
                         class="sync-ui-item"
-                        label="&syncSignIn.label;"
-                        accesskey="&syncSignIn.accesskey;"
                         hidden="true"
-                        oncommand="gSync.openPrefs('menubar')"/>
+                        oncommand="gSync.openPrefs('menubar')" data-l10n-id="menu-tools-sync-sign-in"/>
               <menuitem id="sync-syncnowitem"
                         class="sync-ui-item"
-                        label="&syncSyncNowItem.label;"
-                        accesskey="&syncSyncNowItem.accesskey;"
                         hidden="true"
-                        oncommand="gSync.doSync(event);"/>
+                        oncommand="gSync.doSync(event);" data-l10n-id="menu-tools-sync-now"/>
               <menuitem id="sync-reauthitem"
                         class="sync-ui-item"
-                        label="&syncReAuthItem.label;"
-                        accesskey="&syncReAuthItem.accesskey;"
                         hidden="true"
-                        oncommand="gSync.openSignInAgainPage('menubar');"/>
+                        oncommand="gSync.openSignInAgainPage('menubar');" data-l10n-id="menu-tools-sync-re-auth"/>
               <menuseparator id="devToolsSeparator"/>
-              <menu id="webDeveloperMenu"
-                    label="&webDeveloperMenu.label;"
-                    accesskey="&webDeveloperMenu.accesskey;">
+              <menu id="webDeveloperMenu" data-l10n-id="menu-tools-web-developer">
                 <menupopup id="menuWebDeveloperPopup">
                   <menuitem id="menu_pageSource"
-                            label="&pageSourceCmd.label;"
                             key="key_viewSource"
-                            command="View:PageSource"
-                            accesskey="&pageSourceCmd.accesskey;"/>
+                            command="View:PageSource" data-l10n-id="menu-tools-page-source"/>
                 </menupopup>
               </menu>
               <menuitem id="menu_pageInfo"
-                        accesskey="&pageInfoCmd.accesskey;"
-                        label="&pageInfoCmd.label;"
                         key="key_viewInfo"
-                        command="View:PageInfo"/>
+                        command="View:PageInfo" data-l10n-id="menu-tools-page-info"/>
               </menupopup>
             </menu>
             <menu id="helpMenu"
-                  label="&helpMenu.label;"
-                  accesskey="&helpMenu.accesskey;"
-                  >
+                   data-l10n-id="menu-help">
               <menupopup id="menu_HelpPopup" onpopupshowing="buildHelpMenu();">
                 <menuitem id="menu_openHelp"
                           oncommand="openHelpLink('firefox-help')"
                           onclick="checkForMiddleClick(this, event);"
-                          label="&productHelp2.label;"
-                          accesskey="&productHelp2.accesskey;"
+                          data-l10n-id="menu-help-product"
                           />
                 <menuitem id="menu_openTour"
-                          oncommand="openTourPage();"
-                          label="&helpShowTour2.label;"
-                          accesskey="&helpShowTour2.accesskey;"/>
+                          oncommand="openTourPage();" data-l10n-id="menu-help-show-tour"/>
                 <menuitem id="menu_keyboardShortcuts"
                           oncommand="openHelpLink('keyboard-shortcuts')"
-                          onclick="checkForMiddleClick(this, event);"
-                          label="&helpKeyboardShortcuts.label;"
-                          accesskey="&helpKeyboardShortcuts.accesskey;"/>
+                          onclick="checkForMiddleClick(this, event);" data-l10n-id="menu-help-keyboard-shortcuts"/>
                 <menuitem id="troubleShooting"
-                          accesskey="&helpTroubleshootingInfo.accesskey;"
-                          label="&helpTroubleshootingInfo.label;"
                           oncommand="openTroubleshootingPage()"
-                          onclick="checkForMiddleClick(this, event);"/>
+                          onclick="checkForMiddleClick(this, event);" data-l10n-id="menu-help-troubleshooting-info"/>
                 <menuitem id="feedbackPage"
-                          accesskey="&helpFeedbackPage.accesskey;"
-                          label="&helpFeedbackPage.label;"
                           oncommand="openFeedbackPage()"
-                          onclick="checkForMiddleClick(this, event);"/>
+                          onclick="checkForMiddleClick(this, event);" data-l10n-id="menu-help-feedback-page"/>
                 <menuitem id="helpSafeMode"
-                          accesskey="&helpSafeMode.accesskey;"
-                          label="&helpSafeMode.label;"
-                          stopaccesskey="&helpSafeMode.stop.accesskey;"
-                          stoplabel="&helpSafeMode.stop.label;"
-                          oncommand="safeModeRestart();"/>
+                          oncommand="safeModeRestart();" data-l10n-id="menu-help-safe-mode-without-addons"/>
                 <menuitem id="menu_HelpPopup_reportPhishingtoolmenu"
-                          label="&reportDeceptiveSiteMenu.title;"
-                          accesskey="&reportDeceptiveSiteMenu.accesskey;"
                           disabled="true"
                           oncommand="openUILink(gSafeBrowsing.getReportURL('Phish'), event, {triggeringPrincipal: Services.scriptSecurityManager.createNullPrincipal({})});"
                           onclick="checkForMiddleClick(this, event);"
-                          hidden="true"/>
+                          hidden="true" data-l10n-id="menu-help-report-deceptive-site"/>
                 <menuitem id="menu_HelpPopup_reportPhishingErrortoolmenu"
-                          label="&safeb.palm.notdeceptive.label;"
-                          accesskey="&safeb.palm.notdeceptive.accesskey;"
                           disabled="true"
                           oncommand="ReportFalseDeceptiveSite();"
                           onclick="checkForMiddleClick(this, event);"
@@ -3748,9 +3806,10 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                           hidden="true"/>
                 <menuitem id="helpPolicySupport"
                           hidden="true"
-                          oncommand="openUILink(this.getAttribute('href'), event, {triggeringPrincipal: Services.scriptSecurityManager.createNullPrincipal({})});"
+                          oncommand="openUILinkIn(Services.policies.getSupportMenu().URL.href, 'tab', {triggeringPrincipal: Services.scriptSecurityManager.createNullPrincipal({})});"
                           onclick="checkForMiddleClick(this, event);"/>
                 <menuseparator id="aboutSeparator"/>
+                <!-- We need to leave those strings in DTD until bug 1568133 is fixed. -->
                 <menuitem id="aboutName"
                           accesskey="&aboutProduct2.accesskey;"
                           label="&aboutProduct2.label;"
@@ -3785,11 +3844,20 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
         <hbox flex="1" align="end" class="toolbar-items">
           <hbox id="TabsToolbar-customization-target" flex="1">
             <tabs id="tabbrowser-tabs"
+                  is="tabbrowser-tabs"
                   flex="1"
                   setfocus="false"
                   tooltip="tabbrowser-tab-tooltip"
                   stopwatchid="FX_TAB_CLICK_MS">
-              <tab class="tabbrowser-tab" selected="true" visuallyselected="true" fadein="true"/>
+              <hbox class="tab-drop-indicator-box">
+                <image class="tab-drop-indicator" hidden="true"/>
+              </hbox>
+              <arrowscrollbox orient="horizontal" flex="1" style="min-width: 1px;" clicktoscroll="true" class="tabbrowser-arrowscrollbox" scrolledtostart="true" scrolledtoend="true">
+                <tab is="tabbrowser-tab" class="tabbrowser-tab" selected="true" visuallyselected="true" fadein="true"/>
+                <toolbarbutton class="tabs-newtab-button toolbarbutton-1" command="cmd_newNavigatorTab" onclick="checkForMiddleClick(this, event);"/>
+                <spacer class="closing-tabs-spacer" style="width: 0;"/>
+              </arrowscrollbox>
+              <html:span id="tabbrowser-tab-a11y-desc" hidden="true"/>
             </tabs>
 
             <toolbarbutton id="new-tab-button"
@@ -3806,7 +3874,8 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                            removable="true"/>
 
             <toolbarbutton id="alltabs-button"
-                           class="toolbarbutton-1 chromeclass-toolbar-additional tabs-alltabs-button badged-button"
+                           class="toolbarbutton-1 chromeclass-toolbar-additional tabs-alltabs-button"
+                           badged="true"
                            oncommand="gTabsPanel.showAllTabsPanel();"
                            label="&listAllTabs.label;"
                            tooltiptext="&listAllTabs.label;"
@@ -3899,23 +3968,29 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                      removable="false"
                      class="chromeclass-location" overflows="false">
             <toolbartabstop/>
-            <textbox id="urlbar" flex="1"
-                     placeholder="&urlbar.placeholder2;"
-                     defaultPlaceholder="&urlbar.placeholder2;"
-                     focused="true"
-                     type="autocomplete"
-                     quantumbar="false"
-                     autocompletesearch="unifiedcomplete"
-                     autocompletesearchparam="enable-actions"
-                     autocompletepopup="PopupAutoCompleteRichResult"
-                     completeselectedindex="true"
-                     tabscrolling="true"
-                     newlines="stripsurroundingwhitespace"
-                     ontextentered="this.handleCommand(param);"
-                     ontextreverted="return this.handleRevert();"
-                     pageproxystate="invalid">
+            <hbox id="urlbar" flex="1"
+                  defaultPlaceholder="&urlbar.placeholder2;"
+                  focused="true"
+                  pageproxystate="invalid">
               <!-- Use onclick instead of normal popup= syntax since the popup
                    code fires onmousedown, and hence eats our favicon drag events. -->
+              <box id="tracking-protection-icon-container" align="center"
+                   role="button"
+                   onclick="gProtectionsHandler.handleProtectionsButtonEvent(event);"
+                   onkeypress="gProtectionsHandler.handleProtectionsButtonEvent(event);"
+                   onmouseover="gProtectionsHandler.onTrackingProtectionIconHoveredOrFocused();"
+                   onfocus="gProtectionsHandler.onTrackingProtectionIconHoveredOrFocused();">
+                <box id="tracking-protection-icon-box" animationsenabled="true"
+                     tooltip="tracking-protection-icon-tooltip">
+                  <image id="tracking-protection-icon"/>
+                  <box id="tracking-protection-icon-animatable-box" flex="1">
+                    <image id="tracking-protection-icon-animatable-image" flex="1"/>
+                  </box>
+                </box>
+                <tooltip id="tracking-protection-icon-tooltip">
+                  <description id="tracking-protection-icon-tooltip-label" class="tooltip-label"/>
+                </tooltip>
+              </box>
               <box id="identity-box" role="button"
                    align="center"
                    aria-label="&urlbar.viewSiteInfo.label;"
@@ -3925,12 +4000,9 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                 <image id="identity-icon"
                        consumeanchor="identity-box"
                        onclick="PageProxyClickHandler(event);"/>
-                <image id="sharing-icon" mousethrough="always"/>
-                <box id="tracking-protection-icon-box" animationsenabled="true">
-                  <image id="tracking-protection-icon"/>
-                  <box id="tracking-protection-icon-animatable-box" flex="1">
-                    <image id="tracking-protection-icon-animatable-image" flex="1"/>
-                  </box>
+                <box mousethrough="always">
+                    <image class="sharing-icon" id="webrtc-sharing-icon"/>
+                    <image class="sharing-icon geo-icon" id="geo-sharing-icon"/>
                 </box>
                 <box id="blocked-permissions-container" align="center">
                   <image data-permission-id="geo" class="blocked-permission-icon geo-icon" role="button"
@@ -3951,10 +4023,10 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                          tooltiptext="&urlbar.autoplayMediaBlocked.tooltip;"/>
                   <image data-permission-id="canvas" class="blocked-permission-icon canvas-icon" role="button"
                          tooltiptext="&urlbar.canvasBlocked.tooltip;"/>
-                  <image data-permission-id="plugin:flash" class="blocked-permission-icon plugin-icon" role="button"
-                         tooltiptext="&urlbar.flashPluginBlocked.tooltip;"/>
                   <image data-permission-id="midi" class="blocked-permission-icon midi-icon" role="button"
                          tooltiptext="&urlbar.midiBlocked.tooltip;"/>
+                  <image data-permission-id="install" class="blocked-permission-icon install-icon" role="button"
+                         tooltiptext="&urlbar.installBlocked.tooltip;"/>
                 </box>
                 <box id="notification-popup-box"
                      hidden="true"
@@ -4005,8 +4077,6 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                   <image id="storage-access-notification-icon" class="notification-anchor-icon storage-access-icon" role="button"
                          tooltiptext="&urlbar.storageAccessAnchor.tooltip;"/>
                 </box>
-                <image id="connection-icon"/>
-                <image id="extension-icon"/>
                 <image id="remote-control-icon"
                        tooltiptext="&urlbar.remoteControlNotificationAnchor.tooltip;"/>
                 <hbox id="identity-icon-labels">
@@ -4018,6 +4088,26 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                 <label id="switchtab" class="urlbar-display urlbar-display-switchtab" value="&urlbar.switchToTab.label;"/>
                 <label id="extension" class="urlbar-display urlbar-display-extension" value="&urlbar.extension.label;"/>
               </box>
+              <moz-input-box tooltip="aHTMLTooltip"
+                             class="urlbar-input-box"
+                             flex="1"
+                             role="combobox"
+                             aria-owns="urlbarView-results">
+                <html:input id="urlbar-scheme"
+                            required="required"/>
+                <html:input id="urlbar-input"
+                            anonid="input"
+                            aria-controls="urlbarView-results"
+                            aria-autocomplete="both"
+                            inputmode="mozAwesomebar"
+                            placeholder="&urlbar.placeholder2;"/>
+              </moz-input-box>
+              <image id="urlbar-go-button"
+                     class="urlbar-icon"
+                     onclick="gURLBar.handleCommand(event);"
+                     tooltiptext="&goEndCap.tooltip;"/>
+              <image class="urlbar-history-dropmarker urlbar-icon chromeclass-toolbar-additional"
+                     tooltiptext="&urlbar.openHistoryPopup.tooltip;"/>
               <hbox id="page-action-buttons" context="pageActionContextMenu">
                 <toolbartabstop/>
                 <hbox id="contextual-feature-recommendation" role="button" hidden="true">
@@ -4076,7 +4166,7 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                   </hbox>
                 </hbox>
               </hbox>
-            </textbox>
+            </hbox>
             <toolbartabstop/>
         </toolbaritem>
 
@@ -4086,7 +4176,8 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
              during the customization of the toolbar, in the palette, and before
              the Downloads Indicator overlay is loaded. -->
         <toolbarbutton id="downloads-button"
-                       class="toolbarbutton-1 chromeclass-toolbar-additional badged-button"
+                       class="toolbarbutton-1 chromeclass-toolbar-additional"
+                       badged="true"
                        key="key_openDownloads"
                        onmousedown="DownloadsIndicatorView.onCommand(event);"
                        onkeypress="DownloadsIndicatorView.onCommand(event);"
@@ -4122,9 +4213,10 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                        tooltiptext="&libraryButton.tooltip;"
                        label="&places.library.title;"/>
 
-        <toolbarbutton id="fxa-toolbar-menu-button" class="toolbarbutton-1 badged-button chromeclass-toolbar-additional subviewbutton-nav"
-                       onmousedown="gSync.toggleAccountPanel('PanelUI-fxa', event)"
-                       onkeypress="gSync.toggleAccountPanel('PanelUI-fxa', event)"
+        <toolbarbutton id="fxa-toolbar-menu-button" class="toolbarbutton-1 chromeclass-toolbar-additional subviewbutton-nav"
+                       badged="true"
+                       onmousedown="gSync.toggleAccountPanel('PanelUI-fxa', this, event)"
+                       onkeypress="gSync.toggleAccountPanel('PanelUI-fxa', this, event)"
                        consumeanchor="fxa-toolbar-menu-button"
                        closemenu="none"
                        label="&fxa.menu.firefoxAccount;"
@@ -4148,8 +4240,16 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
 
       <toolbaritem id="PanelUI-button"
                    removable="false">
+       <toolbarbutton id="whats-new-menu-button"
+                      class="toolbarbutton-1"
+                      hidden="true"
+                      badged="true"
+                      consumeanchor="PanelUI-button"
+                      onmousedown="PanelUI.showSubView('PanelUI-whatsNew', this, event);"
+                      onkeypress="PanelUI.showSubView('PanelUI-whatsNew', this, event);"/>
         <toolbarbutton id="PanelUI-menu-button"
-                       class="toolbarbutton-1 badged-button"
+                       class="toolbarbutton-1"
+                       badged="true"
                        consumeanchor="PanelUI-button"
                        label="&brandShortName;"
                        tooltiptext="&appmenu.tooltip;"/>
@@ -4221,6 +4321,7 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                            onpopupshowing="document.getElementById('PlacesToolbar')
                                                    ._placesView._onChevronPopupShowing(event);">
               <menupopup id="PlacesChevronPopup"
+                         is="places-popup"
                          placespopup="true"
                          tooltip="bhTooltip" popupsinherittooltip="true"
                          context="placesContext"/>
@@ -4258,13 +4359,13 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                      type="menu"
                      label="&bookmarksMenuButton2.label;"
                      tooltip="dynamic-shortcut-tooltip"
-                     anchor="dropmarker"
                      ondragenter="PlacesMenuDNDHandler.onDragEnter(event);"
                      ondragover="PlacesMenuDNDHandler.onDragOver(event);"
                      ondragleave="PlacesMenuDNDHandler.onDragLeave(event);"
                      ondrop="PlacesMenuDNDHandler.onDrop(event);"
                      oncommand="BookmarkingUI.onCommand(event);">
         <menupopup id="BMB_bookmarksPopup"
+                   is="places-popup-arrow"
                    class="cui-widget-panel cui-widget-panelview cui-widget-panelWithFooter PanelUI-subView"
                    placespopup="true"
                    context="placesContext"
@@ -4293,6 +4394,7 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                 label="&personalbarCmd.label;"
                 container="true">
             <menupopup id="BMB_bookmarksToolbarPopup"
+                       is="places-popup"
                        placespopup="true"
                        context="placesContext"
                        onpopupshowing="if (!this.parentNode._placesView)
@@ -4312,6 +4414,7 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                 label="&bookmarksMenuButton.other.label;"
                 container="true">
             <menupopup id="BMB_unsortedBookmarksPopup"
+                       is="places-popup"
                        placespopup="true"
                        context="placesContext"
                        onpopupshowing="if (!this.parentNode._placesView)
@@ -4324,6 +4427,7 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
                 hidden="true"
                 container="true">
             <menupopup id="BMB_mobileBookmarksPopup"
+                       is="places-popup"
                        placespopup="true"
                        context="placesContext"
                        onpopupshowing="if (!this.parentNode._placesView)
@@ -4356,174 +4460,164 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
 
   <hbox id="fullscr-toggler" hidden="true"/>
 
-  <deck id="content-deck" flex="1">
-    <hbox flex="1" id="browser">
-      <vbox id="browser-border-start" hidden="true" layer="true"/>
-      <vbox id="sidebar-box" hidden="true" class="chromeclass-extrachrome">
-        <sidebarheader id="sidebar-header" align="center">
-          <toolbarbutton id="sidebar-switcher-target" flex="1" class="tabbable">
-            <image id="sidebar-icon" consumeanchor="sidebar-switcher-target"/>
-            <label id="sidebar-title" crop="end" flex="1" control="sidebar"/>
-            <image id="sidebar-switcher-arrow"/>
-          </toolbarbutton>
-          <image id="sidebar-throbber"/>
-          <spacer flex="1000"/>
-          <toolbarbutton id="sidebar-close" class="close-icon tabbable" tooltiptext="&sidebarCloseButton.tooltip;" oncommand="SidebarUI.hide();"/>
-        </sidebarheader>
-        <browser id="sidebar" flex="1" autoscroll="false" disablehistory="true" disablefullscreen="true"
-                  style="min-width: 14em; width: 18em; max-width: 36em;" tooltip="aHTMLTooltip"/>
-      </vbox>
+  <hbox flex="1" id="browser" renderroot="content">
+    <vbox id="browser-border-start" hidden="true" layer="true"/>
+    <vbox id="sidebar-box" hidden="true" class="chromeclass-extrachrome">
+      <sidebarheader id="sidebar-header" align="center">
+        <toolbarbutton id="sidebar-switcher-target" flex="1" class="tabbable">
+          <image id="sidebar-icon" consumeanchor="sidebar-switcher-target"/>
+          <label id="sidebar-title" crop="end" flex="1" control="sidebar"/>
+          <image id="sidebar-switcher-arrow"/>
+        </toolbarbutton>
+        <image id="sidebar-throbber"/>
+        <spacer flex="1000"/>
+        <toolbarbutton id="sidebar-close" class="close-icon tabbable" tooltiptext="&sidebarCloseButton.tooltip;" oncommand="SidebarUI.hide();"/>
+      </sidebarheader>
+      <browser id="sidebar" flex="1" autoscroll="false" disablehistory="true" disablefullscreen="true"
+                style="min-width: 14em; width: 18em; max-width: 36em;" tooltip="aHTMLTooltip"/>
+    </vbox>
 
-      <splitter id="sidebar-splitter" class="chromeclass-extrachrome sidebar-splitter" hidden="true"/>
-      <vbox id="appcontent" flex="1">
-        <!-- gHighPriorityNotificationBox will be added here lazily. -->
-        <tabbox id="tabbrowser-tabbox"
-                flex="1" tabcontainer="tabbrowser-tabs">
-          <tabpanels id="tabbrowser-tabpanels"
-                     flex="1" class="plain" selectedIndex="0"/>
-        </tabbox>
-      </vbox>
-      <vbox id="browser-border-end" hidden="true" layer="true"/>
-    </hbox>
+    <splitter id="sidebar-splitter" class="chromeclass-extrachrome sidebar-splitter" hidden="true"/>
+    <vbox id="appcontent" flex="1">
+      <!-- gHighPriorityNotificationBox will be added here lazily. -->
+      <tabbox id="tabbrowser-tabbox"
+              flex="1" tabcontainer="tabbrowser-tabs">
+        <tabpanels id="tabbrowser-tabpanels"
+                    flex="1" class="plain" selectedIndex="0"/>
+      </tabbox>
+    </vbox>
+    <vbox id="browser-border-end" hidden="true" layer="true"/>
+  </hbox>
+
+  <box id="customization-container" flex="1" renderroot="content" hidden="true"><![CDATA[
 <!-- This Source Code Form is subject to the terms of the Mozilla Public
    - License, v. 2.0. If a copy of the MPL was not distributed with this
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 
-<box id="customization-container" flex="1" hidden="true">
-  <box id="customization-content-container">
-    <box flex="1" id="customization-palette-container">
-      <label id="customization-header">
-        &customizeMode.menuAndToolbars.header3;
-      </label>
-      <vbox id="customization-palette" class="customization-palette" hidden="true"/>
-      <vbox id="customization-pong-arena" hidden="true"/>
-      <spacer id="customization-spacer"/>
-    </box>
-    <vbox id="customization-panel-container">
-      <vbox id="customization-panelWrapper">
-        <box class="panel-arrowbox">
-          <image class="panel-arrow" side="top"/>
-        </box>
-        <box class="panel-arrowcontent" side="top" flex="1">
-          <vbox id="customization-panelHolder">
-            <description id="customization-panelHeader">&customizeMode.overflowList.title2;</description>
-            <description id="customization-panelDescription">&customizeMode.overflowList.description;</description>
-          </vbox>
-          <box class="panel-inner-arrowcontentfooter" hidden="true"/>
-        </box>
-      </vbox>
-    </vbox>
-  </box>
-  <hbox id="customization-footer">
-    <checkbox id="customization-titlebar-visibility-checkbox" class="customizationmode-checkbox"
-              label="&customizeMode.titlebar;"
-              oncommand="gCustomizeMode.toggleTitlebar(this.checked)"/>
-    <checkbox id="customization-extra-drag-space-checkbox" class="customizationmode-checkbox"
-              label="&customizeMode.extraDragSpace;"
-              oncommand="gCustomizeMode.toggleDragSpace(this.checked)"/>
-    <button id="customization-toolbar-visibility-button" label="&customizeMode.toolbars2;" class="customizationmode-button" type="menu">
-      <menupopup id="customization-toolbar-menu" onpopupshowing="onViewToolbarsPopupShowing(event)"/>
-    </button>
-    <button id="customization-lwtheme-button" label="&customizeMode.lwthemes;" class="customizationmode-button" type="menu">
-      <panel type="arrow" id="customization-lwtheme-menu"
-             onpopupshowing="gCustomizeMode.onLWThemesMenuShowing(event);"
-             position="topcenter bottomleft"
-             flip="none"
-             role="menu">
-        <label id="customization-lwtheme-menu-header" value="&customizeMode.lwthemes.myThemes;"/>
-        <label id="customization-lwtheme-menu-recommended" value="&customizeMode.lwthemes.recommended;"/>
-        <hbox id="customization-lwtheme-menu-footer">
-          <toolbarbutton class="customization-lwtheme-menu-footeritem"
-                         label="&customizeMode.lwthemes.menuManage;"
-                         accesskey="&customizeMode.lwthemes.menuManage.accessKey;"
-                         tabindex="0"
-                         oncommand="gCustomizeMode.openAddonsManagerThemes(event);"/>
-          <toolbarbutton class="customization-lwtheme-menu-footeritem"
-                         label="&customizeMode.lwthemes.menuGetMore;"
-                         accesskey="&customizeMode.lwthemes.menuGetMore.accessKey;"
-                         tabindex="0"
-                         oncommand="gCustomizeMode.getMoreThemes(event);"/>
-        </hbox>
-      </panel>
-    </button>
-    <button id="customization-uidensity-button"
-            label="&customizeMode.uidensity;"
-            class="customizationmode-button"
-            type="menu">
-      <panel type="arrow" id="customization-uidensity-menu"
-             onpopupshowing="gCustomizeMode.onUIDensityMenuShowing();"
-             position="topcenter bottomleft"
-             flip="none"
-             role="menu">
-        <menuitem id="customization-uidensity-menuitem-compact"
-                  class="menuitem-iconic customization-uidensity-menuitem"
-                  role="menuitemradio"
-                  label="&customizeMode.uidensity.menuCompact.label;"
-                  accesskey="&customizeMode.uidensity.menuCompact.accessKey;"
-                  tooltiptext="&customizeMode.uidensity.menuCompact.tooltip;"
-                  tabindex="0"
-                  onfocus="gCustomizeMode.updateUIDensity(this.mode);"
-                  onmouseover="gCustomizeMode.updateUIDensity(this.mode);"
-                  onblur="gCustomizeMode.resetUIDensity();"
-                  onmouseout="gCustomizeMode.resetUIDensity();"
-                  oncommand="gCustomizeMode.setUIDensity(this.mode);" />
-        <menuitem id="customization-uidensity-menuitem-normal"
-                  class="menuitem-iconic customization-uidensity-menuitem"
-                  role="menuitemradio"
-                  label="&customizeMode.uidensity.menuNormal.label;"
-                  accesskey="&customizeMode.uidensity.menuNormal.accessKey;"
-                  tooltiptext="&customizeMode.uidensity.menuNormal.tooltip;"
-                  tabindex="0"
-                  onfocus="gCustomizeMode.updateUIDensity(this.mode);"
-                  onmouseover="gCustomizeMode.updateUIDensity(this.mode);"
-                  onblur="gCustomizeMode.resetUIDensity();"
-                  onmouseout="gCustomizeMode.resetUIDensity();"
-                  oncommand="gCustomizeMode.setUIDensity(this.mode);" />
-        <menuitem id="customization-uidensity-menuitem-touch"
-                  class="menuitem-iconic customization-uidensity-menuitem"
-                  role="menuitemradio"
-                  label="&customizeMode.uidensity.menuTouch.label;"
-                  accesskey="&customizeMode.uidensity.menuTouch.accessKey;"
-                  tooltiptext="&customizeMode.uidensity.menuTouch.tooltip;"
-                  tabindex="0"
-                  onfocus="gCustomizeMode.updateUIDensity(this.mode);"
-                  onmouseover="gCustomizeMode.updateUIDensity(this.mode);"
-                  onblur="gCustomizeMode.resetUIDensity();"
-                  onmouseout="gCustomizeMode.resetUIDensity();"
-                  oncommand="gCustomizeMode.setUIDensity(this.mode);">
-        </menuitem>
-        <spacer hidden="true" id="customization-uidensity-touch-spacer"/>
-        <checkbox id="customization-uidensity-autotouchmode-checkbox"
-                  hidden="true"
-                  label="&customizeMode.uidensity.autoTouchMode.checkbox.label;"
-                  oncommand="gCustomizeMode.updateAutoTouchMode(this.checked)"/>
-      </panel>
-    </button>
-
-    <button id="whimsy-button"
-            type="checkbox"
-            class="customizationmode-button"
-            oncommand="gCustomizeMode.togglePong(this.checked);"
-            hidden="true"/>
-
-    <spacer id="customization-footer-spacer"/>
-    <button id="customization-undo-reset-button"
-            class="customizationmode-button"
-            hidden="true"
-            oncommand="gCustomizeMode.undoReset();"
-            label="&undoCmd.label;"/>
-    <button id="customization-reset-button"
-            oncommand="gCustomizeMode.reset();"
-            label="&customizeMode.restoreDefaults;"
-            class="customizationmode-button"/>
-    <button id="customization-done-button"
-            oncommand="gCustomizeMode.exit();"
-            label="&customizeMode.done;"
-            class="customizationmode-button"/>
-  </hbox>
+<box id="customization-content-container">
+<box flex="1" id="customization-palette-container">
+  <label id="customization-header" data-l10n-id="customize-mode-menu-and-toolbars-header"></label>
+  <vbox id="customization-palette" class="customization-palette" hidden="true"/>
+  <vbox id="customization-pong-arena" hidden="true"/>
+  <spacer id="customization-spacer"/>
 </box>
-  </deck>
+<vbox id="customization-panel-container">
+  <vbox id="customization-panelWrapper">
+    <box class="panel-arrowbox">
+      <image class="panel-arrow" side="top"/>
+    </box>
+    <box class="panel-arrowcontent" side="top" flex="1">
+      <vbox id="customization-panelHolder">
+        <description id="customization-panelHeader" data-l10n-id="customize-mode-overflow-list-title"></description>
+        <description id="customization-panelDescription" data-l10n-id="customize-mode-overflow-list-description"></description>
+      </vbox>
+      <box class="panel-inner-arrowcontentfooter" hidden="true"/>
+    </box>
+  </vbox>
+</vbox>
+</box>
+<hbox id="customization-footer">
+<checkbox id="customization-titlebar-visibility-checkbox" class="customizationmode-checkbox"
+          oncommand="gCustomizeMode.toggleTitlebar(this.checked)" data-l10n-id="customize-mode-titlebar"/>
+<checkbox id="customization-extra-drag-space-checkbox" class="customizationmode-checkbox"
+          data-l10n-id="customize-mode-extra-drag-space"
+          oncommand="gCustomizeMode.toggleDragSpace(this.checked)"/>
+<button id="customization-toolbar-visibility-button" class="customizationmode-button" type="menu" data-l10n-id="customize-mode-toolbars">
+  <menupopup id="customization-toolbar-menu" onpopupshowing="onViewToolbarsPopupShowing(event)"/>
+</button>
+<button id="customization-lwtheme-button" data-l10n-id="customize-mode-lwthemes" class="customizationmode-button" type="menu">
+  <panel type="arrow" id="customization-lwtheme-menu"
+         orient="vertical"
+         onpopupshowing="gCustomizeMode.onThemesMenuShowing(event);"
+         position="topcenter bottomleft"
+         flip="none"
+         role="menu">
+    <label id="customization-lwtheme-menu-header" data-l10n-id="customize-mode-lwthemes-my-themes"/>
+    <hbox id="customization-lwtheme-menu-footer">
+      <toolbarbutton class="customization-lwtheme-menu-footeritem"
+                     data-l10n-id="customize-mode-lwthemes-menu-manage"
+                     tabindex="0"
+                     oncommand="gCustomizeMode.openAddonsManagerThemes(event);"/>
+      <toolbarbutton class="customization-lwtheme-menu-footeritem"
+                     data-l10n-id="customize-mode-lwthemes-menu-get-more"
+                     tabindex="0"
+                     oncommand="gCustomizeMode.getMoreThemes(event);"/>
+    </hbox>
+  </panel>
+</button>
+<button id="customization-uidensity-button"
+        data-l10n-id="customize-mode-uidensity"
+        class="customizationmode-button"
+        type="menu">
+  <panel type="arrow" id="customization-uidensity-menu"
+         orient="vertical"
+         onpopupshowing="gCustomizeMode.onUIDensityMenuShowing();"
+         position="topcenter bottomleft"
+         flip="none"
+         role="menu">
+    <menuitem id="customization-uidensity-menuitem-compact"
+              class="menuitem-iconic customization-uidensity-menuitem"
+              role="menuitemradio"
+              data-l10n-id="customize-mode-uidensity-menu-compact"
+              tabindex="0"
+              onfocus="gCustomizeMode.updateUIDensity(this.mode);"
+              onmouseover="gCustomizeMode.updateUIDensity(this.mode);"
+              onblur="gCustomizeMode.resetUIDensity();"
+              onmouseout="gCustomizeMode.resetUIDensity();"
+              oncommand="gCustomizeMode.setUIDensity(this.mode);"/>
+    <menuitem id="customization-uidensity-menuitem-normal"
+              class="menuitem-iconic customization-uidensity-menuitem"
+              role="menuitemradio"
+              data-l10n-id="customize-mode-uidensity-menu-normal"
+              tabindex="0"
+              onfocus="gCustomizeMode.updateUIDensity(this.mode);"
+              onmouseover="gCustomizeMode.updateUIDensity(this.mode);"
+              onblur="gCustomizeMode.resetUIDensity();"
+              onmouseout="gCustomizeMode.resetUIDensity();"
+              oncommand="gCustomizeMode.setUIDensity(this.mode);"/>
+    <menuitem id="customization-uidensity-menuitem-touch"
+              class="menuitem-iconic customization-uidensity-menuitem"
+              role="menuitemradio"
+              data-l10n-id="customize-mode-uidensity-menu-touch"
+              tabindex="0"
+              onfocus="gCustomizeMode.updateUIDensity(this.mode);"
+              onmouseover="gCustomizeMode.updateUIDensity(this.mode);"
+              onblur="gCustomizeMode.resetUIDensity();"
+              onmouseout="gCustomizeMode.resetUIDensity();"
+              oncommand="gCustomizeMode.setUIDensity(this.mode);">
+    </menuitem>
+    <spacer hidden="true" id="customization-uidensity-touch-spacer"/>
+    <checkbox id="customization-uidensity-autotouchmode-checkbox"
+              hidden="true"
+              data-l10n-id="customize-mode-uidensity-auto-touch-mode-checkbox"
+              oncommand="gCustomizeMode.updateAutoTouchMode(this.checked)"/>
+  </panel>
+</button>
 
+<button id="whimsy-button"
+        type="checkbox"
+        class="customizationmode-button"
+        oncommand="gCustomizeMode.togglePong(this.checked);"
+        hidden="true"/>
+
+<spacer id="customization-footer-spacer"/>
+<button id="customization-undo-reset-button"
+        class="customizationmode-button"
+        hidden="true"
+        oncommand="gCustomizeMode.undoReset();"
+        data-l10n-id="customize-mode-undo-cmd"/>
+<button id="customization-reset-button"
+        oncommand="gCustomizeMode.reset();"
+        data-l10n-id="customize-mode-restore-defaults"
+        class="customizationmode-button"/>
+<button id="customization-done-button"
+        oncommand="gCustomizeMode.exit();"
+        data-l10n-id="customize-mode-done"
+        class="customizationmode-button"/>
+</hbox>
+  ]]></box>
+
+<html:div id="fullscreen-and-pointerlock-wrapper" renderroot="popover">
   <html:div id="fullscreen-warning" class="pointerlockfswarning" hidden="true">
     <html:div class="pointerlockfswarning-domain-text">
       &fullscreenWarning.beforeDomain.label;
@@ -4549,9 +4643,9 @@ Services.scriptloader.loadSubScript("chrome://browser/content/utilityOverlay.js"
       &pointerlockWarning.generic.label;
     </html:div>
   </html:div>
+</html:div>
 
-  <vbox id="browser-bottombox" layer="true">
+  <vbox id="browser-bottombox" layer="true" renderroot="content">
     <!-- gNotificationBox will be added here lazily. -->
   </vbox>
-
 </window>

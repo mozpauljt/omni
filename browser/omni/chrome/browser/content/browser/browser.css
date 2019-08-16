@@ -2,7 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-@namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
 @namespace html url("http://www.w3.org/1999/xhtml");
 
 :root {
@@ -49,10 +48,6 @@
 
 :root[customize-entered] {
   min-width: -moz-fit-content;
-}
-
-.searchbar-textbox {
-  -moz-binding: url("chrome://browser/content/search/search.xml#searchbar-textbox");
 }
 
 .search-one-offs[compact=true] .search-setting-button,
@@ -118,10 +113,6 @@ panelview[mainview] > .panel-header {
   transition: height var(--panelui-subview-transition-duration);
 }
 
-#tabbrowser-tabs {
-  -moz-binding: url("chrome://browser/content/tabbrowser.xml#tabbrowser-tabs");
-}
-
 @supports -moz-bool-pref("layout.css.emulate-moz-box-with-flex") {
   #tabbrowser-tabs {
     /* Without this, the tabs container width extends beyond the window width */
@@ -144,10 +135,6 @@ panelview[mainview] > .panel-header {
 
 #tabbrowser-tabs:not([overflow="true"])[using-closing-tabs-spacer] ~ #alltabs-button {
   visibility: hidden; /* temporary space to keep a tab's close button under the cursor */
-}
-
-.tabbrowser-tab {
-  -moz-binding: url("chrome://browser/content/tabbrowser.xml#tabbrowser-tab");
 }
 
 .tabbrowser-tab:not([pinned]) {
@@ -191,14 +178,19 @@ panelview[mainview] > .panel-header {
   display: none;
 }
 
+@supports -moz-bool-pref("browser.tabs.hideThrobber") {
+  .tab-throbber {
+    display: none !important;
+  }
+}
 
-#tabbrowser-tabs[positionpinnedtabs] > .tabbrowser-tab[pinned] {
+#tabbrowser-tabs[positionpinnedtabs] > .tabbrowser-arrowscrollbox > .tabbrowser-tab[pinned] {
   position: fixed !important;
   display: block; /* position:fixed already does this (bug 579776), but let's be explicit */
 }
 
-#tabbrowser-tabs[movingtab] > .tabbrowser-tab[selected],
-#tabbrowser-tabs[movingtab] > .tabbrowser-tab[multiselected] {
+#tabbrowser-tabs[movingtab] > .tabbrowser-arrowscrollbox > .tabbrowser-tab[selected],
+#tabbrowser-tabs[movingtab] > .tabbrowser-arrowscrollbox > .tabbrowser-tab[multiselected] {
   position: relative;
   z-index: 2;
   pointer-events: none; /* avoid blocking dragover events on scroll buttons */
@@ -320,6 +312,42 @@ toolbarpaletteitem {
 
 #navigator-toolbox[fullscreenShouldAnimate] {
   transition: 0.8s margin-top ease-out;
+}
+
+/* Rule for hiding urlbar's contextual tip and its children */
+
+#urlbar-contextual-tip.hidden,
+#urlbar-contextual-tip-button.hidden,
+#urlbar-contextual-tip-link.hidden {
+  display: none;
+}
+
+/* Rules for the urlbar's contextual tip's icon. */
+
+#urlbar-contextual-tip-icon {
+  background-image: var(--webextension-contextual-tip-icon);
+}
+
+:root[lwt-popup-brighttext] #urlbar-contextual-tip-icon {
+  background-image: var(--webextension-contextual-tip-icon-light);
+}
+
+:root[lwt-popup-darktext] #urlbar-contextual-tip-icon {
+  background-image: var(--webextension-contextual-tip-icon-dark);
+}
+
+@media (min-resolution: 1.1dppx) {
+  #urlbar-contextual-tip-icon {
+    background-image: var(--webextension-contextual-tip-icon-2x);
+  }
+  
+  :root[lwt-popup-brighttext] #urlbar-contextual-tip-icon {
+    background-image: var(--webextension-contextual-tip-icon-2x-light);
+  }
+
+  :root[lwt-popup-darktext] #urlbar-contextual-tip-icon {
+    background-image: var(--webextension-contextual-tip-icon-2x-dark);
+  }
 }
 
 /* Rules to help integrate WebExtension buttons */
@@ -484,16 +512,8 @@ toolbar:not(#TabsToolbar) > #personal-bookmarks {
   min-width: 1px;
 }
 
-#urlbar[quantumbar="false"] {
-  -moz-binding: url(chrome://browser/content/urlbarBindings.xml#legacy-urlbar);
-}
-
-#urlbar[quantumbar="true"] {
-  -moz-binding: url(chrome://browser/content/urlbarBindings.xml#urlbar);
-}
-
 /* Display URLs left-to-right but right aligned in RTL mode. */
-html|input.urlbar-input:-moz-locale-dir(rtl) {
+#urlbar-input:-moz-locale-dir(rtl) {
   direction: ltr !important;
   text-align: right !important;
 }
@@ -501,7 +521,7 @@ html|input.urlbar-input:-moz-locale-dir(rtl) {
 /* Make sure that the location bar's alignment in RTL mode changes according
    to the input box direction if the user switches the text direction using
    cmd_switchTextDirection (which applies a dir attribute to the <input>). */
-html|input.urlbar-input[dir=ltr]:-moz-locale-dir(rtl) {
+#urlbar-input[dir=ltr]:-moz-locale-dir(rtl) {
   text-align: left !important;
 }
 
@@ -522,16 +542,13 @@ html|input.urlbar-input[dir=ltr]:-moz-locale-dir(rtl) {
   background-color: rgba(255,170,68,.8);
   color: black;
 }
-:root[remotecontrol] #urlbar #identity-box {
-  background: white;
-}
 
 /* Show the url scheme in a static box when overflowing to the left */
-moz-input-box.urlbar-input-box {
+.urlbar-input-box {
   position: relative;
   direction: ltr;
 }
-html|input.urlbar-scheme {
+#urlbar-scheme {
   position: absolute;
   height: 100%;
   visibility: hidden;
@@ -541,22 +558,22 @@ html|input.urlbar-scheme {
 
 /* Visible if the urlbar is not focused and it overflows at the start.
    Uses the required-valid trick to check if it contains a value */
-html|input.urlbar-scheme[textoverflow="start"]:not([focused]):valid {
+#urlbar[textoverflow="start"]:not([focused]) > .urlbar-input-box > #urlbar-scheme:valid {
   visibility: visible;
 }
 
 /* Fade out URL on overflow
    This mask may be overriden when a Contextual Feature Recommendation is shown,
    see browser/themes/shared/urlbar-searchbar.inc.css for details */
-html|input.urlbar-input[textoverflow="end"]:not([focused]) {
+#urlbar[textoverflow="end"]:not([focused]) > .urlbar-input-box > #urlbar-input {
   mask-image: linear-gradient(to left, transparent, black 3ch);
 }
 
-html|input.urlbar-input[textoverflow="start"]:not([focused]) {
+#urlbar[textoverflow="start"]:not([focused]) > .urlbar-input-box > #urlbar-input {
   mask-image: linear-gradient(to right, transparent var(--urlbar-scheme-size), black calc(var(--urlbar-scheme-size) + 3ch));
 }
 
-html|input.urlbar-input {
+#urlbar-input {
   mask-repeat: no-repeat;
 }
 
@@ -565,71 +582,6 @@ html|input.urlbar-input {
   .searchbar-engine-image {
     image-rendering: -moz-crisp-edges;
   }
-}
-
-/* Always show URLs LTR. */
-.ac-url-text:-moz-locale-dir(rtl),
-.ac-title-text[lookslikeurl]:-moz-locale-dir(rtl) {
-  direction: ltr !important;
-}
-
-/* Never show a scrollbar for the Location Bar popup.  This overrides the
-   richlistbox inline overflow: auto style.*/
-#PopupAutoCompleteRichResult > richlistbox {
-  overflow: hidden !important;
-}
-
-/* For non-action items, hide the action text; for action items, hide the URL
-   text. Don't show the separator for keyword results. */
-#PopupAutoCompleteRichResult > richlistbox > richlistitem > .ac-type-icon,
-#PopupAutoCompleteRichResult > richlistbox > richlistitem > .ac-site-icon,
-#PopupAutoCompleteRichResult > richlistbox > richlistitem > .ac-tags:not([empty]),
-#PopupAutoCompleteRichResult > richlistbox > richlistitem > .ac-separator:not([type=keyword]),
-#PopupAutoCompleteRichResult > richlistbox > richlistitem > .ac-url:not([actiontype]),
-#PopupAutoCompleteRichResult > richlistbox > richlistitem > .ac-action[actiontype],
-#PopupAutoCompleteRichResult > richlistbox > richlistitem[selected] > .ac-url[actiontype=remotetab],
-#PopupAutoCompleteRichResult > richlistbox > richlistitem:hover > .ac-url[actiontype=remotetab]
-{
-  display: -moz-box;
-}
-
-#PopupAutoCompleteRichResult > richlistbox > richlistitem[selected] > .ac-action[actiontype=remotetab],
-#PopupAutoCompleteRichResult > richlistbox > richlistitem:hover > .ac-action[actiontype=remotetab] {
-  display: none;
-}
-
-/* Normally we want to show the "Search with Engine" label only on hover or
-   selection, but we also want to show it for "alias offer" results -- that is,
-   non-heuristic search engine results that have an alias and empty query.
-   These results tell the user that they can be used to search. */
-#PopupAutoCompleteRichResult > richlistbox > richlistitem:not([selected]):not(:hover):not(.aliasOffer) > .ac-action[actiontype=searchengine],
-#PopupAutoCompleteRichResult > richlistbox > richlistitem:not([selected]):not(:hover):not(.aliasOffer) > .ac-separator[actiontype=searchengine] {
-  display: none;
-}
-
-/* Hide the em-dash separator between the search query description (.ac-title)
-   and the "Search with Foo" description (.ac-url) if the search query is the
-   empty string.  Also hide .ac-title itself because it has a margin-inline-end;
-   alternatively we would need to remove that margin in this case. */
-#PopupAutoCompleteRichResult > richlistbox > richlistitem.emptySearchQuery > .ac-separator,
-#PopupAutoCompleteRichResult > richlistbox > richlistitem.emptySearchQuery > .ac-title {
-  display: none;
-}
-
-#PopupAutoCompleteRichResult > richlistbox > richlistitem > .ac-site-icon {
-  margin-inline-start: 0;
-}
-
-/* For action items in a noactions popup, show the URL text and hide the action
-   text and type icon. */
-#PopupAutoCompleteRichResult[noactions] > richlistbox > richlistitem.overridable-action > .ac-url {
-  display: -moz-box;
-}
-#PopupAutoCompleteRichResult[noactions] > richlistbox > richlistitem.overridable-action > .ac-action {
-  display: none;
-}
-#PopupAutoCompleteRichResult[noactions] > richlistbox > richlistitem.overridable-action > .ac-type-icon {
-  list-style-image: none;
 }
 
 #urlbar[actionoverride] > #urlbar-display-box,
@@ -642,7 +594,7 @@ html|input.urlbar-input {
 #PopupAutoComplete > richlistbox > richlistitem[originaltype="loginsFooter"] {
   -moz-box-pack: center;
   color: -moz-fieldText;
-  min-height: 40px;
+  min-height: 2.6666em;
   border-top: 1px solid rgba(38,38,38,.15);
   background-color: hsla(0,0%,80%,.35); /* match arrowpanel-dimmed */;
 }
@@ -652,8 +604,15 @@ html|input.urlbar-input {
   background-color: hsla(0,0%,80%,.5); /* match arrowpanel-dimmed-further */
 }
 
-#PopupAutoComplete[firstresultstyle="insecureWarning"] {
-  min-width: 200px;
+/* Define the minimum width based on the style of result rows.
+   The order of the min-width rules below must be in increasing order. */
+#PopupAutoComplete[resultstyles~="loginsFooter"],
+#PopupAutoComplete[resultstyles~="insecureWarning"] {
+  min-width: 17em;
+}
+
+#PopupAutoComplete[resultstyles~="generatedPassword"] {
+  min-width: 21em;
 }
 
 #PopupAutoComplete > richlistbox > richlistitem[originaltype="insecureWarning"] {
@@ -661,6 +620,7 @@ html|input.urlbar-input {
   height: auto;
 }
 
+#PopupAutoComplete > richlistbox > richlistitem[originaltype="loginWithOrigin"] > .ac-site-icon,
 #PopupAutoComplete > richlistbox > richlistitem[originaltype="insecureWarning"] > .ac-site-icon {
   margin-inline-start: 0;
   display: initial;
@@ -675,40 +635,16 @@ html|input.urlbar-input {
   margin-inline-start: 0;
 }
 
-#PopupAutoCompleteRichResult {
-  -moz-binding: url("chrome://browser/content/urlbarBindings.xml#urlbar-rich-result-popup");
-}
-
-#PopupAutoCompleteRichResult.showSearchSuggestionsNotification {
-  transition: height 100ms;
-}
-
-#PopupAutoCompleteRichResult > deck[anonid="search-suggestions-notification"] {
-  display: none;
-  transition: margin-top 100ms;
-}
-
-#PopupAutoCompleteRichResult.showSearchSuggestionsNotification > deck[anonid="search-suggestions-notification"] {
-  display: -moz-deck;
-}
-
-#PopupAutoCompleteRichResult > richlistbox {
-  transition: height 100ms;
-}
-
-#PopupAutoCompleteRichResult.showSearchSuggestionsNotification > richlistbox {
-  transition: none;
-}
-
 #urlbar[pageproxystate=invalid] > #page-action-buttons > .urlbar-page-action,
 #identity-box.chromeUI ~ #page-action-buttons > .urlbar-page-action:not(#star-button-box),
-.urlbar-history-dropmarker[usertyping],
-.urlbar-go-button:not([usertyping]),
-.urlbar-go-button:not([parentfocused="true"]) {
+#urlbar[usertyping] > .urlbar-history-dropmarker,
+#urlbar:not([usertyping]) > #urlbar-go-button,
+#urlbar:not([focused]) > #urlbar-go-button {
   display: none;
 }
 
-#nav-bar:not([keyNav=true]) #identity-box {
+#nav-bar:not([keyNav=true]) #identity-box,
+#nav-bar:not([keyNav=true]) #tracking-protection-icon-container {
   -moz-user-focus: normal;
 }
 
@@ -866,7 +802,15 @@ window[chromehidden~="toolbar"] toolbar:not(#nav-bar):not(#TabsToolbar):not(#pri
   background: black;
 }
 
-html|*.pointerlockfswarning {
+#fullscreen-and-pointerlock-wrapper {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  pointer-events: none;
+}
+
+.pointerlockfswarning {
   position: fixed;
   z-index: 2147483647 !important;
   visibility: visible;
@@ -880,32 +824,32 @@ html|*.pointerlockfswarning {
   max-width: 95%;
   pointer-events: none;
 }
-html|*.pointerlockfswarning:not([hidden]) {
+.pointerlockfswarning:not([hidden]) {
   display: flex;
   will-change: transform;
 }
-html|*.pointerlockfswarning[onscreen] {
+.pointerlockfswarning[onscreen] {
   transform: translate(-50%, 50px);
 }
-html|*.pointerlockfswarning[ontop] {
+.pointerlockfswarning[ontop] {
   /* Use -10px to hide the border and border-radius on the top */
   transform: translate(-50%, -10px);
 }
-:root[OSXLionFullscreen] html|*.pointerlockfswarning[ontop] {
+:root[OSXLionFullscreen] .pointerlockfswarning[ontop] {
   transform: translate(-50%, 80px);
 }
 
-html|*.pointerlockfswarning-domain-text,
-html|*.pointerlockfswarning-generic-text {
+.pointerlockfswarning-domain-text,
+.pointerlockfswarning-generic-text {
   word-wrap: break-word;
   /* We must specify a min-width, otherwise word-wrap:break-word doesn't work. Bug 630864. */
   min-width: 1px
 }
-html|*.pointerlockfswarning-domain-text:not([hidden]) + html|*.pointerlockfswarning-generic-text {
+.pointerlockfswarning-domain-text:not([hidden]) + .pointerlockfswarning-generic-text {
   display: none;
 }
 
-html|*#fullscreen-exit-button {
+#fullscreen-exit-button {
   pointer-events: auto;
 }
 
@@ -992,7 +936,7 @@ browser[tabmodalPromptShowing] {
    and just show the icon. This is a hack to side-step very weird layout bugs that
    seem to be caused by the indicator stack interacting with the menu panel. */
 #downloads-button[indicator]:not([cui-areatype="menu-panel"]) > .toolbarbutton-badge-stack > image.toolbarbutton-icon,
-#downloads-button[indicator][cui-areatype="menu-panel"] > #downloads-indicator-anchor {
+#downloads-button[indicator][cui-areatype="menu-panel"] > .toolbarbutton-badge-stack > #downloads-indicator-anchor {
   display: none;
 }
 
@@ -1000,7 +944,7 @@ toolbarpaletteitem[place="palette"] > #downloads-button[indicator] > .toolbarbut
   display: -moz-box;
 }
 
-toolbarpaletteitem[place="palette"] > #downloads-button[indicator] > #downloads-indicator-anchor {
+toolbarpaletteitem[place="palette"] > #downloads-button[indicator] > .toolbarbutton-badge-stack > #downloads-indicator-anchor {
   display: none;
 }
 
@@ -1019,13 +963,41 @@ toolbarpaletteitem[place="palette"] > #downloads-button[indicator] > #downloads-
 /* Give this menupopup an arrow panel styling */
 #BMB_bookmarksPopup {
   -moz-appearance: none;
-  -moz-binding: url("chrome://browser/content/places/menu.xml#places-popup-arrow");
+  -moz-binding: none;
   background: transparent;
   border: none;
   /* The popup inherits -moz-image-region from the button, must reset it */
   -moz-image-region: auto;
 }
 
+@supports -moz-bool-pref("xul.panel-animations.enabled") {
+  #BMB_bookmarksPopup:not([animate="false"]) {
+    opacity: 0;
+    transform: translateY(-70px);
+    transition-property: transform, opacity;
+    transition-duration: 0.18s, 0.18s;
+    transition-timing-function:
+      var(--animation-easing-function), ease-out;
+  }
+
+  #BMB_bookmarksPopup[side="bottom"]:not([animate="false"]) {
+    transform: translateY(70px);
+  }
+
+  /* [animate] is here only so that this rule has greater specificity than the
+   * rule right above */
+  #BMB_bookmarksPopup[animate][animate="open"] {
+    opacity: 1.0;
+    transition-duration: 0.18s, 0.18s;
+    transform: none;
+    transition-timing-function:
+      var(--animation-easing-function), ease-in-out;
+  }
+
+  #BMB_bookmarksPopup[animate][animate="cancel"] {
+    transform: none;
+  }
+}
 
 /* Apply crisp rendering for favicons at exactly 2dppx resolution */
 @media (resolution: 2dppx) {
@@ -1294,150 +1266,4 @@ toolbarpaletteitem > toolbaritem {
 
 toolbar[keyNav=true]:not([collapsed=true]):not([customizing=true]) toolbartabstop {
   -moz-user-focus: normal;
-}
-
-
-:root[lwthemeicons~="--back-icon"] #back-button:-moz-lwtheme {
-  list-style-image: var(--back-icon) !important;
-}
-
-:root[lwthemeicons~="--forward-icon"] #forward-button:-moz-lwtheme {
-  list-style-image: var(--forward-icon) !important;
-}
-
-:root[lwthemeicons~="--reload-icon"] #reload-button:-moz-lwtheme {
-  list-style-image: var(--reload-icon) !important;
-}
-
-:root[lwthemeicons~="--stop-icon"] #stop-button:-moz-lwtheme {
-  list-style-image: var(--stop-icon) !important;
-}
-
-:root[lwthemeicons~="--bookmark_star-icon"] #star-button:-moz-lwtheme,
-:root[lwthemeicons~="--bookmark_star-icon"] #bookmarks-menu-button:-moz-lwtheme {
-  list-style-image: var(--bookmark_star-icon) !important;
-}
-
-:root[lwthemeicons~="--bookmark_menu-icon"] #bookmarks-menu-button:-moz-lwtheme {
-  list-style-image: var(--bookmark_menu-icon) !important;
-}
-
-:root[lwthemeicons~="--downloads-icon"] #downloads-button:-moz-lwtheme {
-  list-style-image: var(--downloads-icon) !important;
-}
-
-:root[lwthemeicons~="--home-icon"] #home-button:-moz-lwtheme {
-  list-style-image: var(--home-icon) !important;
-}
-
-:root[lwthemeicons~="--app_menu-icon"] #PanelUI-menu-button:-moz-lwtheme {
-  list-style-image: var(--app_menu-icon) !important;
-}
-
-:root[lwthemeicons~="--cut-icon"] #cut-button:-moz-lwtheme {
-  list-style-image: var(--cut-icon) !important;
-}
-
-:root[lwthemeicons~="--copy-icon"] #copy-button:-moz-lwtheme {
-  list-style-image: var(--copy-icon) !important;
-}
-
-:root[lwthemeicons~="--paste-icon"] #paste-button:-moz-lwtheme {
-  list-style-image: var(--paste-icon) !important;
-}
-
-:root[lwthemeicons~="--new_window-icon"] #new-window-button:-moz-lwtheme {
-  list-style-image: var(--new_window-icon) !important;
-}
-
-:root[lwthemeicons~="--new_private_window-icon"] #privatebrowsing-button:-moz-lwtheme {
-  list-style-image: var(--new_private_window-icon) !important;
-}
-
-:root[lwthemeicons~="--save_page-icon"] #save-page-button:-moz-lwtheme {
-  list-style-image: var(--save_page-icon) !important;
-}
-
-:root[lwthemeicons~="--print-icon"] #print-button:-moz-lwtheme {
-  list-style-image: var(--print-icon) !important;
-}
-
-:root[lwthemeicons~="--history-icon"] #history-panelmenu:-moz-lwtheme {
-  list-style-image: var(--history-icon) !important;
-}
-
-:root[lwthemeicons~="--full_screen-icon"] #fullscreen-button:-moz-lwtheme {
-  list-style-image: var(--full_screen-icon) !important;
-}
-
-:root[lwthemeicons~="--find-icon"] #find-button:-moz-lwtheme {
-  list-style-image: var(--find-icon) !important;
-}
-
-:root[lwthemeicons~="--options-icon"] #preferences-button:-moz-lwtheme {
-  list-style-image: var(--options-icon) !important;
-}
-
-:root[lwthemeicons~="--addons-icon"] #add-ons-button:-moz-lwtheme {
-  list-style-image: var(--addons-icon) !important;
-}
-
-:root[lwthemeicons~="--developer-icon"] #developer-button:-moz-lwtheme {
-  list-style-image: var(--developer-icon) !important;
-}
-
-:root[lwthemeicons~="--synced_tabs-icon"] #sync-button:-moz-lwtheme {
-  list-style-image: var(--synced_tabs-icon) !important;
-}
-
-:root[lwthemeicons~="--open_file-icon"] #open-file-button:-moz-lwtheme {
-  list-style-image: var(--open_file-icon) !important;
-}
-
-:root[lwthemeicons~="--sidebars-icon"] #sidebar-button:-moz-lwtheme {
-  list-style-image: var(--sidebars-icon) !important;
-}
-
-:root[lwthemeicons~="--text_encoding-icon"] #characterencoding-button:-moz-lwtheme {
-  list-style-image: var(--text_encoding-icon) !important;
-}
-
-:root[lwthemeicons~="--email_link-icon"] #email-link-button:-moz-lwtheme {
-  list-style-image: var(--email_link-icon) !important;
-}
-
-:root[lwthemeicons~="--forget-icon"] #panic-button:-moz-lwtheme {
-  list-style-image: var(--forget-icon) !important;
-}
-
-:root[lwthemeicons~="--bookmark_star-icon"] #star-button:-moz-lwtheme,
-:root[lwthemeicons~="--bookmark_menu-icon"] #bookmarks-menu-button:-moz-lwtheme,
-:root[lwthemeicons~="--back-icon"] #back-button:-moz-lwtheme,
-:root[lwthemeicons~="--forward-icon"] #forward-button:-moz-lwtheme,
-:root[lwthemeicons~="--reload-icon"] #reload-button:-moz-lwtheme,
-:root[lwthemeicons~="--stop-icon"] #stop-button:-moz-lwtheme,
-:root[lwthemeicons~="--bookmark_star-icon"] #bookmarks-menu-button:-moz-lwtheme,
-:root[lwthemeicons~="--downloads-icon"] #downloads-button:-moz-lwtheme,
-:root[lwthemeicons~="--home-icon"] #home-button:-moz-lwtheme,
-:root[lwthemeicons~="--app_menu-icon"] #PanelUI-menu-button:-moz-lwtheme,
-:root[lwthemeicons~="--cut-icon"] #cut-button:-moz-lwtheme,
-:root[lwthemeicons~="--copy-icon"] #copy-button:-moz-lwtheme,
-:root[lwthemeicons~="--paste-icon"] #paste-button:-moz-lwtheme,
-:root[lwthemeicons~="--new_window-icon"] #new-window-button:-moz-lwtheme,
-:root[lwthemeicons~="--new_private_window-icon"] #privatebrowsing-button:-moz-lwtheme,
-:root[lwthemeicons~="--save_page-icon"] #save-page-button:-moz-lwtheme,
-:root[lwthemeicons~="--print-icon"] #print-button:-moz-lwtheme,
-:root[lwthemeicons~="--history-icon"] #history-panelmenu:-moz-lwtheme,
-:root[lwthemeicons~="--full_screen-icon"] #fullscreen-button:-moz-lwtheme,
-:root[lwthemeicons~="--find-icon"] #find-button:-moz-lwtheme,
-:root[lwthemeicons~="--options-icon"] #preferences-button:-moz-lwtheme,
-:root[lwthemeicons~="--addons-icon"] #add-ons-button:-moz-lwtheme,
-:root[lwthemeicons~="--developer-icon"] #developer-button:-moz-lwtheme,
-:root[lwthemeicons~="--synced_tabs-icon"] #sync-button:-moz-lwtheme,
-:root[lwthemeicons~="--open_file-icon"] #open-file-button:-moz-lwtheme,
-:root[lwthemeicons~="--sidebars-icon"] #sidebar-button:-moz-lwtheme,
-:root[lwthemeicons~="--text_encoding-icon"] #characterencoding-button:-moz-lwtheme,
-:root[lwthemeicons~="--email_link-icon"] #email-link-button:-moz-lwtheme,
-:root[lwthemeicons~="--forget-icon"] #panic-button:-moz-lwtheme {
-  -moz-image-region: rect(0, 16px, 16px, 0) !important;
 }

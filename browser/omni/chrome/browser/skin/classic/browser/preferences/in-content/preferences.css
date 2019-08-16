@@ -4,6 +4,18 @@
 
 @namespace html "http://www.w3.org/1999/xhtml";
 
+:root {
+  --in-content-warning-container: var(--grey-20);
+}
+
+@supports -moz-bool-pref("browser.in-content.dark-mode") {
+@media (prefers-color-scheme: dark) {
+  :root {
+    --in-content-warning-container: var(--grey-90-a30);
+  }
+}
+}
+
 * {
   -moz-user-select: text;
 }
@@ -42,7 +54,7 @@ html|h2 {
 
 description.indent,
 .indent > description {
-  color: #737373;
+  color: var(--in-content-deemphasized-text);
 }
 
 button,
@@ -144,7 +156,7 @@ button > hbox > label {
 .subcategory:not([hidden]) ~ .subcategory {
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid rgba(12, 12, 13, 0.15);
+  border-top: 1px solid var(--in-content-border-color);
 }
 
 /* Category List */
@@ -185,6 +197,18 @@ button > hbox > label {
   display: none;
 }
 
+/* All panes */
+
+.info-icon,
+.androidIcon,
+.iOSIcon,
+#updateSettingCrossUserWarning,
+.extension-controlled > description,
+.info-panel > description {
+  -moz-context-properties: fill;
+  fill: currentColor;
+}
+
 /* General Pane */
 
 #isDefaultLabel {
@@ -195,7 +219,7 @@ button > hbox > label {
 .extension-controlled {
   margin-top: 18px !important;
   margin-bottom: 18px !important;
-  background: var(--grey-20);
+  background: var(--in-content-warning-container);
   border-radius: 5px;
   padding-inline-end: 10px;
 }
@@ -259,6 +283,7 @@ button > hbox > label {
 }
 
 #downloadFolder {
+  -moz-box-flex: 1;
   margin-inline-start: 0;
   padding-inline-start: 30px;
   background-repeat: no-repeat;
@@ -424,6 +449,11 @@ button > hbox > label {
   justify-content: space-between;
 }
 
+#sanitizeEverythingWarningBox {
+  background-color: var(--in-content-box-background);
+  border: 1px solid var(--in-content-box-border-color);
+}
+
 #blockCookies,
 #keepRow {
   margin-top: 1.5em;
@@ -468,9 +498,9 @@ button > hbox > label {
 }
 
 .dialogBox {
-  background-color: #fbfbfb;
+  background-color: var(--in-content-page-background);
   background-clip: content-box;
-  color: #424e5a;
+  color: var(--in-content-page-color);
   /* `transparent` will use the dialogText color in high-contrast themes and
      when page colors are disabled */
   border: 1px solid transparent;
@@ -491,8 +521,8 @@ button > hbox > label {
 .dialogTitleBar {
   margin-top: 0;
   padding: 3.5px 0;
-  background-color: #F1F1F1;
-  border-bottom: 1px solid #C1C1C1;
+  background-color: var(--in-content-dialog-header-background);
+  border-bottom: 1px solid var(--in-content-border-color);
 }
 
 .dialogTitle {
@@ -544,7 +574,7 @@ button > hbox > label {
   height: 80px;
   border-radius: 50%;
   border: 1px solid transparent;
-  list-style-image: url("chrome://browser/skin/preferences/in-content/fxa-avatar.svg");
+  list-style-image: url(chrome://browser/skin/fxa/avatar-color.svg);
   margin-inline-end: 24px;
   -moz-user-focus: normal;
 }
@@ -572,6 +602,7 @@ button > hbox > label {
 }
 
 #fxaSyncComputerName {
+  -moz-box-flex: 1;
   margin-inline-start: 0;
   margin-bottom: 4px;
 }
@@ -600,7 +631,7 @@ button > hbox > label {
 }
 
 .fxaSyncIllustration {
-  list-style-image: url("chrome://browser/skin/preferences/in-content/sync-devices.svg");
+  list-style-image: url(chrome://browser/skin/fxa/sync-devices.svg);
   width: 312px;
   height: 136px;
 }
@@ -651,8 +682,6 @@ button > hbox > label {
   width: 20px;
   height: 20px;
   vertical-align: text-bottom;
-  -moz-context-properties: fill;
-  fill: currentColor;
 }
 
 #updateDeck > hbox > label {
@@ -711,16 +740,18 @@ image.update-throbber {
 }
 
 #policies-container {
-  background-color: #ededf0;
+  background-color: var(--in-content-warning-container);
   padding: 0px 8px;
   margin-inline-end: 16px;
   border-radius: 2px;
 }
 
+.policies-label {
+  margin-left: 2px;
+}
+
 .info-icon {
   list-style-image: url("chrome://browser/skin/identity-icon.svg");
-  fill: currentColor;
-  -moz-context-properties: fill;
   width: 16px;
   height: 16px;
   margin-top: calc((32px - 16px) / 2);
@@ -750,6 +781,7 @@ image.update-throbber {
   position: absolute;
   padding: 0 10px;
   background-color: #ffe900;
+  color: #000;
   border: 1px solid #d7b600;
   bottom: 36px;
   opacity: .85;
@@ -898,7 +930,7 @@ menulist[indicator=true] > menupopup menuitem[indicator=true]:not([image]) > .me
 }
 
 .updateSettingCrossUserWarningContainer {
-  background: var(--grey-20);
+  background: var(--in-content-warning-container);
   border-radius: 5px;
   padding-inline: 8px;
   padding-block-start: 2px;
@@ -910,7 +942,7 @@ menulist[indicator=true] > menupopup menuitem[indicator=true]:not([image]) > .me
   padding-inline-start: 30px;
   margin-block-start: 20px;
   line-height: 20px;
-  background-image: url("chrome://global/skin/icons/info.svg");
+  background-image: url("chrome://browser/skin/identity-icon.svg");
   background-position-x: left 2px;
   background-position-y: top 2px;
   background-size: 16px 16px;
@@ -919,6 +951,15 @@ menulist[indicator=true] > menupopup menuitem[indicator=true]:not([image]) > .me
 
 #updateSettingCrossUserWarning:-moz-locale-dir(rtl) {
   background-position-x: right 2px;
+}
+
+richlistitem .text-link {
+  color: inherit;
+  text-decoration: underline;
+}
+
+richlistitem .text-link:hover {
+  color: inherit;
 }
 
 :root > * {

@@ -5,9 +5,21 @@
 "use strict";
 
 const actionTypes = {
-  UPDATE_WORKERS: "UPDATE_WORKERS",
+  // page substate
   UPDATE_DOMAIN: "UPDATE_DOMAIN",
+  // ui substate
+  UPDATE_SELECTED_PAGE: "UPDATE_SELECTED_PAGE",
+  // workers substate
+  UPDATE_CAN_DEBUG_WORKERS: "UPDATE_CAN_DEBUG_WORKERS",
+  UPDATE_WORKERS: "UPDATE_WORKERS",
 };
 
+const PAGE_TYPES = {
+  MANIFEST: "manifest",
+  SERVICE_WORKERS: "service-workers",
+};
+
+const DEFAULT_PAGE = PAGE_TYPES.MANIFEST;
+
 // flatten constants
-module.exports = Object.assign({}, actionTypes);
+module.exports = Object.assign({}, { DEFAULT_PAGE, PAGE_TYPES }, actionTypes);

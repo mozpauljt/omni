@@ -25,34 +25,13 @@
       onunload="PlacesUIUtils.setMouseoverURL('', window);"
       aria-label="&historyButton.label;">
 
-  <script type="application/javascript"
-          src="chrome://browser/content/places/historySidebar.js"/>
-  <script type="application/javascript"
-          src="chrome://global/content/globalOverlay.js"/>
-  <script type="application/javascript"
-          src="chrome://browser/content/utilityOverlay.js"/>
-  <script type="application/javascript"
-          src="chrome://browser/content/contentTheme.js"/>
-  <script type="application/javascript"
-          src="chrome://browser/content/places/places-tree.js"/>
+  <script src="chrome://browser/content/places/historySidebar.js"/>
+  <script src="chrome://global/content/globalOverlay.js"/>
+  <script src="chrome://browser/content/utilityOverlay.js"/>
+  <script src="chrome://browser/content/contentTheme.js"/>
+  <script src="chrome://browser/content/places/places-tree.js"/>
+  <script src="chrome://global/content/editMenuOverlay.js"/>
 
-<script type="application/javascript" src="chrome://global/content/editMenuOverlay.js"/>
-<commandset id="editMenuCommands">
-  <commandset id="editMenuCommandSetAll" commandupdater="true" events="focus,select"
-              oncommandupdate="goUpdateGlobalEditMenuItems()"/>
-  <commandset id="editMenuCommandSetUndo" commandupdater="true" events="undo"
-              oncommandupdate="goUpdateUndoEditMenuItems()"/>
-  <commandset id="editMenuCommandSetPaste" commandupdater="true" events="clipboard"
-              oncommandupdate="goUpdatePasteMenuItems()"/>
-  <command id="cmd_undo" oncommand="goDoCommand('cmd_undo')"/>
-  <command id="cmd_redo" oncommand="goDoCommand('cmd_redo')"/>
-  <command id="cmd_cut" oncommand="goDoCommand('cmd_cut')"/>
-  <command id="cmd_copy" oncommand="goDoCommand('cmd_copy')"/>
-  <command id="cmd_paste" oncommand="goDoCommand('cmd_paste')"/>
-  <command id="cmd_delete" oncommand="goDoCommand('cmd_delete')"/>
-  <command id="cmd_selectAll" oncommand="goDoCommand('cmd_selectAll')"/>
-  <command id="cmd_switchTextDirection" oncommand="goDoCommand('cmd_switchTextDirection');"/>
-</commandset>
 
 <commandset id="placesCommands"
             commandupdater="true"
@@ -101,6 +80,7 @@
            oncommand="PlacesUIUtils.doCommand(window, 'placesCmd_delete');"/>
 </commandset>
 
+
   <!-- These key nodes are here only for show. The real bindings come from
        XBL, in platformHTMLBindings.xml. See bugs 57078 and 71779. -->
 
@@ -119,10 +99,11 @@
     <key id="key_findPrevious2" keycode="&findAgainCmd.key2;" modifiers="shift" command="cmd_findPrevious"/>
   </keyset>
 
+
 <menupopup id="placesContext"
            onpopupshowing="this._view = PlacesUIUtils.getViewForNode(document.popupNode);
                            if (!PlacesUIUtils.openInTabClosesMenu) {
-                             document.getElementById ('placesContext_open:newtab')
+                             document.getElementById('placesContext_open:newtab')
                              .setAttribute('closemenu', 'single');
                            }
                            return this._view.buildContextMenu(this);"
@@ -133,7 +114,8 @@
             accesskey="&cmd.open.accesskey;"
             default="true"
             selectiontype="single"
-            selection="link"/>
+            selection="link"
+            forcehideintabbrowser="true"/>
   <menuitem id="placesContext_open:newtab"
             command="placesCmd_open:tab"
             label="&cmd.open_tab.label;"
@@ -248,6 +230,7 @@
             accesskey="&cmd.properties.accesskey;"
             selection="bookmark|folder|query"/>
 </menupopup>
+
 <!-- Bookmarks and history tooltip -->
 <tooltip id="bhTooltip" noautohide="true"
          onpopupshowing="return window.top.BookmarksEventHandler.fillInBHTooltip(document, event)">
@@ -258,7 +241,7 @@
 </tooltip>
 
   <hbox id="sidebar-search-container">
-    <textbox id="search-box" flex="1" type="search"
+    <textbox id="search-box" flex="1" is="search-textbox"
              placeholder="&historySearch.placeholder;"
              aria-controls="historyTree"
              oncommand="searchHistory(this.value);"/>

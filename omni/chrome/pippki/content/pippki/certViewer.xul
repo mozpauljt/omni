@@ -21,10 +21,10 @@
   <html:link rel="localization" href="security/certificates/certManager.ftl"/>
 </linkset>
 
-<script type="application/javascript" src="chrome://pippki/content/pippki.js"/>
-<script type="application/javascript" src="chrome://global/content/globalOverlay.js"/>
-<script type="application/javascript"
-        src="chrome://pippki/content/certViewer.js"/>
+<script src="chrome://pippki/content/pippki.js"/>
+<script src="chrome://global/content/globalOverlay.js"/>
+<script src="chrome://global/content/editMenuOverlay.js"/>
+<script src="chrome://pippki/content/certViewer.js"/>
 <html:style>
   table {
     border-spacing: 0.5ch 2px;
@@ -40,24 +40,6 @@
     font-weight: normal;
   }
 </html:style>
-
-<script type="application/javascript" src="chrome://global/content/editMenuOverlay.js"/>
-<commandset id="editMenuCommands">
-  <commandset id="editMenuCommandSetAll" commandupdater="true" events="focus,select"
-              oncommandupdate="goUpdateGlobalEditMenuItems()"/>
-  <commandset id="editMenuCommandSetUndo" commandupdater="true" events="undo"
-              oncommandupdate="goUpdateUndoEditMenuItems()"/>
-  <commandset id="editMenuCommandSetPaste" commandupdater="true" events="clipboard"
-              oncommandupdate="goUpdatePasteMenuItems()"/>
-  <command id="cmd_undo" oncommand="goDoCommand('cmd_undo')"/>
-  <command id="cmd_redo" oncommand="goDoCommand('cmd_redo')"/>
-  <command id="cmd_cut" oncommand="goDoCommand('cmd_cut')"/>
-  <command id="cmd_copy" oncommand="goDoCommand('cmd_copy')"/>
-  <command id="cmd_paste" oncommand="goDoCommand('cmd_paste')"/>
-  <command id="cmd_delete" oncommand="goDoCommand('cmd_delete')"/>
-  <command id="cmd_selectAll" oncommand="goDoCommand('cmd_selectAll')"/>
-  <command id="cmd_switchTextDirection" oncommand="goDoCommand('cmd_switchTextDirection');"/>
-</commandset>
 
   <tabbox flex="1">
     <tabs>

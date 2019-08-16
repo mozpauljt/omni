@@ -10,12 +10,36 @@ const ChromeUtils = require("ChromeUtils");
 const EventEmitter = require("devtools/shared/event-emitter");
 const protocol = require("devtools/shared/protocol");
 const Services = require("Services");
-const { highlighterSpec, customHighlighterSpec } = require("devtools/shared/specs/highlighters");
+const ReplayInspector = require("devtools/server/actors/replay/inspector");
+const {
+  highlighterSpec,
+  customHighlighterSpec,
+} = require("devtools/shared/specs/highlighters");
 
-loader.lazyRequireGetter(this, "isWindowIncluded", "devtools/shared/layout/utils", true);
-loader.lazyRequireGetter(this, "isXUL", "devtools/server/actors/highlighters/utils/markup", true);
-loader.lazyRequireGetter(this, "SimpleOutlineHighlighter", "devtools/server/actors/highlighters/simple-outline", true);
-loader.lazyRequireGetter(this, "BoxModelHighlighter", "devtools/server/actors/highlighters/box-model", true);
+loader.lazyRequireGetter(
+  this,
+  "isWindowIncluded",
+  "devtools/shared/layout/utils",
+  true
+);
+loader.lazyRequireGetter(
+  this,
+  "isXUL",
+  "devtools/server/actors/highlighters/utils/markup",
+  true
+);
+loader.lazyRequireGetter(
+  this,
+  "SimpleOutlineHighlighter",
+  "devtools/server/actors/highlighters/simple-outline",
+  true
+);
+loader.lazyRequireGetter(
+  this,
+  "BoxModelHighlighter",
+  "devtools/server/actors/highlighters/box-model",
+  true
+);
 
 const HIGHLIGHTER_PICKED_TIMER = 1000;
 const IS_OSX = Services.appinfo.OS === "Darwin";
@@ -35,7 +59,7 @@ const highlighterTypes = new Map();
  * Returns `true` if a highlighter for the given `typeName` is registered,
  * `false` otherwise.
  */
-const isTypeRegistered = (typeName) => highlighterTypes.has(typeName);
+const isTypeRegistered = typeName => highlighterTypes.has(typeName);
 exports.isTypeRegistered = isTypeRegistered;
 
 /**
@@ -90,8 +114,6 @@ exports.HighlighterActor = protocol.ActorClassWithSpec(highlighterSpec, {
     this._highlighterEnv = new HighlighterEnvironment();
     this._highlighterEnv.initFromTargetActor(this._targetActor);
 
-    this._highlighterReady = this._highlighterReady.bind(this);
-    this._highlighterHidden = this._highlighterHidden.bind(this);
     this._onNavigate = this._onNavigate.bind(this);
 
     const doc = this._targetActor.window.document;
@@ -120,10 +142,10 @@ exports.HighlighterActor = protocol.ActorClassWithSpec(highlighterSpec, {
     this._isPreviousWindowXUL = isXUL(this._targetActor.window);
 
     if (!this._isPreviousWindowXUL) {
-      this._highlighter = new BoxModelHighlighter(this._highlighterEnv,
-                                                  this._inspector);
-      this._highlighter.on("ready", this._highlighterReady);
-      this._highlighter.on("hide", this._highlighterHidden);
+      this._highlighter = new BoxModelHighlighter(
+        this._highlighterEnv,
+        this._inspector
+      );
     } else {
       this._highlighter = new SimpleOutlineHighlighter(this._highlighterEnv);
     }
@@ -131,16 +153,12 @@ exports.HighlighterActor = protocol.ActorClassWithSpec(highlighterSpec, {
 
   _destroyHighlighter: function() {
     if (this._highlighter) {
-      if (!this._isPreviousWindowXUL) {
-        this._highlighter.off("ready", this._highlighterReady);
-        this._highlighter.off("hide", this._highlighterHidden);
-      }
       this._highlighter.destroy();
       this._highlighter = null;
     }
   },
 
-  _onNavigate: function({isTopLevel}) {
+  _onNavigate: function({ isTopLevel }) {
     // Skip navigation events for non top-level windows, or if the document
     // doesn't exist anymore.
     if (!isTopLevel || !this._targetActor.window.document.documentElement) {
@@ -208,11 +226,12 @@ exports.HighlighterActor = protocol.ActorClassWithSpec(highlighterSpec, {
    *          The event to allow
    * @return {Boolean}
    */
-  _isEventAllowed: function({view}) {
+  _isEventAllowed: function({ view }) {
     const { window } = this._highlighterEnv;
 
-    return window instanceof Ci.nsIDOMChromeWindow ||
-          isWindowIncluded(window, view);
+    return (
+      window instanceof Ci.nsIDOMChromeWindow || isWindowIncluded(window, view)
+    );
   },
 
   /**
@@ -230,6 +249,10 @@ exports.HighlighterActor = protocol.ActorClassWithSpec(highlighterSpec, {
   _currentNode: null,
 
   pick: function() {
+    if (this._targetActor.threadActor) {
+      this._targetActor.threadActor.hideOverlay();
+    }
+
     if (this._isPicking) {
       return null;
     }
@@ -250,8 +273,10 @@ exports.HighlighterActor = protocol.ActorClassWithSpec(highlighterSpec, {
       // If shift is pressed, this is only a preview click, send the event to
       // the client, but don't stop picking.
       if (event.shiftKey) {
-        this._walker.emit("picker-node-previewed",
-          this._findAndAttachElement(event));
+        this._walker.emit(
+          "picker-node-previewed",
+          this._findAndAttachElement(event)
+        );
         return;
       }
 
@@ -343,13 +368,18 @@ exports.HighlighterActor = protocol.ActorClassWithSpec(highlighterSpec, {
           this._walker.emit("picker-node-canceled");
           return;
         case event.DOM_VK_C:
-          if ((IS_OSX && event.metaKey && event.altKey) ||
-            (!IS_OSX && event.ctrlKey && event.shiftKey)) {
+          const { altKey, ctrlKey, metaKey, shiftKey } = event;
+
+          if (
+            (IS_OSX && metaKey && altKey | shiftKey) ||
+            (!IS_OSX && ctrlKey && shiftKey)
+          ) {
             this.cancelPick();
             this._walker.emit("picker-node-canceled");
           }
           return;
-        default: return;
+        default:
+          return;
       }
 
       // Store currently attached element
@@ -377,7 +407,9 @@ exports.HighlighterActor = protocol.ActorClassWithSpec(highlighterSpec, {
     // originalTarget allows access to the "real" element before any retargeting
     // is applied, such as in the case of XBL anonymous elements.  See also
     // https://developer.mozilla.org/docs/XBL/XBL_1.0_Reference/Anonymous_Content#Event_Flow_and_Targeting
-    const node = event.originalTarget || event.target;
+    const node = isReplaying
+      ? ReplayInspector.findEventTarget(event)
+      : event.originalTarget || event.target;
     return this._walker.attachElement(node);
   },
 
@@ -405,7 +437,9 @@ exports.HighlighterActor = protocol.ActorClassWithSpec(highlighterSpec, {
     const document = this._targetActor.window.document;
 
     // Pass the callback to setSuppressedEventListener as an EventListener.
-    document.setSuppressedEventListener(callback ? { handleEvent: callback } : null);
+    document.setSuppressedEventListener(
+      callback ? { handleEvent: callback } : null
+    );
   },
 
   _startPickerListeners: function() {
@@ -439,15 +473,11 @@ exports.HighlighterActor = protocol.ActorClassWithSpec(highlighterSpec, {
     this._setSuppressedEventListener(null);
   },
 
-  _highlighterReady: function() {
-    this._inspector.walker.emit("highlighter-ready");
-  },
-
-  _highlighterHidden: function() {
-    this._inspector.walker.emit("highlighter-hide");
-  },
-
   cancelPick: function() {
+    if (this._targetActor.threadActor) {
+      this._targetActor.threadActor.showOverlay();
+    }
+
     if (this._isPicking) {
       this._highlighter.hide();
       this._stopPickerListeners();
@@ -461,116 +491,135 @@ exports.HighlighterActor = protocol.ActorClassWithSpec(highlighterSpec, {
  * A generic highlighter actor class that instantiate a highlighter given its
  * type name and allows to show/hide it.
  */
-exports.CustomHighlighterActor = protocol.ActorClassWithSpec(customHighlighterSpec, {
-  /**
-   * Create a highlighter instance given its typename
-   * The typename must be one of HIGHLIGHTER_CLASSES and the class must
-   * implement constructor(targetActor), show(node), hide(), destroy()
-   */
-  initialize: function(parent, typeName) {
-    protocol.Actor.prototype.initialize.call(this, null);
+exports.CustomHighlighterActor = protocol.ActorClassWithSpec(
+  customHighlighterSpec,
+  {
+    /**
+     * Create a highlighter instance given its typename
+     * The typename must be one of HIGHLIGHTER_CLASSES and the class must
+     * implement constructor(targetActor), show(node), hide(), destroy()
+     */
+    initialize: function(parent, typeName) {
+      protocol.Actor.prototype.initialize.call(this, null);
 
-    this._parent = parent;
+      this._parent = parent;
 
-    const modulePath = highlighterTypes.get(typeName);
-    if (!modulePath) {
-      const list = [...highlighterTypes.keys()];
+      const modulePath = highlighterTypes.get(typeName);
+      if (!modulePath) {
+        const list = [...highlighterTypes.keys()];
 
-      throw new Error(`${typeName} isn't a valid highlighter class (${list})`);
-    }
-
-    const constructor = require("./highlighters/" + modulePath)[typeName];
-    // The assumption is that custom highlighters either need the canvasframe
-    // container to append their elements and thus a non-XUL window or they have
-    // to define a static XULSupported flag that indicates that the highlighter
-    // supports XUL windows. Otherwise, bail out.
-    if (!isXUL(this._parent.targetActor.window) || constructor.XULSupported) {
-      this._highlighterEnv = new HighlighterEnvironment();
-      this._highlighterEnv.initFromTargetActor(parent.targetActor);
-      this._highlighter = new constructor(this._highlighterEnv);
-      if (this._highlighter.on) {
-        this._highlighter.on("highlighter-event", this._onHighlighterEvent.bind(this));
+        throw new Error(
+          `${typeName} isn't a valid highlighter class (${list})`
+        );
       }
-    } else {
-      throw new Error("Custom " + typeName +
-        "highlighter cannot be created in a XUL window");
-    }
-  },
 
-  get conn() {
-    return this._parent && this._parent.conn;
-  },
-
-  destroy: function() {
-    protocol.Actor.prototype.destroy.call(this);
-    this.finalize();
-    this._parent = null;
-  },
-
-  release: function() {},
-
-  /**
-   * Show the highlighter.
-   * This calls through to the highlighter instance's |show(node, options)|
-   * method.
-   *
-   * Most custom highlighters are made to highlight DOM nodes, hence the first
-   * NodeActor argument (NodeActor as in
-   * devtools/server/actor/inspector).
-   * Note however that some highlighters use this argument merely as a context
-   * node: The SelectHighlighter for instance uses it as a base node to run the
-   * provided CSS selector on.
-   *
-   * @param {NodeActor} The node to be highlighted
-   * @param {Object} Options for the custom highlighter
-   * @return {Boolean} True, if the highlighter has been successfully shown
-   * (FF41+)
-   */
-  show: function(node, options) {
-    if (!this._highlighter) {
-      return null;
-    }
-
-    const rawNode = node && node.rawNode;
-
-    return this._highlighter.show(rawNode, options);
-  },
-
-  /**
-   * Hide the highlighter if it was shown before
-   */
-  hide: function() {
-    if (this._highlighter) {
-      this._highlighter.hide();
-    }
-  },
-
-  /**
-   * Upon receiving an event from the highlighter, forward it to the client.
-   */
-  _onHighlighterEvent: function(data) {
-    this.emit("highlighter-event", data);
-  },
-
-  /**
-   * Kill this actor. This method is called automatically just before the actor
-   * is destroyed.
-   */
-  finalize: function() {
-    if (this._highlighter) {
-      if (this._highlighter.off) {
-        this._highlighter.off("highlighter-event", this._onHighlighterEvent.bind(this));
+      const constructor = require("./highlighters/" + modulePath)[typeName];
+      // The assumption is that custom highlighters either need the canvasframe
+      // container to append their elements and thus a non-XUL window or they have
+      // to define a static XULSupported flag that indicates that the highlighter
+      // supports XUL windows. Otherwise, bail out.
+      if (!isXUL(this._parent.targetActor.window) || constructor.XULSupported) {
+        this._highlighterEnv = new HighlighterEnvironment();
+        this._highlighterEnv.initFromTargetActor(parent.targetActor);
+        this._highlighter = new constructor(this._highlighterEnv);
+        if (this._highlighter.on) {
+          this._highlighter.on(
+            "highlighter-event",
+            this._onHighlighterEvent.bind(this)
+          );
+        }
+      } else {
+        throw new Error(
+          "Custom " + typeName + "highlighter cannot be created in a XUL window"
+        );
       }
-      this._highlighter.destroy();
-      this._highlighter = null;
-    }
+    },
 
-    if (this._highlighterEnv) {
-      this._highlighterEnv.destroy();
-      this._highlighterEnv = null;
-    }
-  },
-});
+    get conn() {
+      return this._parent && this._parent.conn;
+    },
+
+    destroy: function() {
+      protocol.Actor.prototype.destroy.call(this);
+      this.finalize();
+      this._parent = null;
+    },
+
+    release: function() {},
+
+    /**
+     * Get current instance of the highlighter object.
+     */
+    get instance() {
+      return this._highlighter;
+    },
+
+    /**
+     * Show the highlighter.
+     * This calls through to the highlighter instance's |show(node, options)|
+     * method.
+     *
+     * Most custom highlighters are made to highlight DOM nodes, hence the first
+     * NodeActor argument (NodeActor as in
+     * devtools/server/actor/inspector).
+     * Note however that some highlighters use this argument merely as a context
+     * node: The SelectHighlighter for instance uses it as a base node to run the
+     * provided CSS selector on.
+     *
+     * @param {NodeActor} The node to be highlighted
+     * @param {Object} Options for the custom highlighter
+     * @return {Boolean} True, if the highlighter has been successfully shown
+     * (FF41+)
+     */
+    show: function(node, options) {
+      if (!this._highlighter) {
+        return null;
+      }
+
+      const rawNode = node && node.rawNode;
+
+      return this._highlighter.show(rawNode, options);
+    },
+
+    /**
+     * Hide the highlighter if it was shown before
+     */
+    hide: function() {
+      if (this._highlighter) {
+        this._highlighter.hide();
+      }
+    },
+
+    /**
+     * Upon receiving an event from the highlighter, forward it to the client.
+     */
+    _onHighlighterEvent: function(data) {
+      this.emit("highlighter-event", data);
+    },
+
+    /**
+     * Kill this actor. This method is called automatically just before the actor
+     * is destroyed.
+     */
+    finalize: function() {
+      if (this._highlighter) {
+        if (this._highlighter.off) {
+          this._highlighter.off(
+            "highlighter-event",
+            this._onHighlighterEvent.bind(this)
+          );
+        }
+        this._highlighter.destroy();
+        this._highlighter = null;
+      }
+
+      if (this._highlighterEnv) {
+        this._highlighterEnv.destroy();
+        this._highlighterEnv = null;
+      }
+    },
+  }
+);
 
 /**
  * The HighlighterEnvironment is an object that holds all the required data for
@@ -585,9 +634,13 @@ exports.CustomHighlighterActor = protocol.ActorClassWithSpec(customHighlighterSp
  * useful for when a highlighter is used outside of the debugger server context.
  */
 function HighlighterEnvironment() {
-  this.relayTargetActorWindowReady = this.relayTargetActorWindowReady.bind(this);
+  this.relayTargetActorWindowReady = this.relayTargetActorWindowReady.bind(
+    this
+  );
   this.relayTargetActorNavigate = this.relayTargetActorNavigate.bind(this);
-  this.relayTargetActorWillNavigate = this.relayTargetActorWillNavigate.bind(this);
+  this.relayTargetActorWillNavigate = this.relayTargetActorWillNavigate.bind(
+    this
+  );
 
   EventEmitter.decorate(this);
 }
@@ -641,9 +694,11 @@ HighlighterEnvironment.prototype = {
       },
     };
 
-    this.webProgress.addProgressListener(this.listener,
+    this.webProgress.addProgressListener(
+      this.listener,
       Ci.nsIWebProgress.NOTIFY_STATE_WINDOW |
-      Ci.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
+        Ci.nsIWebProgress.NOTIFY_STATE_DOCUMENT
+    );
   },
 
   get isInitialized() {
@@ -656,8 +711,10 @@ HighlighterEnvironment.prototype = {
 
   get window() {
     if (!this.isInitialized) {
-      throw new Error("Initialize HighlighterEnvironment with a targetActor " +
-        "or window first");
+      throw new Error(
+        "Initialize HighlighterEnvironment with a targetActor " +
+          "or window first"
+      );
     }
     const win = this._targetActor ? this._targetActor.window : this._win;
 
@@ -669,14 +726,16 @@ HighlighterEnvironment.prototype = {
   },
 
   get docShell() {
-    return this.window &&
-           this.window.docShell;
+    return this.window && this.window.docShell;
   },
 
   get webProgress() {
-    return this.docShell &&
-           this.docShell.QueryInterface(Ci.nsIInterfaceRequestor)
-                        .getInterface(Ci.nsIWebProgress);
+    return (
+      this.docShell &&
+      this.docShell
+        .QueryInterface(Ci.nsIInterfaceRequestor)
+        .getInterface(Ci.nsIWebProgress)
+    );
   },
 
   /**

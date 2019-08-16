@@ -105,7 +105,7 @@ const nodeSpec = generateActorSpec({
       response: {},
     },
     getImageData: {
-      request: {maxDim: Arg(0, "nullable:number")},
+      request: { maxDim: Arg(0, "nullable:number") },
       response: RetVal("imageData"),
     },
     getEventListenerInfo: {
@@ -121,7 +121,7 @@ const nodeSpec = generateActorSpec({
       response: {},
     },
     getFontFamilyDataURL: {
-      request: {font: Arg(0, "string"), fillStyle: Arg(1, "nullable:string")},
+      request: { font: Arg(0, "string"), fillStyle: Arg(1, "nullable:string") },
       response: RetVal("imageData"),
     },
     getClosestBackgroundColor: {
@@ -133,6 +133,16 @@ const nodeSpec = generateActorSpec({
     getOwnerGlobalDimensions: {
       request: {},
       response: RetVal("windowDimensions"),
+    },
+    connectToRemoteFrame: {
+      request: {},
+      // We are passing a target actor form here.
+      // As we are manually fetching the form JSON via DebuggerServer.connectToFrame,
+      // we are not instanciating a protocol.js front class and can't use proper type
+      // here and have automatic marshalling.
+      //
+      // Alex: Can we do something to address that??
+      response: RetVal("json"),
     },
   },
 });

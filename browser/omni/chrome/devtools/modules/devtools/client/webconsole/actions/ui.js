@@ -15,14 +15,19 @@ const {
   PREFS,
   REVERSE_SEARCH_INPUT_TOGGLE,
   SELECT_NETWORK_MESSAGE_TAB,
+  SHOW_CONTENT_MESSAGES_TOGGLE,
   SHOW_OBJECT_IN_SIDEBAR,
   SIDEBAR_CLOSE,
   SPLIT_CONSOLE_CLOSE_BUTTON_TOGGLE,
   TIMESTAMPS_TOGGLE,
+  WARNING_GROUPS_TOGGLE,
+  FILTERBAR_DISPLAY_MODE_SET,
+  EDITOR_TOGGLE,
+  EDITOR_SET_WIDTH,
 } = require("devtools/client/webconsole/constants");
 
 function persistToggle() {
-  return ({dispatch, getState, prefsService}) => {
+  return ({ dispatch, getState, prefsService }) => {
     dispatch({
       type: PERSIST_TOGGLE,
     });
@@ -31,10 +36,30 @@ function persistToggle() {
   };
 }
 
+function contentMessagesToggle() {
+  return ({ dispatch, getState, prefsService }) => {
+    dispatch({
+      type: SHOW_CONTENT_MESSAGES_TOGGLE,
+    });
+    const uiState = getAllUi(getState());
+    prefsService.setBoolPref(
+      PREFS.UI.CONTENT_MESSAGES,
+      uiState.showContentMessages
+    );
+  };
+}
+
 function timestampsToggle(visible) {
   return {
     type: TIMESTAMPS_TOGGLE,
     visible,
+  };
+}
+
+function warningGroupsToggle(value) {
+  return {
+    type: WARNING_GROUPS_TOGGLE,
+    value,
   };
 }
 
@@ -51,7 +76,7 @@ function initialize() {
   };
 }
 
-function sidebarClose(show) {
+function sidebarClose() {
   return {
     type: SIDEBAR_CLOSE,
   };
@@ -64,6 +89,26 @@ function splitConsoleCloseButtonToggle(shouldDisplayButton) {
   };
 }
 
+function editorToggle() {
+  return ({ dispatch, getState, prefsService }) => {
+    dispatch({
+      type: EDITOR_TOGGLE,
+    });
+    const uiState = getAllUi(getState());
+    prefsService.setBoolPref(PREFS.UI.EDITOR, uiState.editor);
+  };
+}
+
+function setEditorWidth(width) {
+  return ({ dispatch, prefsService }) => {
+    dispatch({
+      type: EDITOR_SET_WIDTH,
+      width,
+    });
+    prefsService.setIntPref(PREFS.UI.EDITOR_WIDTH, width);
+  };
+}
+
 /**
  * Dispatches a SHOW_OBJECT_IN_SIDEBAR action, with a grip property corresponding to the
  * {actor} parameter in the {messageId} message.
@@ -72,7 +117,7 @@ function splitConsoleCloseButtonToggle(shouldDisplayButton) {
  * @param {String} messageId: id of the message containing the {actor} parameter.
  */
 function showMessageObjectInSidebar(actor, messageId) {
-  return ({dispatch, getState}) => {
+  return ({ dispatch, getState }) => {
     const { parameters } = getMessage(getState(), messageId);
     if (Array.isArray(parameters)) {
       for (const parameter of parameters) {
@@ -92,21 +137,33 @@ function showObjectInSidebar(grip) {
   };
 }
 
-function reverseSearchInputToggle({initialValue} = {}) {
+function reverseSearchInputToggle({ initialValue } = {}) {
   return {
     type: REVERSE_SEARCH_INPUT_TOGGLE,
     initialValue,
   };
 }
 
+function filterBarDisplayModeSet(displayMode) {
+  return {
+    type: FILTERBAR_DISPLAY_MODE_SET,
+    displayMode,
+  };
+}
+
 module.exports = {
+  contentMessagesToggle,
+  editorToggle,
+  filterBarDisplayModeSet,
   initialize,
   persistToggle,
   reverseSearchInputToggle,
   selectNetworkMessageTab,
+  setEditorWidth,
   showMessageObjectInSidebar,
   showObjectInSidebar,
   sidebarClose,
   splitConsoleCloseButtonToggle,
   timestampsToggle,
+  warningGroupsToggle,
 };

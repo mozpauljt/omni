@@ -9,12 +9,14 @@
   --in-content-page-color: #0c0c0d;
   --in-content-page-background: #f9f9fa;
   --in-content-text-color: var(--grey-90);
+  --in-content-deemphasized-text: var(--grey-60);
   --in-content-selected-text: #fff;
   --in-content-box-background: #fff;
   --in-content-box-background-odd: rgba(12, 12, 13, 0.05); /* grey 90 a05 */
   --in-content-box-background-hover: #ededf0; /* grey 20 */
   --in-content-box-background-active: #d7d7db; /* grey 30 */
-  --in-content-box-border-color: var(--grey-90-a40);
+  --in-content-box-border-color: var(--grey-90-a30);
+  --in-content-box-info-background: var(--grey-20);
   --in-content-item-hover: rgba(69, 161, 255, 0.2); /* blue 40 a20 */
   --in-content-item-selected: #0a84ff;
   --in-content-border-highlight: #0a84ff;
@@ -46,8 +48,8 @@
   --in-content-table-background: #ebebeb;
   --in-content-table-border-dark-color: #d1d1d1;
   --in-content-table-header-background: #0a84ff;
+  --in-content-dialog-header-background: #f1f1f1;
 
-  --panel-border-color: var(--grey-90-a20);
   --panel-border-radius: 2px; /* This is overridden on Windows */
 
   /* The photon animation curve */
@@ -62,20 +64,33 @@
   --blue-80: #002275;
   --grey-20: #ededf0;
   --grey-30: #d7d7db;
-  --grey-50: #737373;
+  --grey-40: #b1b1b3;
   --grey-60: #4a4a4f;
   --grey-90: #0c0c0d;
   --grey-90-a10: rgba(12, 12, 13, 0.1);
   --grey-90-a20: rgba(12, 12, 13, 0.2);
   --grey-90-a30: rgba(12, 12, 13, 0.3);
-  --grey-90-a40: rgba(12, 12, 13, 0.4);
   --grey-90-a50: rgba(12, 12, 13, 0.5);
+  --grey-90-a60: rgba(12, 12, 13, 0.6);
+  --green-50: #30e60b;
+  --green-60: #12bc00;
+  --green-70: #058b00;
+  --green-80: #006504;
+  --green-90: #003706;
+  --orange-50: #ff9400;
   --purple-70: #6200a4;
-  --purple-70-a40: rgba(98, 0, 164, 0.4);
   --red-50: #ff0039;
   --red-50-a30: rgba(255, 0, 57, 0.3);
   --red-60: #d70022;
+  --red-70: #a4000f;
+  --red-80: #5a0002;
+  --red-90: #3e0200;
+  --yellow-10: #ffff98;
   --yellow-50: #ffe900;
+  --yellow-60: #d7b600;
+  --yellow-60-a30: rgba(215, 182, 0, 0.3);
+  --yellow-70: #a47f00;
+  --yellow-80: #715100;
   --yellow-90: #3e2800;
 
   --shadow-10: 0 1px 4px var(--grey-90-a10);
@@ -86,6 +101,52 @@
   --card-outline-color: var(--grey-30);
   --card-shadow-hover: var(--card-shadow), 0 0 0 5px var(--card-outline-color);
   --card-shadow-focus: 0 0 0 2px var(--blue-50), 0 0 0 6px var(--blue-50-a30);
+}
+
+@supports -moz-bool-pref("browser.in-content.dark-mode") {
+@media (prefers-color-scheme: dark) {
+  :root {
+    --in-content-page-background: #2A2A2E;
+    --in-content-page-color: rgb(249, 249, 250);
+    --in-content-text-color: var(--in-content-page-color);
+    --in-content-deemphasized-text: var(--grey-40);
+    --in-content-box-background: #202023;
+    --in-content-box-background-hover: rgba(249,249,250,0.15);
+    --in-content-box-background-active: rgba(249,249,250,0.2);
+    --in-content-box-background-odd: rgba(249,249,250,0.05);
+    --in-content-box-info-background: rgba(249,249,250,0.15);
+
+    --in-content-border-color: rgba(249,249,250,0.2);
+    --in-content-border-hover: rgba(249,249,250,0.3);
+    --in-content-box-border-color: rgba(249,249,250,0.2);
+
+    --in-content-button-background: rgba(249,249,250,0.1);
+    --in-content-button-background-hover: rgba(249,249,250,0.15);
+    --in-content-button-background-active: rgba(249,249,250,0.2);
+
+    --in-content-category-background-hover: rgba(249,249,250,0.1);
+    --in-content-category-background-active: rgba(249,249,250,0.15);
+    --in-content-category-background-selected-hover: rgba(249,249,250,0.15);
+    --in-content-category-background-selected-active: rgba(249,249,250,0.2);
+
+    --in-content-table-background: #202023;
+    --in-content-table-border-dark-color: rgba(249,249,250,0.2);
+    --in-content-table-header-background: #002b57;
+    --in-content-dialog-header-background: rgba(249,249,250,0.05);
+
+    --in-content-category-text-selected: var(--blue-40);
+    --in-content-category-text-selected-active: var(--blue-50);
+    --in-content-link-color: var(--blue-40);
+    --in-content-link-color-hover: var(--blue-50);
+    --in-content-link-color-active: var(--blue-60);
+
+    --in-content-tab-color: var(--in-content-page-color);
+
+    --card-outline-color: var(--grey-60);
+
+    scrollbar-color: rgba(249,249,250,.4) rgba(20,20,25,.3);
+  }
+}
 }
 
 html|html,
@@ -169,6 +230,7 @@ xul|tab[selected] {
 
 html|button {
   padding: 3px;
+  font: inherit;
 }
 
 /* xul buttons and menulists */
@@ -219,11 +281,14 @@ xul|menulist:-moz-focusring {
 }
 
 html|select:not([size]):not([multiple]) {
-  background-image: url("chrome://global/skin/in-content/dropdown.svg#dropdown");
+  background-image: url("chrome://global/skin/icons/arrow-dropdown-12.svg");
   background-position: right 3px center;
   background-repeat: no-repeat;
-  background-size: auto 18px;
+  background-size: auto 12px;
+  -moz-context-properties: fill;
+  fill: currentColor;
   font-size: inherit;
+  line-height: 2.1;
   padding-inline-start: 5px;
   padding-inline-end: 24px;
   text-overflow: ellipsis;
@@ -231,6 +296,11 @@ html|select:not([size]):not([multiple]) {
 
 html|select:not([size]):not([multiple]):dir(rtl) {
   background-position: left 3px center;
+}
+
+html|select:not([size]):not([multiple]) > html|option {
+  background-color: var(--in-content-box-background);
+  color: var(--in-content-text-color);
 }
 
 html|button:enabled:hover,
@@ -260,21 +330,37 @@ xul|menulist[disabled="true"] {
 }
 
 html|button[autofocus],
+html|button[type="submit"],
 *|button.primary {
   background-color: var(--in-content-primary-button-background);
   color: var(--in-content-selected-text) !important;
 }
 
 html|button[autofocus]:enabled:hover,
+html|button[type="submit"]:enabled:hover,
 html|button.primary:enabled:hover,
 xul|button.primary:not([disabled="true"]):hover {
   background-color: var(--in-content-primary-button-background-hover);
 }
 
 html|button[autofocus]:enabled:hover:active,
+html|button[type="submit"]:enabled:hover:active,
 html|button.primary:enabled:hover:active,
 xul|button.primary:not([disabled="true"]):hover:active {
   background-color: var(--in-content-primary-button-background-active);
+}
+
+html|button.danger-button {
+  background-color: var(--red-60);
+  color: white !important;
+}
+
+html|button.danger-button:enabled:hover {
+  background-color: var(--red-70);
+}
+
+html|button.danger-button:enabled:hover:active {
+  background-color: var(--red-80);
 }
 
 html|button.ghost-button {
@@ -311,18 +397,14 @@ xul|*.menulist-dropmarker {
   padding: 0;
   border: none;
   background-color: transparent;
-  list-style-image: url("chrome://global/skin/in-content/dropdown.svg");
+  list-style-image: url("chrome://global/skin/icons/arrow-dropdown-12.svg");
   -moz-context-properties: fill;
-  fill: -moz-DialogText;
+  fill: currentColor;
 }
 
-xul|*.menulist-dropmarker > xul|*.dropmarker-icon {
-  width: 18px;
-  height: 18px;
-}
-
-xul|menulist[disabled="true"] > xul|*.menulist-dropmarker {
-  fill: GrayText;
+xul|*.menulist-dropmarker::part(icon) {
+  width: 12px;
+  height: 12px;
 }
 
 xul|menulist > xul|menupopup {
@@ -376,6 +458,8 @@ xul|menulist > xul|menupopup xul|menuseparator {
 html|input[type="email"],
 html|input[type="tel"],
 html|input[type="text"],
+html|input[type="password"],
+html|input[type="url"],
 html|input[type="number"],
 html|textarea,
 xul|textbox {
@@ -397,16 +481,21 @@ xul|textbox {
 html|input[type="email"],
 html|input[type="tel"],
 html|input[type="text"],
+html|input[type="password"],
+html|input[type="url"],
 html|input[type="number"],
 html|textarea {
   font-family: inherit;
   font-size: inherit;
   padding: 5px 8px;
+  margin: 2px 4px;
 }
 
 html|input[type="email"]:enabled:not(:focus):hover,
 html|input[type="tel"]:enabled:not(:focus):hover,
 html|input[type="text"]:enabled:not(:focus):hover,
+html|input[type="password"]:enabled:not(:focus):hover,
+html|input[type="url"]:enabled:not(:focus):hover,
 html|input[type="number"]:enabled:not(:focus):hover,
 html|textarea:enabled:not(:focus):hover,
 xul|textbox:not([disabled="true"]):not([focused]):hover {
@@ -416,6 +505,8 @@ xul|textbox:not([disabled="true"]):not([focused]):hover {
 html|input[type="email"]:focus,
 html|input[type="tel"]:focus,
 html|input[type="text"]:focus,
+html|input[type="password"]:focus,
+html|input[type="url"]:focus,
 html|input[type="number"]:focus,
 html|textarea:focus,
 xul|textbox[focused] {
@@ -427,6 +518,8 @@ xul|textbox[focused] {
 html|input[type="email"]:-moz-ui-invalid,
 html|input[type="tel"]:-moz-ui-invalid,
 html|input[type="text"]:-moz-ui-invalid,
+html|input[type="password"]:-moz-ui-invalid,
+html|input[type="url"]:-moz-ui-invalid,
 html|input[type="number"]:-moz-ui-invalid,
 html|textarea:-moz-ui-invalid {
   border-color: var(--in-content-border-invalid);
@@ -438,6 +531,8 @@ html|textarea:-moz-ui-invalid {
 html|input[type="email"]:-moz-ui-invalid:focus,
 html|input[type="tel"]:-moz-ui-invalid:focus,
 html|input[type="text"]:-moz-ui-invalid:focus,
+html|input[type="password"]:-moz-ui-invalid:focus,
+html|input[type="url"]:-moz-ui-invalid:focus,
 html|input[type="number"]:-moz-ui-invalid:focus,
 html|textarea:-moz-ui-invalid:focus {
   box-shadow: 0 0 0 3px var(--in-content-border-invalid-shadow);
@@ -446,6 +541,8 @@ html|textarea:-moz-ui-invalid:focus {
 html|input[type="email"]:disabled,
 html|input[type="tel"]:disabled,
 html|input[type="text"]:disabled,
+html|input[type="password"]:disabled,
+html|input[type="url"]:disabled,
 html|input[type="number"]:disabled,
 html|textarea:disabled,
 xul|textbox[disabled="true"] {
@@ -516,8 +613,14 @@ html|input[type="checkbox"]:checked {
   fill: #2292d0;
 }
 
-xul|checkbox[disabled="true"] > xul|*.checkbox-check,
-html|input[type="checkbox"]:disabled {
+xul|checkbox[disabled="true"],
+xul|label[disabled="true"] {
+  color: inherit;
+}
+
+xul|checkbox[disabled="true"],
+html|input[type="checkbox"]:disabled,
+xul|label[disabled="true"] {
   opacity: 0.5;
 }
 
@@ -556,7 +659,8 @@ xul|*.radio-check[selected] {
   fill: #2292d0;
 }
 
-xul|radio[disabled="true"] > xul|*.radio-check {
+xul|radio[disabled="true"] {
+  color: inherit;
   opacity: 0.5;
 }
 
@@ -770,13 +874,13 @@ xul|treecol:not([hideheader="true"]):not(:first-child),
 xul|treecolpicker {
   border-inline-start-width: 1px;
   border-inline-start-style: solid;
-  border-image: linear-gradient(transparent 0%, transparent 20%, #c1c1c1 20%, #c1c1c1 80%, transparent 80%, transparent 100%) 1 1;
+  border-image: linear-gradient(transparent 0%, transparent 20%, var(--in-content-box-border-color) 20%, var(--in-content-box-border-color) 80%, transparent 80%, transparent 100%) 1 1;
 }
 
 xul|treecol[sortDirection]:not([hideheader="true"]) > xul|*.treecol-sortdirection {
   list-style-image: url("chrome://global/skin/in-content/dropdown.svg");
   -moz-context-properties: fill;
-  fill: -moz-DialogText;
+  fill: currentColor;
   width: 18px;
   height: 18px;
 }
@@ -805,9 +909,8 @@ xul|treechildren::-moz-tree-image(selected) {
 
 /* Message bars */
 .message-bar {
-  background-color: var(--grey-20);
+  background-color: var(--in-content-box-info-background);
   border-radius: 4px;
-  color: var(--grey-90);
   min-height: 32px;
   -moz-box-align: center;
   padding: 4px;
@@ -857,6 +960,11 @@ xul|treechildren::-moz-tree-image(selected) {
   list-style-image: url("chrome://browser/skin/warning.svg");
 }
 
+input[type="text"][warning]:enabled:not(:focus) {
+  border-color: var(--yellow-60);
+  box-shadow: 0 0 0 1px var(--yellow-60), 0 0 0 4px var(--yellow-60-a30);
+}
+
 .card {
   background: var(--in-content-box-background);
   /* Needed for high-contrast where the border will appear. */
@@ -869,7 +977,7 @@ xul|treechildren::-moz-tree-image(selected) {
   transition: box-shadow 150ms;
 }
 
-.card:hover {
+.card:not(.card-no-hover):hover {
   box-shadow: var(--card-shadow-hover);
 }
 
@@ -964,14 +1072,27 @@ xul|treechildren::-moz-tree-image(selected) {
   }
 }
 
+@supports -moz-bool-pref("browser.in-content.dark-mode") {
+@media (prefers-color-scheme: dark) {
+  /* Don't apply scrollbar-color since it removes the native scrollbar style on Linux */
+  :root {
+    scrollbar-color: initial;
+  }
+}
+}
+
 xul|tab[visuallyselected] {
   /* Override styles for tab[selected] from
      toolkit/themes/linux/global/tabbox.css */
   margin-bottom: 0;
 }
 
+/* Overriding appearance also avoids incorrect selection background color with
+   light text. */
 xul|button > xul|*.button-box,
-xul|menulist > xul|*.menulist-label-box {
+xul|menulist > xul|*.menulist-label-box,
+xul|*.radio-label-box,
+xul|*.checkbox-label-box {
   -moz-appearance: none;
 }
 
@@ -997,10 +1118,6 @@ xul|checkbox[checked] > xul|*.checkbox-check,
 xul|*.radio-check[selected] {
   background-color: -moz-field;
   fill: -moz-fieldText;
-}
-
-xul|*.radio-label-box {
-  -moz-appearance: none;
 }
 
 xul|menulist:-moz-focusring > xul|*.menulist-label-box {

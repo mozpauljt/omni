@@ -8,22 +8,22 @@
 
 const DevToolsUtils = require("devtools/shared/DevToolsUtils");
 const LongStringClient = require("devtools/shared/client/long-string-client");
-const { FrontClassWithSpec, registerFront } = require("devtools/shared/protocol");
+const {
+  FrontClassWithSpec,
+  registerFront,
+} = require("devtools/shared/protocol");
 const { webconsoleSpec } = require("devtools/shared/specs/webconsole");
 
 /**
  * A WebConsoleClient is used as a front end for the WebConsoleActor that is
  * created on the server, hiding implementation details.
  *
- * @param object debuggerClient
+ * @param object client
  *        The DebuggerClient instance we live for.
- * @param object response
- *        The response packet received from the "startListeners" request sent to
- *        the WebConsoleActor.
  */
 class WebConsoleFront extends FrontClassWithSpec(webconsoleSpec) {
-  constructor(client) {
-    super(client);
+  constructor(client, targetFront, parentFront) {
+    super(client, targetFront, parentFront);
     this._client = client;
     this.traits = {};
     this._longStrings = {};
@@ -46,7 +46,7 @@ class WebConsoleFront extends FrontClassWithSpec(webconsoleSpec) {
 
     this.on("evaluationResult", this.onEvaluationResult);
     this.on("serverNetworkEvent", this.onNetworkEvent);
-    this._client.addListener("networkEventUpdate", this.onNetworkEventUpdate);
+    this._client.on("networkEventUpdate", this.onNetworkEventUpdate);
   }
 
   getNetworkRequest(actorId) {
@@ -96,6 +96,8 @@ class WebConsoleFront extends FrontClassWithSpec(webconsoleSpec) {
       fromServiceWorker: actor.fromServiceWorker,
       isThirdPartyTrackingResource: actor.isThirdPartyTrackingResource,
       referrerPolicy: actor.referrerPolicy,
+      blockedReason: actor.blockedReason,
+      channelId: actor.channelId,
     };
     this._networkRequests.set(actor.actor, networkInfo);
 
@@ -112,7 +114,7 @@ class WebConsoleFront extends FrontClassWithSpec(webconsoleSpec) {
    * @param object packet
    *        The message received from the server.
    */
-  _onNetworkEventUpdate(type, packet) {
+  _onNetworkEventUpdate(packet) {
     const networkInfo = this.getNetworkRequest(packet.from);
     if (!networkInfo) {
       return;
@@ -170,20 +172,6 @@ class WebConsoleFront extends FrontClassWithSpec(webconsoleSpec) {
    * @param object [options={}]
    *        Options for evaluation:
    *
-   *        - bindObjectActor: an ObjectActor ID. The OA holds a reference to
-   *        a Debugger.Object that wraps a content object. This option allows
-   *        you to bind |_self| to the D.O of the given OA, during string
-   *        evaluation.
-   *
-   *        See: Debugger.Object.executeInGlobalWithBindings() for information
-   *        about bindings.
-   *
-   *        Use case: the variable view needs to update objects and it does so
-   *        by knowing the ObjectActor it inspects and binding |_self| to the
-   *        D.O of the OA. As such, variable view sends strings like these for
-   *        eval:
-   *          _self["prop"] = value;
-   *
    *        - frameActor: a FrameActor ID. The FA holds a reference to
    *        a Debugger.Frame. This option allows you to evaluate the string in
    *        the frame of the given FA.
@@ -202,7 +190,6 @@ class WebConsoleFront extends FrontClassWithSpec(webconsoleSpec) {
   evaluateJS(string, opts = {}) {
     const options = {
       text: string,
-      bindObjectActor: opts.bindObjectActor,
       frameActor: opts.frameActor,
       url: opts.url,
       selectedNodeActor: opts.selectedNodeActor,
@@ -218,7 +205,6 @@ class WebConsoleFront extends FrontClassWithSpec(webconsoleSpec) {
   evaluateJSAsync(string, opts = {}) {
     const options = {
       text: string,
-      bindObjectActor: opts.bindObjectActor,
       frameActor: opts.frameActor,
       url: opts.url,
       selectedNodeActor: opts.selectedNodeActor,
@@ -227,11 +213,11 @@ class WebConsoleFront extends FrontClassWithSpec(webconsoleSpec) {
     };
 
     return new Promise(async (resolve, reject) => {
-      const response = await super.evaluateJSAsync(options);
-      // Null check this in case the client has been detached while waiting
-      // for a response.
+      const { resultID } = await super.evaluateJSAsync(options);
+      // Null check this in case the client has been detached while sending
+      // the one way request
       if (this.pendingEvaluationResults) {
-        this.pendingEvaluationResults.set(response.resultID, resp => {
+        this.pendingEvaluationResults.set(resultID, resp => {
           if (resp.error) {
             reject(resp);
           } else {
@@ -254,9 +240,12 @@ class WebConsoleFront extends FrontClassWithSpec(webconsoleSpec) {
       onResponse(packet);
       this.pendingEvaluationResults.delete(packet.resultID);
     } else {
-      DevToolsUtils.reportException("onEvaluationResult",
+      DevToolsUtils.reportException(
+        "onEvaluationResult",
         "No response handler for an evaluateJSAsync result (resultID: " +
-                                    packet.resultID + ")");
+          packet.resultID +
+          ")"
+      );
     }
   }
 
@@ -486,8 +475,7 @@ class WebConsoleFront extends FrontClassWithSpec(webconsoleSpec) {
     }
     this.off("evaluationResult", this.onEvaluationResult);
     this.off("serverNetworkEvent", this.onNetworkEvent);
-    this._client.removeListener("networkEventUpdate",
-                                this.onNetworkEventUpdate);
+    this._client.off("networkEventUpdate", this.onNetworkEventUpdate);
     this._longStrings = null;
     this._client = null;
     this.pendingEvaluationResults.clear();
@@ -530,8 +518,10 @@ class WebConsoleFront extends FrontClassWithSpec(webconsoleSpec) {
 
       longStringClient.substring(initial.length, length, response => {
         if (response.error) {
-          DevToolsUtils.reportException("getString",
-              response.error + ": " + response.message);
+          DevToolsUtils.reportException(
+            "getString",
+            response.error + ": " + response.message
+          );
           reject(response);
         }
         resolve(initial + response.substring);

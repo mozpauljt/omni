@@ -28,7 +28,7 @@ exports.CSS_PROPERTIES = {
       "animation-play-state"
     ],
     "supports": [
-      10
+      "timing-function"
     ],
     "values": [
       "alternate",
@@ -166,7 +166,7 @@ exports.CSS_PROPERTIES = {
       "animation-timing-function"
     ],
     "supports": [
-      10
+      "timing-function"
     ],
     "values": [
       "cubic-bezier",
@@ -226,9 +226,7 @@ exports.CSS_PROPERTIES = {
       "button-arrow-next",
       "button-arrow-previous",
       "button-arrow-up",
-      "button-bevel",
       "button-focus",
-      "caret",
       "checkbox",
       "checkbox-container",
       "checkbox-label",
@@ -240,7 +238,6 @@ exports.CSS_PROPERTIES = {
       "initial",
       "inner-spin-button",
       "listbox",
-      "listitem",
       "menuarrow",
       "menubar",
       "menucheckbox",
@@ -250,7 +247,6 @@ exports.CSS_PROPERTIES = {
       "menulist",
       "menulist-button",
       "menulist-text",
-      "menulist-textfield",
       "menupopup",
       "menuradio",
       "menuseparator",
@@ -350,7 +346,7 @@ exports.CSS_PROPERTIES = {
       "border-inline-end-width"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -385,7 +381,7 @@ exports.CSS_PROPERTIES = {
       "border-inline-end-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -450,7 +446,7 @@ exports.CSS_PROPERTIES = {
       "border-image-width"
     ],
     "supports": [
-      4
+      "gradient"
     ],
     "values": [
       "-moz-element",
@@ -490,7 +486,7 @@ exports.CSS_PROPERTIES = {
       "border-inline-start-width"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -525,7 +521,7 @@ exports.CSS_PROPERTIES = {
       "border-inline-start-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -739,7 +735,7 @@ exports.CSS_PROPERTIES = {
       "column-rule-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -774,7 +770,7 @@ exports.CSS_PROPERTIES = {
       "column-rule-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -1269,7 +1265,7 @@ exports.CSS_PROPERTIES = {
       "transition-delay"
     ],
     "supports": [
-      10
+      "timing-function"
     ],
     "values": [
       "all",
@@ -1336,7 +1332,7 @@ exports.CSS_PROPERTIES = {
       "transition-timing-function"
     ],
     "supports": [
-      10
+      "timing-function"
     ],
     "values": [
       "cubic-bezier",
@@ -1409,7 +1405,7 @@ exports.CSS_PROPERTIES = {
   "-moz-user-select": {
     "isInherited": false,
     "subproperties": [
-      "-moz-user-select"
+      "user-select"
     ],
     "supports": [],
     "values": [
@@ -1536,7 +1532,7 @@ exports.CSS_PROPERTIES = {
       "animation-play-state"
     ],
     "supports": [
-      10
+      "timing-function"
     ],
     "values": [
       "alternate",
@@ -1674,7 +1670,7 @@ exports.CSS_PROPERTIES = {
       "animation-timing-function"
     ],
     "supports": [
-      10
+      "timing-function"
     ],
     "values": [
       "cubic-bezier",
@@ -1734,9 +1730,7 @@ exports.CSS_PROPERTIES = {
       "button-arrow-next",
       "button-arrow-previous",
       "button-arrow-up",
-      "button-bevel",
       "button-focus",
-      "caret",
       "checkbox",
       "checkbox-container",
       "checkbox-label",
@@ -1748,7 +1742,6 @@ exports.CSS_PROPERTIES = {
       "initial",
       "inner-spin-button",
       "listbox",
-      "listitem",
       "menuarrow",
       "menubar",
       "menucheckbox",
@@ -1758,7 +1751,6 @@ exports.CSS_PROPERTIES = {
       "menulist",
       "menulist-button",
       "menulist-text",
-      "menulist-textfield",
       "menupopup",
       "menuradio",
       "menuseparator",
@@ -1935,7 +1927,7 @@ exports.CSS_PROPERTIES = {
       "border-image-width"
     ],
     "supports": [
-      4
+      "gradient"
     ],
     "values": [
       "-moz-element",
@@ -2108,7 +2100,7 @@ exports.CSS_PROPERTIES = {
       "box-shadow"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -2317,6 +2309,20 @@ exports.CSS_PROPERTIES = {
       "unset"
     ]
   },
+  "-webkit-line-clamp": {
+    "isInherited": false,
+    "subproperties": [
+      "-webkit-line-clamp"
+    ],
+    "supports": [],
+    "values": [
+      "inherit",
+      "initial",
+      "none",
+      "revert",
+      "unset"
+    ]
+  },
   "-webkit-mask": {
     "isInherited": false,
     "subproperties": [
@@ -2331,7 +2337,7 @@ exports.CSS_PROPERTIES = {
       "mask-image"
     ],
     "supports": [
-      4
+      "gradient"
     ],
     "values": [
       "-moz-element",
@@ -2428,7 +2434,7 @@ exports.CSS_PROPERTIES = {
       "mask-image"
     ],
     "supports": [
-      4
+      "gradient"
     ],
     "values": [
       "-moz-element",
@@ -2610,7 +2616,7 @@ exports.CSS_PROPERTIES = {
       "-webkit-text-fill-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -2648,7 +2654,7 @@ exports.CSS_PROPERTIES = {
       "-webkit-text-stroke-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -2673,7 +2679,7 @@ exports.CSS_PROPERTIES = {
       "-webkit-text-stroke-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -2784,7 +2790,7 @@ exports.CSS_PROPERTIES = {
       "transition-delay"
     ],
     "supports": [
-      10
+      "timing-function"
     ],
     "values": [
       "all",
@@ -2851,7 +2857,7 @@ exports.CSS_PROPERTIES = {
       "transition-timing-function"
     ],
     "supports": [
-      10
+      "timing-function"
     ],
     "values": [
       "cubic-bezier",
@@ -2872,7 +2878,7 @@ exports.CSS_PROPERTIES = {
   "-webkit-user-select": {
     "isInherited": false,
     "subproperties": [
-      "-moz-user-select"
+      "user-select"
     ],
     "supports": [],
     "values": [
@@ -2989,6 +2995,8 @@ exports.CSS_PROPERTIES = {
       "border-start-end-radius",
       "border-end-start-radius",
       "border-end-end-radius",
+      "overflow-inline",
+      "overflow-block",
       "margin-block-start",
       "margin-block-end",
       "margin-inline-start",
@@ -3070,19 +3078,17 @@ exports.CSS_PROPERTIES = {
       "animation-play-state",
       "animation-fill-mode",
       "animation-delay",
-      "scroll-snap-points-x",
-      "scroll-snap-points-y",
-      "scroll-snap-destination",
-      "scroll-snap-coordinate",
       "transform",
       "rotate",
       "scale",
       "translate",
       "offset-path",
+      "offset-distance",
+      "offset-rotate",
+      "offset-anchor",
       "scroll-behavior",
       "scroll-snap-align",
-      "scroll-snap-type-x",
-      "scroll-snap-type-y",
+      "scroll-snap-type",
       "overscroll-behavior-x",
       "overscroll-behavior-y",
       "isolation",
@@ -3105,7 +3111,7 @@ exports.CSS_PROPERTIES = {
       "shape-margin",
       "shape-outside",
       "touch-action",
-      "color",
+      "-webkit-line-clamp",
       "column-width",
       "column-count",
       "column-fill",
@@ -3116,10 +3122,12 @@ exports.CSS_PROPERTIES = {
       "content",
       "counter-increment",
       "counter-reset",
+      "counter-set",
       "opacity",
       "box-shadow",
       "clip",
       "filter",
+      "backdrop-filter",
       "mix-blend-mode",
       "font-family",
       "font-style",
@@ -3146,43 +3154,7 @@ exports.CSS_PROPERTIES = {
       "color-adjust",
       "image-rendering",
       "image-orientation",
-      "border-collapse",
-      "empty-cells",
-      "caption-side",
-      "border-spacing",
-      "line-height",
-      "text-transform",
-      "hyphens",
-      "-moz-text-size-adjust",
-      "text-indent",
-      "overflow-wrap",
-      "word-break",
-      "text-justify",
-      "text-align-last",
-      "text-align",
-      "letter-spacing",
-      "word-spacing",
-      "white-space",
-      "text-shadow",
-      "text-emphasis-style",
-      "text-emphasis-position",
-      "text-emphasis-color",
-      "-moz-tab-size",
-      "-webkit-text-fill-color",
-      "-webkit-text-stroke-color",
-      "-webkit-text-stroke-width",
-      "ruby-align",
-      "ruby-position",
-      "text-combine-upright",
-      "text-rendering",
-      "-moz-control-character-visibility",
-      "cursor",
-      "pointer-events",
-      "-moz-user-input",
-      "-moz-user-modify",
-      "-moz-user-focus",
-      "caret-color",
-      "scrollbar-color",
+      "dominant-baseline",
       "text-anchor",
       "color-interpolation",
       "color-interpolation-filters",
@@ -3204,6 +3176,47 @@ exports.CSS_PROPERTIES = {
       "marker-end",
       "paint-order",
       "-moz-context-properties",
+      "border-collapse",
+      "empty-cells",
+      "caption-side",
+      "border-spacing",
+      "color",
+      "line-height",
+      "text-transform",
+      "hyphens",
+      "-moz-text-size-adjust",
+      "text-indent",
+      "overflow-wrap",
+      "word-break",
+      "text-justify",
+      "text-align-last",
+      "text-align",
+      "letter-spacing",
+      "word-spacing",
+      "white-space",
+      "text-shadow",
+      "text-emphasis-style",
+      "text-emphasis-position",
+      "text-emphasis-color",
+      "-moz-tab-size",
+      "line-break",
+      "-webkit-text-fill-color",
+      "-webkit-text-stroke-color",
+      "-webkit-text-stroke-width",
+      "ruby-align",
+      "ruby-position",
+      "text-combine-upright",
+      "text-rendering",
+      "-moz-control-character-visibility",
+      "text-underline-offset",
+      "text-decoration-skip-ink",
+      "cursor",
+      "pointer-events",
+      "-moz-user-input",
+      "-moz-user-modify",
+      "-moz-user-focus",
+      "caret-color",
+      "scrollbar-color",
       "list-style-position",
       "list-style-type",
       "list-style-image",
@@ -3271,18 +3284,6 @@ exports.CSS_PROPERTIES = {
       "grid-template-areas",
       "column-gap",
       "row-gap",
-      "table-layout",
-      "text-overflow",
-      "text-decoration-line",
-      "text-decoration-style",
-      "text-decoration-color",
-      "initial-letter",
-      "ime-mode",
-      "scrollbar-width",
-      "-moz-user-select",
-      "-moz-window-dragging",
-      "-moz-force-broken-image-icon",
-      "dominant-baseline",
       "vector-effect",
       "stop-color",
       "stop-opacity",
@@ -3300,6 +3301,25 @@ exports.CSS_PROPERTIES = {
       "mask-size",
       "mask-composite",
       "mask-image",
+      "x",
+      "y",
+      "cx",
+      "cy",
+      "rx",
+      "ry",
+      "r",
+      "table-layout",
+      "text-overflow",
+      "text-decoration-line",
+      "text-decoration-style",
+      "text-decoration-color",
+      "initial-letter",
+      "text-decoration-thickness",
+      "ime-mode",
+      "scrollbar-width",
+      "user-select",
+      "-moz-window-dragging",
+      "-moz-force-broken-image-icon",
       "-moz-box-align",
       "-moz-box-direction",
       "-moz-box-flex",
@@ -3329,7 +3349,7 @@ exports.CSS_PROPERTIES = {
       "animation-play-state"
     ],
     "supports": [
-      10
+      "timing-function"
     ],
     "values": [
       "alternate",
@@ -3467,7 +3487,7 @@ exports.CSS_PROPERTIES = {
       "animation-timing-function"
     ],
     "supports": [
-      10
+      "timing-function"
     ],
     "values": [
       "cubic-bezier",
@@ -3514,8 +3534,8 @@ exports.CSS_PROPERTIES = {
       "background-clip"
     ],
     "supports": [
-      2,
-      4
+      "color",
+      "gradient"
     ],
     "values": [
       "COLOR",
@@ -3637,7 +3657,7 @@ exports.CSS_PROPERTIES = {
       "background-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -3659,7 +3679,7 @@ exports.CSS_PROPERTIES = {
       "background-image"
     ],
     "supports": [
-      4
+      "gradient"
     ],
     "values": [
       "-moz-element",
@@ -3829,7 +3849,7 @@ exports.CSS_PROPERTIES = {
       "border-image-width"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -3869,7 +3889,7 @@ exports.CSS_PROPERTIES = {
       "border-block-end-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -3905,7 +3925,7 @@ exports.CSS_PROPERTIES = {
       "border-block-end-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -3929,7 +3949,7 @@ exports.CSS_PROPERTIES = {
       "border-block-end-width"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -3964,7 +3984,7 @@ exports.CSS_PROPERTIES = {
       "border-block-end-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -4027,7 +4047,7 @@ exports.CSS_PROPERTIES = {
       "border-block-start-width"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -4062,7 +4082,7 @@ exports.CSS_PROPERTIES = {
       "border-block-start-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -4166,7 +4186,7 @@ exports.CSS_PROPERTIES = {
       "border-bottom-width"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -4201,7 +4221,7 @@ exports.CSS_PROPERTIES = {
       "border-bottom-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -4306,7 +4326,7 @@ exports.CSS_PROPERTIES = {
       "border-left-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -4358,7 +4378,7 @@ exports.CSS_PROPERTIES = {
       "border-image-width"
     ],
     "supports": [
-      4
+      "gradient"
     ],
     "values": [
       "-moz-element",
@@ -4440,7 +4460,7 @@ exports.CSS_PROPERTIES = {
       "border-image-source"
     ],
     "supports": [
-      4
+      "gradient"
     ],
     "values": [
       "-moz-element",
@@ -4491,7 +4511,7 @@ exports.CSS_PROPERTIES = {
       "border-inline-end-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -4527,7 +4547,7 @@ exports.CSS_PROPERTIES = {
       "border-inline-end-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -4551,7 +4571,7 @@ exports.CSS_PROPERTIES = {
       "border-inline-end-width"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -4586,7 +4606,7 @@ exports.CSS_PROPERTIES = {
       "border-inline-end-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -4649,7 +4669,7 @@ exports.CSS_PROPERTIES = {
       "border-inline-start-width"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -4684,7 +4704,7 @@ exports.CSS_PROPERTIES = {
       "border-inline-start-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -4788,7 +4808,7 @@ exports.CSS_PROPERTIES = {
       "border-left-width"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -4823,7 +4843,7 @@ exports.CSS_PROPERTIES = {
       "border-left-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -4902,7 +4922,7 @@ exports.CSS_PROPERTIES = {
       "border-right-width"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -4937,7 +4957,7 @@ exports.CSS_PROPERTIES = {
       "border-right-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -5065,7 +5085,7 @@ exports.CSS_PROPERTIES = {
       "border-top-width"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -5100,7 +5120,7 @@ exports.CSS_PROPERTIES = {
       "border-top-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -5235,7 +5255,7 @@ exports.CSS_PROPERTIES = {
       "box-shadow"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -5346,7 +5366,7 @@ exports.CSS_PROPERTIES = {
       "caret-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -5445,7 +5465,7 @@ exports.CSS_PROPERTIES = {
       "color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -5559,7 +5579,7 @@ exports.CSS_PROPERTIES = {
       "column-rule-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -5594,7 +5614,7 @@ exports.CSS_PROPERTIES = {
       "column-rule-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -5678,6 +5698,25 @@ exports.CSS_PROPERTIES = {
       "unset"
     ]
   },
+  "contain": {
+    "isInherited": false,
+    "subproperties": [
+      "contain"
+    ],
+    "supports": [],
+    "values": [
+      "content",
+      "inherit",
+      "initial",
+      "layout",
+      "none",
+      "paint",
+      "revert",
+      "size",
+      "strict",
+      "unset"
+    ]
+  },
   "content": {
     "isInherited": false,
     "subproperties": [
@@ -5720,6 +5759,20 @@ exports.CSS_PROPERTIES = {
     "isInherited": false,
     "subproperties": [
       "counter-reset"
+    ],
+    "supports": [],
+    "values": [
+      "inherit",
+      "initial",
+      "none",
+      "revert",
+      "unset"
+    ]
+  },
+  "counter-set": {
+    "isInherited": false,
+    "subproperties": [
+      "counter-set"
     ],
     "supports": [],
     "values": [
@@ -5784,6 +5837,32 @@ exports.CSS_PROPERTIES = {
       "zoom-out"
     ]
   },
+  "cx": {
+    "isInherited": false,
+    "subproperties": [
+      "cx"
+    ],
+    "supports": [],
+    "values": [
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "cy": {
+    "isInherited": false,
+    "subproperties": [
+      "cy"
+    ],
+    "supports": [],
+    "values": [
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
   "direction": {
     "isInherited": true,
     "subproperties": [
@@ -5806,22 +5885,10 @@ exports.CSS_PROPERTIES = {
     ],
     "supports": [],
     "values": [
-      "-moz-box",
-      "-moz-deck",
-      "-moz-grid",
-      "-moz-grid-group",
-      "-moz-grid-line",
-      "-moz-groupbox",
-      "-moz-inline-box",
-      "-moz-inline-grid",
-      "-moz-inline-stack",
-      "-moz-popup",
-      "-moz-stack",
       "-webkit-box",
-      "-webkit-flex",
       "-webkit-inline-box",
-      "-webkit-inline-flex",
       "block",
+      "block ruby",
       "contents",
       "flex",
       "flow-root",
@@ -5829,6 +5896,8 @@ exports.CSS_PROPERTIES = {
       "inherit",
       "initial",
       "inline",
+      "inline flow-root list-item",
+      "inline list-item",
       "inline-block",
       "inline-flex",
       "inline-grid",
@@ -5854,7 +5923,7 @@ exports.CSS_PROPERTIES = {
     ]
   },
   "dominant-baseline": {
-    "isInherited": false,
+    "isInherited": true,
     "subproperties": [
       "dominant-baseline"
     ],
@@ -5869,13 +5938,10 @@ exports.CSS_PROPERTIES = {
       "initial",
       "mathematical",
       "middle",
-      "no-change",
-      "reset-size",
       "revert",
       "text-after-edge",
       "text-before-edge",
-      "unset",
-      "use-script"
+      "unset"
     ]
   },
   "empty-cells": {
@@ -5899,7 +5965,7 @@ exports.CSS_PROPERTIES = {
       "fill"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -6122,7 +6188,7 @@ exports.CSS_PROPERTIES = {
       "flood-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -6223,7 +6289,8 @@ exports.CSS_PROPERTIES = {
       "x-large",
       "x-small",
       "xx-large",
-      "xx-small"
+      "xx-small",
+      "xxx-large"
     ]
   },
   "font-family": {
@@ -6317,7 +6384,8 @@ exports.CSS_PROPERTIES = {
       "x-large",
       "x-small",
       "xx-large",
-      "xx-small"
+      "xx-small",
+      "xxx-large"
     ]
   },
   "font-size-adjust": {
@@ -7259,7 +7327,7 @@ exports.CSS_PROPERTIES = {
       "lighting-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -7272,6 +7340,24 @@ exports.CSS_PROPERTIES = {
       "rgb",
       "rgba",
       "transparent",
+      "unset"
+    ]
+  },
+  "line-break": {
+    "isInherited": true,
+    "subproperties": [
+      "line-break"
+    ],
+    "supports": [],
+    "values": [
+      "anywhere",
+      "auto",
+      "inherit",
+      "initial",
+      "loose",
+      "normal",
+      "revert",
+      "strict",
       "unset"
     ]
   },
@@ -7700,7 +7786,7 @@ exports.CSS_PROPERTIES = {
       "mask-image"
     ],
     "supports": [
-      4
+      "gradient"
     ],
     "values": [
       "-moz-element",
@@ -7797,7 +7883,7 @@ exports.CSS_PROPERTIES = {
       "mask-image"
     ],
     "supports": [
-      4
+      "gradient"
     ],
     "values": [
       "-moz-element",
@@ -8184,6 +8270,38 @@ exports.CSS_PROPERTIES = {
       "unset"
     ]
   },
+  "offset-anchor": {
+    "isInherited": false,
+    "subproperties": [
+      "offset-anchor"
+    ],
+    "supports": [],
+    "values": [
+      "auto",
+      "bottom",
+      "center",
+      "inherit",
+      "initial",
+      "left",
+      "revert",
+      "right",
+      "top",
+      "unset"
+    ]
+  },
+  "offset-distance": {
+    "isInherited": false,
+    "subproperties": [
+      "offset-distance"
+    ],
+    "supports": [],
+    "values": [
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
   "offset-path": {
     "isInherited": false,
     "subproperties": [
@@ -8195,6 +8313,21 @@ exports.CSS_PROPERTIES = {
       "initial",
       "none",
       "path",
+      "revert",
+      "unset"
+    ]
+  },
+  "offset-rotate": {
+    "isInherited": false,
+    "subproperties": [
+      "offset-rotate"
+    ],
+    "supports": [],
+    "values": [
+      "auto",
+      "inherit",
+      "initial",
+      "reverse",
       "revert",
       "unset"
     ]
@@ -8233,7 +8366,7 @@ exports.CSS_PROPERTIES = {
       "outline-width"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -8269,7 +8402,7 @@ exports.CSS_PROPERTIES = {
       "outline-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -8370,6 +8503,42 @@ exports.CSS_PROPERTIES = {
       "none",
       "revert",
       "unset"
+    ]
+  },
+  "overflow-block": {
+    "isInherited": false,
+    "subproperties": [
+      "overflow-block"
+    ],
+    "supports": [],
+    "values": [
+      "-moz-hidden-unscrollable",
+      "auto",
+      "hidden",
+      "inherit",
+      "initial",
+      "revert",
+      "scroll",
+      "unset",
+      "visible"
+    ]
+  },
+  "overflow-inline": {
+    "isInherited": false,
+    "subproperties": [
+      "overflow-inline"
+    ],
+    "supports": [],
+    "values": [
+      "-moz-hidden-unscrollable",
+      "auto",
+      "hidden",
+      "inherit",
+      "initial",
+      "revert",
+      "scroll",
+      "unset",
+      "visible"
     ]
   },
   "overflow-wrap": {
@@ -8860,9 +9029,23 @@ exports.CSS_PROPERTIES = {
     ],
     "supports": [],
     "values": [
+      "auto",
       "inherit",
       "initial",
       "none",
+      "revert",
+      "unset"
+    ]
+  },
+  "r": {
+    "isInherited": false,
+    "subproperties": [
+      "r"
+    ],
+    "supports": [],
+    "values": [
+      "inherit",
+      "initial",
       "revert",
       "unset"
     ]
@@ -8946,6 +9129,34 @@ exports.CSS_PROPERTIES = {
       "unset"
     ]
   },
+  "rx": {
+    "isInherited": false,
+    "subproperties": [
+      "rx"
+    ],
+    "supports": [],
+    "values": [
+      "auto",
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "ry": {
+    "isInherited": false,
+    "subproperties": [
+      "ry"
+    ],
+    "supports": [],
+    "values": [
+      "auto",
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
   "scroll-behavior": {
     "isInherited": false,
     "subproperties": [
@@ -8961,120 +9172,348 @@ exports.CSS_PROPERTIES = {
       "unset"
     ]
   },
-  "scroll-snap-coordinate": {
+  "scroll-margin": {
     "isInherited": false,
     "subproperties": [
-      "scroll-snap-coordinate"
+      "scroll-margin-top",
+      "scroll-margin-right",
+      "scroll-margin-bottom",
+      "scroll-margin-left"
     ],
     "supports": [],
     "values": [
-      "bottom",
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "scroll-margin-block": {
+    "isInherited": false,
+    "subproperties": [
+      "scroll-margin-block-start",
+      "scroll-margin-block-end"
+    ],
+    "supports": [],
+    "values": [
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "scroll-margin-block-end": {
+    "isInherited": false,
+    "subproperties": [
+      "scroll-margin-block-end"
+    ],
+    "supports": [],
+    "values": [
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "scroll-margin-block-start": {
+    "isInherited": false,
+    "subproperties": [
+      "scroll-margin-block-start"
+    ],
+    "supports": [],
+    "values": [
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "scroll-margin-bottom": {
+    "isInherited": false,
+    "subproperties": [
+      "scroll-margin-bottom"
+    ],
+    "supports": [],
+    "values": [
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "scroll-margin-inline": {
+    "isInherited": false,
+    "subproperties": [
+      "scroll-margin-inline-start",
+      "scroll-margin-inline-end"
+    ],
+    "supports": [],
+    "values": [
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "scroll-margin-inline-end": {
+    "isInherited": false,
+    "subproperties": [
+      "scroll-margin-inline-end"
+    ],
+    "supports": [],
+    "values": [
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "scroll-margin-inline-start": {
+    "isInherited": false,
+    "subproperties": [
+      "scroll-margin-inline-start"
+    ],
+    "supports": [],
+    "values": [
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "scroll-margin-left": {
+    "isInherited": false,
+    "subproperties": [
+      "scroll-margin-left"
+    ],
+    "supports": [],
+    "values": [
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "scroll-margin-right": {
+    "isInherited": false,
+    "subproperties": [
+      "scroll-margin-right"
+    ],
+    "supports": [],
+    "values": [
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "scroll-margin-top": {
+    "isInherited": false,
+    "subproperties": [
+      "scroll-margin-top"
+    ],
+    "supports": [],
+    "values": [
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "scroll-padding": {
+    "isInherited": false,
+    "subproperties": [
+      "scroll-padding-top",
+      "scroll-padding-right",
+      "scroll-padding-bottom",
+      "scroll-padding-left"
+    ],
+    "supports": [],
+    "values": [
+      "auto",
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "scroll-padding-block": {
+    "isInherited": false,
+    "subproperties": [
+      "scroll-padding-block-start",
+      "scroll-padding-block-end"
+    ],
+    "supports": [],
+    "values": [
+      "auto",
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "scroll-padding-block-end": {
+    "isInherited": false,
+    "subproperties": [
+      "scroll-padding-block-end"
+    ],
+    "supports": [],
+    "values": [
+      "auto",
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "scroll-padding-block-start": {
+    "isInherited": false,
+    "subproperties": [
+      "scroll-padding-block-start"
+    ],
+    "supports": [],
+    "values": [
+      "auto",
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "scroll-padding-bottom": {
+    "isInherited": false,
+    "subproperties": [
+      "scroll-padding-bottom"
+    ],
+    "supports": [],
+    "values": [
+      "auto",
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "scroll-padding-inline": {
+    "isInherited": false,
+    "subproperties": [
+      "scroll-padding-inline-start",
+      "scroll-padding-inline-end"
+    ],
+    "supports": [],
+    "values": [
+      "auto",
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "scroll-padding-inline-end": {
+    "isInherited": false,
+    "subproperties": [
+      "scroll-padding-inline-end"
+    ],
+    "supports": [],
+    "values": [
+      "auto",
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "scroll-padding-inline-start": {
+    "isInherited": false,
+    "subproperties": [
+      "scroll-padding-inline-start"
+    ],
+    "supports": [],
+    "values": [
+      "auto",
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "scroll-padding-left": {
+    "isInherited": false,
+    "subproperties": [
+      "scroll-padding-left"
+    ],
+    "supports": [],
+    "values": [
+      "auto",
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "scroll-padding-right": {
+    "isInherited": false,
+    "subproperties": [
+      "scroll-padding-right"
+    ],
+    "supports": [],
+    "values": [
+      "auto",
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "scroll-padding-top": {
+    "isInherited": false,
+    "subproperties": [
+      "scroll-padding-top"
+    ],
+    "supports": [],
+    "values": [
+      "auto",
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "scroll-snap-align": {
+    "isInherited": false,
+    "subproperties": [
+      "scroll-snap-align"
+    ],
+    "supports": [],
+    "values": [
       "center",
-      "inherit",
-      "initial",
-      "left",
-      "none",
-      "revert",
-      "right",
-      "top",
-      "unset"
-    ]
-  },
-  "scroll-snap-destination": {
-    "isInherited": false,
-    "subproperties": [
-      "scroll-snap-destination"
-    ],
-    "supports": [],
-    "values": [
-      "bottom",
-      "center",
-      "inherit",
-      "initial",
-      "left",
-      "revert",
-      "right",
-      "top",
-      "unset"
-    ]
-  },
-  "scroll-snap-points-x": {
-    "isInherited": false,
-    "subproperties": [
-      "scroll-snap-points-x"
-    ],
-    "supports": [],
-    "values": [
+      "end",
       "inherit",
       "initial",
       "none",
-      "repeat",
       "revert",
-      "unset"
-    ]
-  },
-  "scroll-snap-points-y": {
-    "isInherited": false,
-    "subproperties": [
-      "scroll-snap-points-y"
-    ],
-    "supports": [],
-    "values": [
-      "inherit",
-      "initial",
-      "none",
-      "repeat",
-      "revert",
+      "start",
       "unset"
     ]
   },
   "scroll-snap-type": {
     "isInherited": false,
     "subproperties": [
-      "scroll-snap-type-x",
-      "scroll-snap-type-y"
+      "scroll-snap-type"
     ],
     "supports": [],
     "values": [
+      "block",
+      "both",
       "inherit",
       "initial",
+      "inline",
       "mandatory",
-      "none",
       "proximity",
       "revert",
-      "unset"
-    ]
-  },
-  "scroll-snap-type-x": {
-    "isInherited": false,
-    "subproperties": [
-      "scroll-snap-type-x"
-    ],
-    "supports": [],
-    "values": [
-      "inherit",
-      "initial",
-      "mandatory",
-      "none",
-      "proximity",
-      "revert",
-      "unset"
-    ]
-  },
-  "scroll-snap-type-y": {
-    "isInherited": false,
-    "subproperties": [
-      "scroll-snap-type-y"
-    ],
-    "supports": [],
-    "values": [
-      "inherit",
-      "initial",
-      "mandatory",
-      "none",
-      "proximity",
-      "revert",
-      "unset"
+      "unset",
+      "x",
+      "y"
     ]
   },
   "scrollbar-color": {
@@ -9083,7 +9522,7 @@ exports.CSS_PROPERTIES = {
       "scrollbar-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -9148,7 +9587,7 @@ exports.CSS_PROPERTIES = {
       "shape-outside"
     ],
     "supports": [
-      4
+      "gradient"
     ],
     "values": [
       "-moz-element",
@@ -9206,7 +9645,7 @@ exports.CSS_PROPERTIES = {
       "stop-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -9241,7 +9680,7 @@ exports.CSS_PROPERTIES = {
       "stroke"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -9458,19 +9897,22 @@ exports.CSS_PROPERTIES = {
     "subproperties": [
       "text-decoration-line",
       "text-decoration-style",
-      "text-decoration-color"
+      "text-decoration-color",
+      "text-decoration-thickness"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
       "-moz-none",
+      "auto",
       "blink",
       "currentColor",
       "dashed",
       "dotted",
       "double",
+      "from-font",
       "hsl",
       "hsla",
       "inherit",
@@ -9494,7 +9936,7 @@ exports.CSS_PROPERTIES = {
       "text-decoration-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -9528,6 +9970,21 @@ exports.CSS_PROPERTIES = {
       "unset"
     ]
   },
+  "text-decoration-skip-ink": {
+    "isInherited": true,
+    "subproperties": [
+      "text-decoration-skip-ink"
+    ],
+    "supports": [],
+    "values": [
+      "auto",
+      "inherit",
+      "initial",
+      "none",
+      "revert",
+      "unset"
+    ]
+  },
   "text-decoration-style": {
     "isInherited": false,
     "subproperties": [
@@ -9547,6 +10004,21 @@ exports.CSS_PROPERTIES = {
       "wavy"
     ]
   },
+  "text-decoration-thickness": {
+    "isInherited": false,
+    "subproperties": [
+      "text-decoration-thickness"
+    ],
+    "supports": [],
+    "values": [
+      "auto",
+      "from-font",
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
   "text-emphasis": {
     "isInherited": true,
     "subproperties": [
@@ -9554,7 +10026,7 @@ exports.CSS_PROPERTIES = {
       "text-emphasis-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -9584,7 +10056,7 @@ exports.CSS_PROPERTIES = {
       "text-emphasis-color"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -9724,7 +10196,7 @@ exports.CSS_PROPERTIES = {
       "text-shadow"
     ],
     "supports": [
-      2
+      "color"
     ],
     "values": [
       "COLOR",
@@ -9758,6 +10230,21 @@ exports.CSS_PROPERTIES = {
       "revert",
       "unset",
       "uppercase"
+    ]
+  },
+  "text-underline-offset": {
+    "isInherited": true,
+    "subproperties": [
+      "text-underline-offset"
+    ],
+    "supports": [],
+    "values": [
+      "auto",
+      "from-font",
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
     ]
   },
   "top": {
@@ -9887,7 +10374,7 @@ exports.CSS_PROPERTIES = {
       "transition-delay"
     ],
     "supports": [
-      10
+      "timing-function"
     ],
     "values": [
       "all",
@@ -9954,7 +10441,7 @@ exports.CSS_PROPERTIES = {
       "transition-timing-function"
     ],
     "supports": [
-      10
+      "timing-function"
     ],
     "values": [
       "cubic-bezier",
@@ -9988,6 +10475,24 @@ exports.CSS_PROPERTIES = {
       "normal",
       "plaintext",
       "revert",
+      "unset"
+    ]
+  },
+  "user-select": {
+    "isInherited": false,
+    "subproperties": [
+      "user-select"
+    ],
+    "supports": [],
+    "values": [
+      "-moz-none",
+      "all",
+      "auto",
+      "inherit",
+      "initial",
+      "none",
+      "revert",
+      "text",
       "unset"
     ]
   },
@@ -10052,6 +10557,7 @@ exports.CSS_PROPERTIES = {
     "supports": [],
     "values": [
       "-moz-pre-space",
+      "break-spaces",
       "inherit",
       "initial",
       "normal",
@@ -10168,6 +10674,32 @@ exports.CSS_PROPERTIES = {
       "vertical-rl"
     ]
   },
+  "x": {
+    "isInherited": false,
+    "subproperties": [
+      "x"
+    ],
+    "supports": [],
+    "values": [
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "y": {
+    "isInherited": false,
+    "subproperties": [
+      "y"
+    ],
+    "supports": [],
+    "values": [
+      "inherit",
+      "initial",
+      "revert",
+      "unset"
+    ]
+  },
   "z-index": {
     "isInherited": false,
     "subproperties": [
@@ -10190,6 +10722,7 @@ exports.CSS_PROPERTIES = {
 exports.PSEUDO_ELEMENTS = [
   ":after",
   ":before",
+  ":marker",
   ":backdrop",
   ":cue",
   ":first-letter",
@@ -10197,8 +10730,6 @@ exports.PSEUDO_ELEMENTS = [
   ":selection",
   ":-moz-focus-inner",
   ":-moz-focus-outer",
-  ":-moz-list-bullet",
-  ":-moz-list-number",
   ":-moz-progress-bar",
   ":-moz-range-track",
   ":-moz-range-progress",
@@ -10234,6 +10765,10 @@ exports.PREFERENCES = [
     "layout.css.osx-font-smoothing.enabled"
   ],
   [
+    "offset-rotate",
+    "layout.css.motion-path.enabled"
+  ],
+  [
     "overflow-anchor",
     "layout.css.scroll-anchoring.enabled"
   ],
@@ -10246,6 +10781,10 @@ exports.PREFERENCES = [
     "layout.css.scrollbar-width.enabled"
   ],
   [
+    "text-decoration-skip-ink",
+    "layout.css.text-decoration-skip-ink.enabled"
+  ],
+  [
     "text-justify",
     "layout.css.text-justify.enabled"
   ],
@@ -10256,6 +10795,10 @@ exports.PREFERENCES = [
   [
     "transform-box",
     "svg.transform-box.enabled"
+  ],
+  [
+    "-webkit-line-clamp",
+    "layout.css.webkit-line-clamp.enabled"
   ],
   [
     "overflow-clip-box-block",
@@ -10274,16 +10817,24 @@ exports.PREFERENCES = [
     "layout.css.overscroll-behavior.enabled"
   ],
   [
-    "scroll-snap-type-x",
-    "layout.css.scroll-snap.enabled"
+    "overflow-block",
+    "layout.css.overflow-logical.enabled"
   ],
   [
-    "scroll-snap-type-y",
-    "layout.css.scroll-snap.enabled"
+    "overflow-inline",
+    "layout.css.overflow-logical.enabled"
+  ],
+  [
+    "backdrop-filter",
+    "layout.css.backdrop-filter.enabled"
   ],
   [
     "font-variation-settings",
     "layout.css.font-variations.enabled"
+  ],
+  [
+    "offset-anchor",
+    "layout.css.motion-path.enabled"
   ],
   [
     "offset-path",
@@ -10298,10 +10849,6 @@ exports.PREFERENCES = [
     "layout.css.individual-transform.enabled"
   ],
   [
-    "scroll-snap-coordinate",
-    "layout.css.scroll-snap.enabled"
-  ],
-  [
     "scrollbar-color",
     "layout.css.scrollbar-color.enabled"
   ],
@@ -10310,52 +10857,20 @@ exports.PREFERENCES = [
     "layout.css.individual-transform.enabled"
   ],
   [
-    "scroll-snap-points-x",
-    "layout.css.scroll-snap.enabled"
+    "text-decoration-thickness",
+    "layout.css.text-decoration-thickness.enabled"
   ],
   [
-    "scroll-snap-points-y",
-    "layout.css.scroll-snap.enabled"
-  ],
-  [
-    "scroll-snap-destination",
-    "layout.css.scroll-snap.enabled"
+    "text-underline-offset",
+    "layout.css.text-underline-offset.enabled"
   ],
   [
     "-moz-binding",
     "layout.css.moz-binding.content.enabled"
   ],
   [
-    "scroll-padding-block-end",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-padding-block-start",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-padding-bottom",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-padding-inline-end",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-padding-inline-start",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-padding-left",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-padding-right",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-padding-top",
-    "layout.css.scroll-snap-v1.enabled"
+    "offset-distance",
+    "layout.css.motion-path.enabled"
   ],
   [
     "scroll-margin-block-end",
@@ -10390,32 +10905,44 @@ exports.PREFERENCES = [
     "layout.css.scroll-snap-v1.enabled"
   ],
   [
-    "-webkit-text-stroke-width",
-    "layout.css.prefixes.webkit"
+    "scroll-padding-block-end",
+    "layout.css.scroll-snap-v1.enabled"
   ],
   [
-    "-webkit-text-fill-color",
-    "layout.css.prefixes.webkit"
+    "scroll-padding-block-start",
+    "layout.css.scroll-snap-v1.enabled"
   ],
   [
-    "-webkit-text-stroke-color",
-    "layout.css.prefixes.webkit"
+    "scroll-padding-bottom",
+    "layout.css.scroll-snap-v1.enabled"
+  ],
+  [
+    "scroll-padding-inline-end",
+    "layout.css.scroll-snap-v1.enabled"
+  ],
+  [
+    "scroll-padding-inline-start",
+    "layout.css.scroll-snap-v1.enabled"
+  ],
+  [
+    "scroll-padding-left",
+    "layout.css.scroll-snap-v1.enabled"
+  ],
+  [
+    "scroll-padding-right",
+    "layout.css.scroll-snap-v1.enabled"
+  ],
+  [
+    "scroll-padding-top",
+    "layout.css.scroll-snap-v1.enabled"
   ],
   [
     "overflow-clip-box",
     "layout.css.overflow-clip-box.enabled"
   ],
   [
-    "scroll-snap-type",
-    "layout.css.scroll-snap.enabled"
-  ],
-  [
     "overscroll-behavior",
     "layout.css.overscroll-behavior.enabled"
-  ],
-  [
-    "-webkit-text-stroke",
-    "layout.css.prefixes.webkit"
   ],
   [
     "scroll-margin",
@@ -10442,176 +10969,76 @@ exports.PREFERENCES = [
     "layout.css.scroll-snap-v1.enabled"
   ],
   [
-    "-webkit-background-clip",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-background-origin",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-background-size",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-border-top-left-radius",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-border-top-right-radius",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-border-bottom-right-radius",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-border-bottom-left-radius",
-    "layout.css.prefixes.webkit"
-  ],
-  [
     "-moz-transition-duration",
     "layout.css.prefixes.transitions"
-  ],
-  [
-    "-webkit-transition-duration",
-    "layout.css.prefixes.webkit"
   ],
   [
     "-moz-transition-timing-function",
     "layout.css.prefixes.transitions"
   ],
   [
-    "-webkit-transition-timing-function",
-    "layout.css.prefixes.webkit"
-  ],
-  [
     "-moz-transition-property",
     "layout.css.prefixes.transitions"
-  ],
-  [
-    "-webkit-transition-property",
-    "layout.css.prefixes.webkit"
   ],
   [
     "-moz-transition-delay",
     "layout.css.prefixes.transitions"
   ],
   [
-    "-webkit-transition-delay",
-    "layout.css.prefixes.webkit"
-  ],
-  [
     "-moz-animation-name",
     "layout.css.prefixes.animations"
-  ],
-  [
-    "-webkit-animation-name",
-    "layout.css.prefixes.webkit"
   ],
   [
     "-moz-animation-duration",
     "layout.css.prefixes.animations"
   ],
   [
-    "-webkit-animation-duration",
-    "layout.css.prefixes.webkit"
-  ],
-  [
     "-moz-animation-timing-function",
     "layout.css.prefixes.animations"
-  ],
-  [
-    "-webkit-animation-timing-function",
-    "layout.css.prefixes.webkit"
   ],
   [
     "-moz-animation-iteration-count",
     "layout.css.prefixes.animations"
   ],
   [
-    "-webkit-animation-iteration-count",
-    "layout.css.prefixes.webkit"
-  ],
-  [
     "-moz-animation-direction",
     "layout.css.prefixes.animations"
-  ],
-  [
-    "-webkit-animation-direction",
-    "layout.css.prefixes.webkit"
   ],
   [
     "-moz-animation-play-state",
     "layout.css.prefixes.animations"
   ],
   [
-    "-webkit-animation-play-state",
-    "layout.css.prefixes.webkit"
-  ],
-  [
     "-moz-animation-fill-mode",
     "layout.css.prefixes.animations"
-  ],
-  [
-    "-webkit-animation-fill-mode",
-    "layout.css.prefixes.webkit"
   ],
   [
     "-moz-animation-delay",
     "layout.css.prefixes.animations"
   ],
   [
-    "-webkit-animation-delay",
-    "layout.css.prefixes.webkit"
-  ],
-  [
     "-moz-transform",
     "layout.css.prefixes.transforms"
-  ],
-  [
-    "-webkit-transform",
-    "layout.css.prefixes.webkit"
   ],
   [
     "-moz-perspective",
     "layout.css.prefixes.transforms"
   ],
   [
-    "-webkit-perspective",
-    "layout.css.prefixes.webkit"
-  ],
-  [
     "-moz-perspective-origin",
     "layout.css.prefixes.transforms"
-  ],
-  [
-    "-webkit-perspective-origin",
-    "layout.css.prefixes.webkit"
   ],
   [
     "-moz-backface-visibility",
     "layout.css.prefixes.transforms"
   ],
   [
-    "-webkit-backface-visibility",
-    "layout.css.prefixes.webkit"
-  ],
-  [
     "-moz-transform-style",
     "layout.css.prefixes.transforms"
   ],
   [
-    "-webkit-transform-style",
-    "layout.css.prefixes.webkit"
-  ],
-  [
     "-moz-transform-origin",
     "layout.css.prefixes.transforms"
-  ],
-  [
-    "-webkit-transform-origin",
-    "layout.css.prefixes.webkit"
   ],
   [
     "-webkit-appearance",
@@ -10622,24 +11049,12 @@ exports.PREFERENCES = [
     "layout.css.column-span.enabled"
   ],
   [
-    "-webkit-box-shadow",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-filter",
-    "layout.css.prefixes.webkit"
-  ],
-  [
     "-moz-font-feature-settings",
     "layout.css.prefixes.font-features"
   ],
   [
     "-moz-font-language-override",
     "layout.css.prefixes.font-features"
-  ],
-  [
-    "-webkit-text-size-adjust",
-    "layout.css.prefixes.webkit"
   ],
   [
     "offset-block-start",
@@ -10658,155 +11073,19 @@ exports.PREFERENCES = [
     "layout.css.offset-logical-properties.enabled"
   ],
   [
-    "-webkit-flex-direction",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-flex-wrap",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-justify-content",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-align-content",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-align-items",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-flex-grow",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-flex-shrink",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-align-self",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-order",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-flex-basis",
-    "layout.css.prefixes.webkit"
-  ],
-  [
     "-moz-box-sizing",
     "layout.css.prefixes.box-sizing"
-  ],
-  [
-    "-webkit-box-sizing",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-user-select",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-mask-repeat",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-mask-position-x",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-mask-position-y",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-mask-clip",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-mask-origin",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-mask-size",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-mask-composite",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-mask-image",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-box-align",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-box-direction",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-box-flex",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-box-orient",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-box-pack",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-box-ordinal-group",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-border-radius",
-    "layout.css.prefixes.webkit"
   ],
   [
     "-moz-border-image",
     "layout.css.prefixes.border-image"
   ],
   [
-    "-webkit-border-image",
-    "layout.css.prefixes.webkit"
-  ],
-  [
     "-moz-transition",
     "layout.css.prefixes.transitions"
   ],
   [
-    "-webkit-transition",
-    "layout.css.prefixes.webkit"
-  ],
-  [
     "-moz-animation",
     "layout.css.prefixes.animations"
-  ],
-  [
-    "-webkit-animation",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-flex-flow",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-flex",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-mask",
-    "layout.css.prefixes.webkit"
-  ],
-  [
-    "-webkit-mask-position",
-    "layout.css.prefixes.webkit"
   ]
 ];

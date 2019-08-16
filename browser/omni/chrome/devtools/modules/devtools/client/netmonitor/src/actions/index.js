@@ -11,13 +11,18 @@ const selection = require("./selection");
 const sort = require("./sort");
 const timingMarkers = require("./timing-markers");
 const ui = require("./ui");
+const webSockets = require("./web-sockets");
+const search = require("./search");
 
-Object.assign(exports,
+Object.assign(
+  exports,
   batching,
   filters,
   requests,
+  search,
   selection,
   sort,
   timingMarkers,
-  ui
+  ui,
+  webSockets
 );

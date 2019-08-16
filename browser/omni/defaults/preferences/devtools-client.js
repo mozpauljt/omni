@@ -2,8 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Enable DevTools WebIDE by default
-pref("devtools.webide.enabled", true);
+// Disable WebIDE and ConnectPage by default (Bug 1539451)
+pref("devtools.webide.enabled", false);
+pref("devtools.connectpage.enabled", false);
 
 // Toolbox preferences
 pref("devtools.toolbox.footer.height", 250);
@@ -16,6 +17,11 @@ pref("devtools.toolbox.zoomValue", "1");
 pref("devtools.toolbox.splitconsoleEnabled", false);
 pref("devtools.toolbox.splitconsoleHeight", 100);
 pref("devtools.toolbox.tabsOrder", "");
+
+// The fission pref is enabling the "Omniscient Browser Toolbox", which will make it
+// possible to debug anything in Firefox (See Bug 1570639 for more information).
+// ⚠ This is a work in progress. Expect weirdness when the pref is flipped on ⚠
+pref("devtools.browsertoolbox.fission", false);
 
 // Toolbox Button preferences
 pref("devtools.command-button-pick.enabled", true);
@@ -53,12 +59,6 @@ pref("devtools.inspector.showUserAgentShadowRoots", false);
 // Enable the new Rules View
 pref("devtools.inspector.new-rulesview.enabled", false);
 
-// Flexbox preferences
-// Whether or not to show the combined flexbox and box model highlighter.
-//@line 61 "$SRCDIR/devtools/client/preferences/devtools-client.js"
-pref("devtools.inspector.flexboxHighlighter.combine", false);
-//@line 63 "$SRCDIR/devtools/client/preferences/devtools-client.js"
-
 // Grid highlighter preferences
 pref("devtools.gridinspector.gridOutlineMaxColumns", 50);
 pref("devtools.gridinspector.gridOutlineMaxRows", 50);
@@ -76,21 +76,21 @@ pref("devtools.layout.flexbox.opened", true);
 pref("devtools.layout.grid.opened", true);
 
 // Enable hovering Box Model values and jumping to their source CSS rule in the rule-view
+//@line 80 "$SRCDIR/devtools/client/preferences/devtools-client.js"
+pref("devtools.layout.boxmodel.highlightProperty", true);
 //@line 84 "$SRCDIR/devtools/client/preferences/devtools-client.js"
-pref("devtools.layout.boxmodel.highlightProperty", false);
-//@line 86 "$SRCDIR/devtools/client/preferences/devtools-client.js"
 
 // By how many times eyedropper will magnify pixels
 pref("devtools.eyedropper.zoom", 6);
 
 // Enable to collapse attributes that are too long.
 pref("devtools.markup.collapseAttributes", true);
-
 // Length to collapse attributes
 pref("devtools.markup.collapseAttributeLength", 120);
-
 // Whether to auto-beautify the HTML on copy.
 pref("devtools.markup.beautifyOnCopy", false);
+// Whether or not the DOM mutation breakpoints context menu are enabled in the markup view
+pref("devtools.markup.mutationBreakpoints.enabled", false);
 
 // DevTools default color unit
 pref("devtools.defaultColorUnit", "authored");
@@ -134,9 +134,9 @@ pref("devtools.performance.ui.show-triggers-for-gc-types",
 pref("devtools.performance.ui.enable-memory-flame", false);
 
 // Enable experimental options in the UI only in Nightly
+//@line 140 "$SRCDIR/devtools/client/preferences/devtools-client.js"
+pref("devtools.performance.ui.experimental", true);
 //@line 144 "$SRCDIR/devtools/client/preferences/devtools-client.js"
-pref("devtools.performance.ui.experimental", false);
-//@line 146 "$SRCDIR/devtools/client/preferences/devtools-client.js"
 
 // Preferences for the new performance panel
 // This pref configures the base URL for the profiler.firefox.com instance to use. This is
@@ -159,21 +159,28 @@ pref("devtools.serviceWorkers.testing.enabled", false);
 // Enable the Network Monitor
 pref("devtools.netmonitor.enabled", true);
 
+// Enable Network Search
+pref("devtools.netmonitor.features.search", false);
+
 // Enable the Application panel
 pref("devtools.application.enabled", false);
 
 // The default Network Monitor UI settings
 pref("devtools.netmonitor.panes-network-details-width", 550);
 pref("devtools.netmonitor.panes-network-details-height", 450);
+pref("devtools.netmonitor.panes-search-width", 550);
+pref("devtools.netmonitor.panes-search-height", 450);
 pref("devtools.netmonitor.filters", "[\"all\"]");
 pref("devtools.netmonitor.visibleColumns",
   "[\"status\",\"method\",\"domain\",\"file\",\"cause\",\"type\",\"transferred\",\"contentSize\",\"waterfall\"]"
 );
 pref("devtools.netmonitor.columnsData",
-  '[{"name":"status","minWidth":30,"width":5}, {"name":"method","minWidth":30,"width":5}, {"name":"domain","minWidth":30,"width":10}, {"name":"file","minWidth":30,"width":25}, {"name":"cause","minWidth":30,"width":10},{"name":"type","minWidth":30,"width":5},{"name":"transferred","minWidth":30,"width":10},{"name":"contentSize","minWidth":30,"width":5},{"name":"waterfall","minWidth":150,"width":25}]');
-
-// Support for columns resizing pref is now enabled (after merge date 03/18/19).
-pref("devtools.netmonitor.features.resizeColumns", true);
+  '[{"name":"status","minWidth":30,"width":5}, {"name":"method","minWidth":30,"width":5}, {"name":"domain","minWidth":30,"width":10}, {"name":"file","minWidth":30,"width":25}, {"name":"url","minWidth":30,"width":25}, {"name":"cause","minWidth":30,"width":10},{"name":"type","minWidth":30,"width":5},{"name":"transferred","minWidth":30,"width":10},{"name":"contentSize","minWidth":30,"width":5},{"name":"waterfall","minWidth":150,"width":25}]');
+pref("devtools.netmonitor.ws.payload-preview-height", 128);
+pref("devtools.netmonitor.ws.visibleColumns",
+  '["data", "time"]'
+);
+pref("devtools.netmonitor.ws.displayed-frames.limit", 500);
 
 pref("devtools.netmonitor.response.ui.limit", 10240);
 
@@ -182,7 +189,7 @@ pref("devtools.netmonitor.saveRequestAndResponseBodies", true);
 
 // The default Network monitor HAR export setting
 pref("devtools.netmonitor.har.defaultLogDir", "");
-pref("devtools.netmonitor.har.defaultFileName", "Archive %date");
+pref("devtools.netmonitor.har.defaultFileName", "%hostname_Archive [%date]");
 pref("devtools.netmonitor.har.jsonp", false);
 pref("devtools.netmonitor.har.jsonpCallback", "");
 pref("devtools.netmonitor.har.includeResponseBodies", true);
@@ -190,6 +197,11 @@ pref("devtools.netmonitor.har.compress", false);
 pref("devtools.netmonitor.har.forceExport", false);
 pref("devtools.netmonitor.har.pageLoadedTimeout", 1500);
 pref("devtools.netmonitor.har.enableAutoExportToFile", false);
+
+// Enable WebSocket monitoring in Nightly builds.
+//@line 207 "$SRCDIR/devtools/client/preferences/devtools-client.js"
+pref("devtools.netmonitor.features.webSockets", true);
+//@line 211 "$SRCDIR/devtools/client/preferences/devtools-client.js"
 
 // Scratchpad settings
 // - recentFileMax: The maximum number of recently-opened files
@@ -242,6 +254,9 @@ pref("devtools.webconsole.filter.css", false);
 pref("devtools.webconsole.filter.net", false);
 pref("devtools.webconsole.filter.netxhr", false);
 
+// Webconsole autocomplete preference
+pref("devtools.webconsole.input.autocomplete",true);
+
 // Browser console filters
 pref("devtools.browserconsole.filter.error", true);
 pref("devtools.browserconsole.filter.warn", true);
@@ -267,21 +282,30 @@ pref("devtools.netmonitor.persistlog", false);
 pref("devtools.webconsole.timestampMessages", false);
 
 // Enable the webconsole sidebar toggle in Nightly builds.
-//@line 279 "$SRCDIR/devtools/client/preferences/devtools-client.js"
-pref("devtools.webconsole.sidebarToggle", false);
-//@line 281 "$SRCDIR/devtools/client/preferences/devtools-client.js"
+//@line 292 "$SRCDIR/devtools/client/preferences/devtools-client.js"
+pref("devtools.webconsole.sidebarToggle", true);
+//@line 296 "$SRCDIR/devtools/client/preferences/devtools-client.js"
 
-// Enable CodeMirror in the JsTerm
-pref("devtools.webconsole.jsterm.codeMirror", true);
+// Enable editor mode in the console in Nightly builds.
+//@line 299 "$SRCDIR/devtools/client/preferences/devtools-client.js"
+pref("devtools.webconsole.features.editor", true);
+//@line 303 "$SRCDIR/devtools/client/preferences/devtools-client.js"
 
-// Enable editor mode in the console.
+// Saved editor mode state in the console.
 pref("devtools.webconsole.input.editor", false);
+
+// Editor width for webconsole and browserconsole
+pref("devtools.webconsole.input.editorWidth", 0);
+pref("devtools.browserconsole.input.editorWidth", 0);
 
 // Disable the new performance recording panel by default
 pref("devtools.performance.new-panel-enabled", false);
 
-// Enable message grouping in the console, false by default
-pref("devtools.webconsole.groupWarningMessages", false);
+// Enable message grouping in the console, true by default
+pref("devtools.webconsole.groupWarningMessages", true);
+
+// Saved state of the Display content messages checkbox in the browser console.
+pref("devtools.browserconsole.contentMessages", false);
 
 // Enable client-side mapping service for source maps
 pref("devtools.source-map.client-service.enabled", true);
@@ -304,6 +328,8 @@ pref("devtools.editor.detectindentation", true);
 pref("devtools.editor.enableCodeFolding", true);
 pref("devtools.editor.autocomplete", true);
 
+// The angle of the viewport.
+pref("devtools.responsive.viewport.angle", 0);
 // The width of the viewport.
 pref("devtools.responsive.viewport.width", 320);
 // The height of the viewport.
@@ -327,20 +353,21 @@ pref("devtools.responsive.metaViewport.enabled", false);
 pref("devtools.responsive.userAgent", "");
 
 // Whether to show the settings onboarding tooltip only in release or beta builds.
-//@line 339 "$SRCDIR/devtools/client/preferences/devtools-client.js"
-pref("devtools.responsive.show-setting-tooltip", true);
-//@line 343 "$SRCDIR/devtools/client/preferences/devtools-client.js"
+//@line 369 "$SRCDIR/devtools/client/preferences/devtools-client.js"
+pref("devtools.responsive.show-setting-tooltip", false);
+//@line 371 "$SRCDIR/devtools/client/preferences/devtools-client.js"
 // Show the custom user agent input in Nightly builds.
-//@line 347 "$SRCDIR/devtools/client/preferences/devtools-client.js"
-pref("devtools.responsive.showUserAgentInput", false);
-//@line 349 "$SRCDIR/devtools/client/preferences/devtools-client.js"
+//@line 373 "$SRCDIR/devtools/client/preferences/devtools-client.js"
+pref("devtools.responsive.showUserAgentInput", true);
+//@line 377 "$SRCDIR/devtools/client/preferences/devtools-client.js"
 
-// Enable new about:debugging.
-pref("devtools.aboutdebugging.new-enabled", false);
-// Enable the network location feature.
-pref("devtools.aboutdebugging.network", false);
-// Enable the wifi feature.
-pref("devtools.aboutdebugging.wifi", false);
+// Show tab debug targets for This Firefox (on by default for local builds).
+//@line 380 "$SRCDIR/devtools/client/preferences/devtools-client.js"
+  pref("devtools.aboutdebugging.local-tab-debugging", false);
+//@line 384 "$SRCDIR/devtools/client/preferences/devtools-client.js"
+
+// Show process debug targets.
+pref("devtools.aboutdebugging.process-debugging", true);
 // Stringified array of network locations that users can connect to.
 pref("devtools.aboutdebugging.network-locations", "[]");
 // Debug target pane collapse/expand settings.
@@ -351,10 +378,15 @@ pref("devtools.aboutdebugging.collapsibilities.sharedWorker", false);
 pref("devtools.aboutdebugging.collapsibilities.tab", false);
 pref("devtools.aboutdebugging.collapsibilities.temporaryExtension", false);
 
-// about:debugging: only show system add-ons in local builds by default.
-//@line 368 "$SRCDIR/devtools/client/preferences/devtools-client.js"
-  pref("devtools.aboutdebugging.showSystemAddons", false);
-//@line 372 "$SRCDIR/devtools/client/preferences/devtools-client.js"
+// about:debugging: only show system and hidden extensions in local builds by default.
+//@line 399 "$SRCDIR/devtools/client/preferences/devtools-client.js"
+  pref("devtools.aboutdebugging.showHiddenAddons", false);
+//@line 403 "$SRCDIR/devtools/client/preferences/devtools-client.js"
 
 // Map top-level await expressions in the console
 pref("devtools.debugger.features.map-await-expression", true);
+
+// Disable autohide for DevTools popups and tooltips.
+// This is currently not exposed by any UI to avoid making
+// about:devtools-toolbox tabs unusable by mistake.
+pref("devtools.popup.disable_autohide", false);

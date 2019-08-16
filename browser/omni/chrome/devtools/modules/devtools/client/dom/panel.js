@@ -9,7 +9,12 @@ const { Cu } = require("chrome");
 const ObjectClient = require("devtools/shared/client/object-client");
 
 const EventEmitter = require("devtools/shared/event-emitter");
-loader.lazyRequireGetter(this, "openContentLink", "devtools/client/shared/link", true);
+loader.lazyRequireGetter(
+  this,
+  "openContentLink",
+  "devtools/client/shared/link",
+  true
+);
 
 /**
  * This object represents DOM panel. It's responsibility is to
@@ -35,8 +40,16 @@ DomPanel.prototype = {
    * @return object
    *         A promise that is resolved when the DOM panel completes opening.
    */
-  open() {
+  async open() {
+    // Wait for the retrieval of root object properties before resolving open
+    const onGetProperties = new Promise(resolve => {
+      this._resolveOpen = resolve;
+    });
+
     this.initialize();
+    this.refresh();
+
+    await onGetProperties;
 
     this.isReady = true;
     this.emit("ready");
@@ -47,16 +60,27 @@ DomPanel.prototype = {
   // Initialization
 
   initialize: function() {
-    this.panelWin.addEventListener("devtools/content/message",
-      this.onContentMessage, true);
+    this.panelWin.addEventListener(
+      "devtools/content/message",
+      this.onContentMessage,
+      true
+    );
 
     this.target.on("navigate", this.onTabNavigated);
     this._toolbox.on("select", this.onPanelVisibilityChange);
 
     // Export provider object with useful API for DOM panel.
     const provider = {
+      getToolbox: this.getToolbox.bind(this),
       getPrototypeAndProperties: this.getPrototypeAndProperties.bind(this),
       openLink: this.openLink.bind(this),
+      // Resolve DomPanel.open once the object properties are fetched
+      onPropertiesFetched: () => {
+        if (this._resolveOpen) {
+          this._resolveOpen();
+          this._resolveOpen = null;
+        }
+      },
     };
 
     exportIntoContentScope(this.panelWin, provider, "DomProvider");
@@ -65,19 +89,15 @@ DomPanel.prototype = {
   },
 
   destroy() {
-    if (this._destroying) {
-      return this._destroying;
+    if (this._destroyed) {
+      return;
     }
+    this._destroyed = true;
 
-    this._destroying = new Promise(resolve => {
-      this.target.off("navigate", this.onTabNavigated);
-      this._toolbox.off("select", this.onPanelVisibilityChange);
+    this.target.off("navigate", this.onTabNavigated);
+    this._toolbox.off("select", this.onPanelVisibilityChange);
 
-      this.emit("destroyed");
-      resolve();
-    });
-
-    return this._destroying;
+    this.emit("destroyed");
   },
 
   // Events
@@ -166,7 +186,9 @@ DomPanel.prototype = {
   getRootGrip: async function() {
     // Attach Console. It might involve RDP communication, so wait
     // asynchronously for the result
-    const { result } = await this.target.activeConsole.evaluateJSAsync("window");
+    const { result } = await this.target.activeConsole.evaluateJSAsync(
+      "window"
+    );
     return result;
   },
 
@@ -191,6 +213,10 @@ DomPanel.prototype = {
     if (typeof this[method] == "function") {
       this[method](data.args);
     }
+  },
+
+  getToolbox: function() {
+    return this._toolbox;
   },
 
   get target() {

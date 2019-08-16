@@ -8,26 +8,38 @@
 const nodeConstants = require("devtools/shared/dom-node-constants");
 
 // React & Redux
-const { createFactory, createElement } = require("devtools/client/shared/vendor/react");
+const {
+  createFactory,
+  createElement,
+} = require("devtools/client/shared/vendor/react");
 const ReactDOM = require("devtools/client/shared/vendor/react-dom");
 const { Provider } = require("devtools/client/shared/vendor/react-redux");
-const { combineReducers } = require("devtools/client/shared/vendor/redux");
 
 // Accessibility Panel
 const MainFrame = createFactory(require("./components/MainFrame"));
-const OldVersionDescription =
-  createFactory(require("./components/Description").OldVersionDescription);
+const OldVersionDescription = createFactory(
+  require("./components/Description").OldVersionDescription
+);
 
 // Store
-const createStore = require("devtools/client/shared/redux/create-store")();
+const createStore = require("devtools/client/shared/redux/create-store");
 
 // Reducers
 const { reducers } = require("./reducers/index");
-const store = createStore(combineReducers(reducers));
+const store = createStore(reducers);
 
 // Actions
 const { reset } = require("./actions/ui");
 const { select, highlight } = require("./actions/accessibles");
+
+/**
+ * A helper function that wraps access to the dom walker that should be updated
+ * when fission-ready API is in place. Right now walker is accessed from the
+ * toolbox which will no longer be the case.
+ */
+async function getDOMWalker() {
+  return (await gToolbox.target.getFront("inspector")).walker;
+}
 
 /**
  * This object represents view of the Accessibility panel and is responsible
@@ -52,8 +64,9 @@ AccessibilityView.prototype = {
    * @param {JSON}   supports       a collection of flags indicating which accessibility
    *                                panel features are supported by the current serverside
    *                                version.
+   * @param {Array}  fluentBundles  array of FluentBundles elements for localization
    */
-  async initialize(accessibility, walker, supports) {
+  async initialize(accessibility, walker, supports, fluentBundles) {
     // Make sure state is reset every time accessibility panel is initialized.
     await this.store.dispatch(reset(accessibility, supports));
     const container = document.getElementById("content");
@@ -63,7 +76,12 @@ AccessibilityView.prototype = {
       return;
     }
 
-    const mainFrame = MainFrame({ accessibility, walker });
+    const mainFrame = MainFrame({
+      accessibility,
+      accessibilityWalker: walker,
+      fluentBundles,
+      getDOMWalker,
+    });
     // Render top level component
     const provider = createElement(Provider, { store: this.store }, mainFrame);
     this.mainFrame = ReactDOM.render(provider, container);
@@ -79,18 +97,29 @@ AccessibilityView.prototype = {
     window.emit(EVENTS.NEW_ACCESSIBLE_FRONT_HIGHLIGHTED);
   },
 
-  async selectNodeAccessible(walker, node) {
+  async selectNodeAccessible(walker, node, supports) {
     let accessible = await walker.getAccessibleFor(node);
+    if (accessible && supports.hydration) {
+      await accessible.hydrate();
+    }
+
     // If node does not have an accessible object, try to find node's child text node and
     // try to retrieve an accessible object for that child instead. This is the best
     // effort approach until there's accessibility API to retrieve accessible object at
     // point.
     if (!accessible || accessible.indexInParent < 0) {
-      const { nodes: children } = await gToolbox.walker.children(node);
+      const domWalker = await getDOMWalker();
+      const { nodes: children } = await domWalker.children(node);
       for (const child of children) {
         if (child.nodeType === nodeConstants.TEXT_NODE) {
           accessible = await walker.getAccessibleFor(child);
-          if (accessible && accessible.indexInParent >= 0) {
+          // indexInParent property is only available with additional request
+          // for data (hydration) about the accessible object.
+          if (accessible && supports.hydration) {
+            await accessible.hydrate();
+          }
+
+          if (accessible.indexInParent >= 0) {
             break;
           }
         }

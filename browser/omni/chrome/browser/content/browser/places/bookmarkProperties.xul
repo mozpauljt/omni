@@ -17,8 +17,6 @@
 <dialog id="bookmarkproperties"
         buttons="accept, cancel"
         buttoniconaccept="save"
-        ondialogaccept="BookmarkPropertiesPanel.onDialogAccept();"
-        ondialogcancel="BookmarkPropertiesPanel.onDialogCancel();"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         onload="BookmarkPropertiesPanel.onDialogLoad();"
         onunload="BookmarkPropertiesPanel.onDialogUnload();"
@@ -30,16 +28,12 @@
                   src="chrome://browser/locale/places/bookmarkProperties.properties"/>
   </stringbundleset>
 
-  <script type="application/javascript"
-          src="chrome://browser/content/places/editBookmark.js"/>
-  <script type="application/javascript"
-          src="chrome://browser/content/places/bookmarkProperties.js"/>
-  <script type="application/javascript"
-          src="chrome://global/content/globalOverlay.js"/>
-  <script type="application/javascript"
-          src="chrome://browser/content/utilityOverlay.js"/>
-  <script type="application/javascript"
-          src="chrome://browser/content/places/places-tree.js"/>
+  <script src="chrome://browser/content/places/editBookmark.js"/>
+  <script src="chrome://browser/content/places/bookmarkProperties.js"/>
+  <script src="chrome://global/content/globalOverlay.js"/>
+  <script src="chrome://browser/content/utilityOverlay.js"/>
+  <script src="chrome://browser/content/places/places-tree.js"/>
+
 
 <vbox id="editBookmarkPanelContent" flex="1">
   <hbox id="editBMPanel_selectionCount" pack="center">
@@ -53,7 +47,7 @@
              accesskey="&editBookmarkOverlay.name.accesskey;"
              control="editBMPanel_namePicker"/>
       <textbox id="editBMPanel_namePicker"
-               onchange="gEditItemOverlay.onNamePickerChange().catch(Components.utils.reportError);"/>
+               onchange="gEditItemOverlay.onNamePickerChange().catch(Cu.reportError);"/>
     </vbox>
 
     <vbox id="editBMPanel_locationRow"
@@ -74,7 +68,7 @@
         <menulist id="editBMPanel_folderMenuList"
                   class="folder-icon panel-button"
                   flex="1"
-                  oncommand="gEditItemOverlay.onFolderMenuListCommand(event).catch(Components.utils.reportError);">
+                  oncommand="gEditItemOverlay.onFolderMenuListCommand(event).catch(Cu.reportError);">
           <menupopup>
             <!-- Static item for special folders -->
             <menuitem id="editBMPanel_toolbarFolderItem"
@@ -106,7 +100,7 @@
         <button label="&editBookmarkOverlay.newFolderButton.label;"
                 id="editBMPanel_newFolderButton"
                 accesskey="&editBookmarkOverlay.newFolderButton.accesskey;"
-                oncommand="gEditItemOverlay.newFolder().catch(Components.utils.reportError);"/>
+                oncommand="gEditItemOverlay.newFolder().catch(Cu.reportError);"/>
       </hbox>
     </vbox>
 

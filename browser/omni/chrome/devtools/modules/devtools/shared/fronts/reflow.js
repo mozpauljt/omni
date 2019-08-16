@@ -4,8 +4,11 @@
 
 "use strict";
 
-const {reflowSpec} = require("devtools/shared/specs/reflow");
-const { FrontClassWithSpec, registerFront } = require("devtools/shared/protocol");
+const { reflowSpec } = require("devtools/shared/specs/reflow");
+const {
+  FrontClassWithSpec,
+  registerFront,
+} = require("devtools/shared/protocol");
 
 /**
  * Usage example of the reflow front:
@@ -16,8 +19,8 @@ const { FrontClassWithSpec, registerFront } = require("devtools/shared/protocol"
  * // now wait for events to come
  */
 class ReflowFront extends FrontClassWithSpec(reflowSpec) {
-  constructor(client) {
-    super(client);
+  constructor(client, targetFront, parentFront) {
+    super(client, targetFront, parentFront);
 
     // Attribute name from which to retrieve the actorID out of the target actor's form
     this.formAttributeName = "reflowActor";

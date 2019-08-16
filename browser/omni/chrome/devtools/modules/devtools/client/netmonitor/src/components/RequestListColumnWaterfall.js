@@ -30,7 +30,7 @@ class RequestListColumnWaterfall extends Component {
   static get propTypes() {
     return {
       connector: PropTypes.object.isRequired,
-      firstRequestStartedMillis: PropTypes.number.isRequired,
+      firstRequestStartedMs: PropTypes.number.isRequired,
       item: PropTypes.object.isRequired,
       onWaterfallMouseDown: PropTypes.func.isRequired,
     };
@@ -47,12 +47,22 @@ class RequestListColumnWaterfall extends Component {
   }
 
   shouldComponentUpdate(nextProps) {
-    return !propertiesEqual(UPDATED_WATERFALL_PROPS, this.props.item, nextProps.item) ||
-      this.props.firstRequestStartedMillis !== nextProps.firstRequestStartedMillis;
+    return (
+      !propertiesEqual(
+        UPDATED_WATERFALL_PROPS,
+        this.props.item,
+        nextProps.item
+      ) || this.props.firstRequestStartedMs !== nextProps.firstRequestStartedMs
+    );
   }
 
   timingTooltip() {
-    const { eventTimings, fromCache, fromServiceWorker, totalTime } = this.props.item;
+    const {
+      eventTimings,
+      fromCache,
+      fromServiceWorker,
+      totalTime,
+    } = this.props.item;
     const tooltip = [];
 
     if (fromCache || fromServiceWorker) {
@@ -64,20 +74,29 @@ class RequestListColumnWaterfall extends Component {
         const width = eventTimings.timings[key];
 
         if (width > 0) {
-          tooltip.push(L10N.getFormatStr("netmonitor.waterfall.tooltip." + key, width));
+          tooltip.push(
+            L10N.getFormatStr("netmonitor.waterfall.tooltip." + key, width)
+          );
         }
       }
     }
 
     if (typeof totalTime === "number") {
-      tooltip.push(L10N.getFormatStr("netmonitor.waterfall.tooltip.total", totalTime));
+      tooltip.push(
+        L10N.getFormatStr("netmonitor.waterfall.tooltip.total", totalTime)
+      );
     }
 
     return tooltip.join(L10N.getStr("netmonitor.waterfall.tooltip.separator"));
   }
 
   timingBoxes() {
-    const { eventTimings, fromCache, fromServiceWorker, totalTime } = this.props.item;
+    const {
+      eventTimings,
+      fromCache,
+      fromServiceWorker,
+      totalTime,
+    } = this.props.item;
     const boxes = [];
 
     if (fromCache || fromServiceWorker) {
@@ -106,11 +125,14 @@ class RequestListColumnWaterfall extends Component {
     if (typeof totalTime === "number") {
       const title = L10N.getFormatStr("networkMenu.totalMS2", totalTime);
       boxes.push(
-        div({
-          key: "total",
-          className: "requests-list-timings-total",
-          title,
-        }, title)
+        div(
+          {
+            key: "total",
+            className: "requests-list-timings-total",
+            title,
+          },
+          title
+        )
       );
     }
 
@@ -118,14 +140,10 @@ class RequestListColumnWaterfall extends Component {
   }
 
   render() {
-    const {
-      firstRequestStartedMillis,
-      item,
-      onWaterfallMouseDown,
-    } = this.props;
+    const { firstRequestStartedMs, item, onWaterfallMouseDown } = this.props;
 
-    return (
-      dom.td({
+    return dom.td(
+      {
         className: "requests-list-column requests-list-waterfall",
         onMouseOver: ({ target }) => {
           if (!target.title) {
@@ -133,15 +151,15 @@ class RequestListColumnWaterfall extends Component {
           }
         },
       },
-        div({
+      div(
+        {
           className: "requests-list-timings",
           style: {
-            paddingInlineStart: `${item.startedMillis - firstRequestStartedMillis}px`,
+            paddingInlineStart: `${item.startedMs - firstRequestStartedMs}px`,
           },
           onMouseDown: onWaterfallMouseDown,
         },
-          this.timingBoxes(),
-        )
+        this.timingBoxes()
       )
     );
   }

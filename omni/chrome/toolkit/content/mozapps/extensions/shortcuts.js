@@ -5,7 +5,9 @@
 
 "use strict";
 
-const {XPCOMUtils} = ChromeUtils.import("resource://gre/modules/XPCOMUtils.jsm");
+const { XPCOMUtils } = ChromeUtils.import(
+  "resource://gre/modules/XPCOMUtils.jsm"
+);
 
 XPCOMUtils.defineLazyModuleGetters(this, {
   AddonManager: "resource://gre/modules/AddonManager.jsm",
@@ -18,19 +20,25 @@ const COLLAPSE_OPTIONS = {
   limit: 5, // We only want to show 5 when collapsed.
   allowOver: 1, // Avoid collapsing to hide 1 row.
 };
+const SHORTCUT_KEY_SEPARATOR = "|";
 
 let templatesLoaded = false;
+let shortcutKeyMap = new Map();
 const templates = {};
 
 function loadTemplates() {
-  if (templatesLoaded) return;
+  if (templatesLoaded) {
+    return;
+  }
   templatesLoaded = true;
 
   templates.card = document.getElementById("card-template");
   templates.row = document.getElementById("shortcut-row-template");
   templates.noAddons = document.getElementById("shortcuts-no-addons");
   templates.expandRow = document.getElementById("expand-row-template");
-  templates.noShortcutAddons = document.getElementById("shortcuts-no-commands-template");
+  templates.noShortcutAddons = document.getElementById(
+    "shortcuts-no-commands-template"
+  );
 }
 
 function extensionForAddonId(id) {
@@ -43,7 +51,7 @@ let builtInNames = new Map([
   ["_execute_page_action", "shortcuts-pageAction"],
   ["_execute_sidebar_action", "shortcuts-sidebarAction"],
 ]);
-let getCommandDescriptionId = (command) => {
+let getCommandDescriptionId = command => {
   if (!command.description && builtInNames.has(command.name)) {
     return builtInNames.get(command.name);
   }
@@ -51,18 +59,75 @@ let getCommandDescriptionId = (command) => {
 };
 
 const _functionKeys = [
-  "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
+  "F1",
+  "F2",
+  "F3",
+  "F4",
+  "F5",
+  "F6",
+  "F7",
+  "F8",
+  "F9",
+  "F10",
+  "F11",
+  "F12",
 ];
 const functionKeys = new Set(_functionKeys);
 const validKeys = new Set([
-  "Home", "End", "PageUp", "PageDown", "Insert", "Delete",
-  "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+  "Home",
+  "End",
+  "PageUp",
+  "PageDown",
+  "Insert",
+  "Delete",
+  "0",
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
   ..._functionKeys,
-  "MediaNextTrack", "MediaPlayPause", "MediaPrevTrack", "MediaStop",
-  "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-  "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
-  "Up", "Down", "Left", "Right",
-  "Comma", "Period", "Space",
+  "MediaNextTrack",
+  "MediaPlayPause",
+  "MediaPrevTrack",
+  "MediaStop",
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F",
+  "G",
+  "H",
+  "I",
+  "J",
+  "K",
+  "L",
+  "M",
+  "N",
+  "O",
+  "P",
+  "Q",
+  "R",
+  "S",
+  "T",
+  "U",
+  "V",
+  "W",
+  "X",
+  "Y",
+  "Z",
+  "Up",
+  "Down",
+  "Left",
+  "Right",
+  "Comma",
+  "Period",
+  "Space",
 ]);
 
 /**
@@ -155,26 +220,47 @@ function getShortcutValue(shortcut) {
 
 let error;
 
-function setError(input, messageId) {
-  if (!error) error = document.querySelector(".error-message");
+function setError(...args) {
+  setInputMessage("error", ...args);
+}
 
-  let {x, y, height} = input.getBoundingClientRect();
+function setWarning(...args) {
+  setInputMessage("warning", ...args);
+}
+
+function setInputMessage(type, input, messageId, args) {
+  if (!error) {
+    error = document.querySelector(".error-message");
+  }
+
+  let { x, y, height } = input.getBoundingClientRect();
   error.style.top = `${y + window.scrollY + height - 5}px`;
   error.style.left = `${x}px`;
+  error.setAttribute("type", type);
   document.l10n.setAttributes(
-    error.querySelector(".error-message-label"), messageId);
+    error.querySelector(".error-message-label"),
+    messageId,
+    args
+  );
   error.style.visibility = "visible";
 }
 
 function inputBlurred(e) {
-  if (!error) error = document.querySelector(".error-message");
+  if (!error) {
+    error = document.querySelector(".error-message");
+  }
 
   error.style.visibility = "hidden";
   e.target.value = getShortcutValue(e.target.getAttribute("shortcut"));
 }
 
-function clearValue(e) {
+function onFocus(e) {
   e.target.value = "";
+
+  let warning = e.target.getAttribute("warning");
+  if (warning) {
+    setWarning(e.target, warning);
+  }
 }
 
 function getShortcutForEvent(e) {
@@ -200,6 +286,106 @@ function getShortcutForEvent(e) {
     .map(([key]) => key)
     .concat(getStringForEvent(e))
     .join("+");
+}
+
+function buildDuplicateShortcutsMap(addons) {
+  return Promise.all(
+    addons.map(async addon => {
+      let extension = extensionForAddonId(addon.id);
+      if (extension && extension.shortcuts) {
+        let commands = await extension.shortcuts.allCommands();
+        for (let command of commands) {
+          recordShortcut(command.shortcut, addon.name, command.name);
+        }
+      }
+    })
+  );
+}
+
+function recordShortcut(shortcut, addonName, commandName) {
+  if (!shortcut) {
+    return;
+  }
+  let addons = shortcutKeyMap.get(shortcut);
+  let addonString = `${addonName}${SHORTCUT_KEY_SEPARATOR}${commandName}`;
+  if (addons) {
+    addons.add(addonString);
+  } else {
+    shortcutKeyMap.set(shortcut, new Set([addonString]));
+  }
+}
+
+function removeShortcut(shortcut, addonName, commandName) {
+  let addons = shortcutKeyMap.get(shortcut);
+  let addonString = `${addonName}${SHORTCUT_KEY_SEPARATOR}${commandName}`;
+  if (addons) {
+    addons.delete(addonString);
+    if (addons.size === 0) {
+      shortcutKeyMap.delete(shortcut);
+    }
+  }
+}
+
+function getAddonName(shortcut) {
+  let addons = shortcutKeyMap.get(shortcut);
+  // Get the first addon name with given shortcut.
+  let name = addons.values().next().value;
+  return name.split(SHORTCUT_KEY_SEPARATOR)[0];
+}
+
+function setDuplicateWarnings() {
+  let warningHolder = document.getElementById("duplicate-warning-messages");
+  clearWarnings(warningHolder);
+  for (let [shortcut, addons] of shortcutKeyMap) {
+    if (addons.size > 1) {
+      warningHolder.appendChild(createDuplicateWarningBar(shortcut));
+      markDuplicates(shortcut);
+    }
+  }
+}
+
+function clearWarnings(warningHolder) {
+  warningHolder.textContent = "";
+  let inputs = document.querySelectorAll(".shortcut-input[warning]");
+  for (let input of inputs) {
+    input.removeAttribute("warning");
+    let row = input.closest(".shortcut-row");
+    if (row.hasAttribute("hide-before-expand")) {
+      row
+        .closest(".card")
+        .querySelector(".expand-button")
+        .removeAttribute("warning");
+    }
+  }
+}
+
+function createDuplicateWarningBar(shortcut) {
+  let messagebar = document.createElement("message-bar");
+  messagebar.setAttribute("type", "warning");
+
+  let message = document.createElement("span");
+  document.l10n.setAttributes(message, "shortcuts-duplicate-warning-message", {
+    shortcut,
+  });
+
+  messagebar.append(message);
+  return messagebar;
+}
+
+function markDuplicates(shortcut) {
+  let inputs = document.querySelectorAll(
+    `.shortcut-input[shortcut="${shortcut}"]`
+  );
+  for (let input of inputs) {
+    input.setAttribute("warning", "shortcuts-duplicate");
+    let row = input.closest(".shortcut-row");
+    if (row.hasAttribute("hide-before-expand")) {
+      row
+        .closest(".card")
+        .querySelector(".expand-button")
+        .setAttribute("warning", "shortcuts-duplicate");
+    }
+  }
 }
 
 function onShortcutChange(e) {
@@ -241,9 +427,24 @@ function onShortcutChange(e) {
         break;
       }
 
-      // Update the shortcut if it isn't reserved.
       let addonId = input.closest(".card").getAttribute("addon-id");
       let extension = extensionForAddonId(addonId);
+
+      // Check if shortcut is already assigned.
+      if (shortcutKeyMap.has(shortcutString)) {
+        setError(input, "shortcuts-exists", {
+          addon: getAddonName(shortcutString),
+        });
+        break;
+      } else {
+        // Update the shortcut if it isn't reserved or assigned.
+        let oldShortcut = input.getAttribute("shortcut");
+        let addonName = input.closest(".card").getAttribute("addon-name");
+        let commandName = input.getAttribute("name");
+
+        removeShortcut(oldShortcut, addonName, commandName);
+        recordShortcut(shortcutString, addonName, commandName);
+      }
 
       // This is async, but we're not awaiting it to keep the handler sync.
       extension.shortcuts.updateCommand({
@@ -252,12 +453,14 @@ function onShortcutChange(e) {
       });
       input.setAttribute("shortcut", shortcutString);
       input.blur();
+      setDuplicateWarnings();
       break;
     case ShortcutUtils.MODIFIER_REQUIRED:
-      if (AppConstants.platform == "macosx")
+      if (AppConstants.platform == "macosx") {
         setError(input, "shortcuts-modifier-mac");
-      else
+      } else {
         setError(input, "shortcuts-modifier-other");
+      }
       break;
     case ShortcutUtils.INVALID_COMBINATION:
       setError(input, "shortcuts-invalid");
@@ -284,17 +487,31 @@ function renderNoShortcutAddons(addons) {
 async function renderAddons(addons) {
   let frag = document.createDocumentFragment();
   let noShortcutAddons = [];
+
+  await buildDuplicateShortcutsMap(addons);
+
+  let isDuplicate = command => {
+    if (command.shortcut) {
+      let dupes = shortcutKeyMap.get(command.shortcut);
+      return dupes.size > 1;
+    }
+    return false;
+  };
+
   for (let addon of addons) {
     let extension = extensionForAddonId(addon.id);
 
     // Skip this extension if it isn't a webextension.
-    if (!extension) continue;
+    if (!extension) {
+      continue;
+    }
 
     if (extension.shortcuts) {
-      let card = document.importNode(
-        templates.card.content, true).firstElementChild;
+      let card = document.importNode(templates.card.content, true)
+        .firstElementChild;
       let icon = AddonManager.getPreferredIconURL(addon, 24, window);
       card.setAttribute("addon-id", addon.id);
+      card.setAttribute("addon-name", addon.name);
       card.querySelector(".addon-icon").src = icon || FALLBACK_ICON;
       card.querySelector(".addon-name").textContent = addon.name;
 
@@ -302,22 +519,34 @@ async function renderAddons(addons) {
 
       // Sort the commands so the ones with shortcuts are at the top.
       commands.sort((a, b) => {
-        // Boolean compare the shortcuts to see if they're both set or unset.
-        if (!a.shortcut == !b.shortcut)
+        if (isDuplicate(a) && isDuplicate(b)) {
           return 0;
-        if (a.shortcut)
+        }
+        if (isDuplicate(a)) {
           return -1;
+        }
+        if (isDuplicate(b)) {
+          return 1;
+        }
+        // Boolean compare the shortcuts to see if they're both set or unset.
+        if (!a.shortcut == !b.shortcut) {
+          return 0;
+        }
+        if (a.shortcut) {
+          return -1;
+        }
         return 1;
       });
 
-      let {limit, allowOver} = COLLAPSE_OPTIONS;
+      let { limit, allowOver } = COLLAPSE_OPTIONS;
       let willHideCommands = commands.length > limit + allowOver;
       let firstHiddenInput;
 
       for (let i = 0; i < commands.length; i++) {
         let command = commands[i];
 
-        let row = document.importNode(templates.row.content, true).firstElementChild;
+        let row = document.importNode(templates.row.content, true)
+          .firstElementChild;
 
         if (willHideCommands && i >= limit) {
           row.setAttribute("hide-before-expand", "true");
@@ -337,7 +566,7 @@ async function renderAddons(addons) {
         input.addEventListener("keydown", onShortcutChange);
         input.addEventListener("keyup", onShortcutChange);
         input.addEventListener("blur", inputBlurred);
-        input.addEventListener("focus", clearValue);
+        input.addEventListener("focus", onFocus);
 
         if (willHideCommands && i == limit) {
           firstHiddenInput = input;
@@ -351,14 +580,14 @@ async function renderAddons(addons) {
         let row = document.importNode(templates.expandRow.content, true);
         let button = row.querySelector(".expand-button");
         let numberToShow = commands.length - limit;
-        let setLabel = (type) => {
+        let setLabel = type => {
           document.l10n.setAttributes(button, `shortcuts-card-${type}-button`, {
             numberToShow,
           });
         };
 
         setLabel("expand");
-        button.addEventListener("click", (event) => {
+        button.addEventListener("click", event => {
           let expanded = card.hasAttribute("expanded");
           if (expanded) {
             card.removeAttribute("expanded");
@@ -376,7 +605,7 @@ async function renderAddons(addons) {
       }
 
       frag.appendChild(card);
-    } else {
+    } else if (!addon.hidden) {
       noShortcutAddons.push({ id: addon.id, name: addon.name });
     }
   }
@@ -392,7 +621,7 @@ async function render() {
   loadTemplates();
   let allAddons = await AddonManager.getAddonsByTypes(["extension"]);
   let addons = allAddons
-    .filter(addon => !addon.isSystem && addon.isActive)
+    .filter(addon => addon.isActive)
     .sort((a, b) => a.name.localeCompare(b.name));
   let frag;
 
@@ -405,4 +634,5 @@ async function render() {
   let container = document.getElementById("addon-shortcuts");
   container.textContent = "";
   container.appendChild(frag);
+  setDuplicateWarnings();
 }

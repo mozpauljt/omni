@@ -13,29 +13,11 @@
   %storageDTD;
 ]>
 
-<window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        xmlns:html="http://www.w3.org/1999/xhtml">
 
-  <script type="application/javascript"
-          src="chrome://devtools/content/shared/theme-switching.js"/>
-  <script type="text/javascript" src="chrome://global/content/globalOverlay.js"/>
-
-<script type="application/javascript" src="chrome://global/content/editMenuOverlay.js"/>
-<commandset id="editMenuCommands">
-  <commandset id="editMenuCommandSetAll" commandupdater="true" events="focus,select"
-              oncommandupdate="goUpdateGlobalEditMenuItems()"/>
-  <commandset id="editMenuCommandSetUndo" commandupdater="true" events="undo"
-              oncommandupdate="goUpdateUndoEditMenuItems()"/>
-  <commandset id="editMenuCommandSetPaste" commandupdater="true" events="clipboard"
-              oncommandupdate="goUpdatePasteMenuItems()"/>
-  <command id="cmd_undo" oncommand="goDoCommand('cmd_undo')"/>
-  <command id="cmd_redo" oncommand="goDoCommand('cmd_redo')"/>
-  <command id="cmd_cut" oncommand="goDoCommand('cmd_cut')"/>
-  <command id="cmd_copy" oncommand="goDoCommand('cmd_copy')"/>
-  <command id="cmd_paste" oncommand="goDoCommand('cmd_paste')"/>
-  <command id="cmd_delete" oncommand="goDoCommand('cmd_delete')"/>
-  <command id="cmd_selectAll" oncommand="goDoCommand('cmd_selectAll')"/>
-  <command id="cmd_switchTextDirection" oncommand="goDoCommand('cmd_switchTextDirection');"/>
-</commandset>
+  <script src="chrome://devtools/content/shared/theme-switching.js"/>
+  <script src="chrome://global/content/globalOverlay.js"/>
 
   <popupset id="storagePopupSet">
     <menupopup id="storage-tree-popup">
@@ -44,6 +26,10 @@
       <menuitem id="storage-tree-popup-delete-all-session-cookies"
                 label="&storage.popupMenu.deleteAllSessionCookiesLabel;"/>
       <menuitem id="storage-tree-popup-delete"/>
+    </menupopup>
+    <menupopup id="variable-view-popup">
+      <menuitem id="variable-view-popup-copy"
+                label="&storage.popupMenu.copyLabel;"/>
     </menupopup>
     <menupopup id="storage-table-popup">
       <menuitem id="storage-table-popup-add"/>
@@ -60,16 +46,16 @@
     <vbox id="storage-tree"/>
     <splitter class="devtools-side-splitter"/>
     <vbox flex="1">
-      <hbox id="storage-toolbar" class="devtools-toolbar">
-        <button id="add-button"
-                class="devtools-button add-button"></button>
-        <button id="refresh-button"
-                class="devtools-button refresh-button"></button>
-        <spacer flex="1"/>
-        <textbox id="storage-searchbox"
-                 class="devtools-filterinput"
-                 placeholder="&searchBox.placeholder;"/>
-        <button class="devtools-button sidebar-toggle" hidden="true"></button>
+      <hbox id="storage-toolbar" class="devtools-toolbar devtools-input-toolbar">
+        <html:input id="storage-searchbox"
+                    class="devtools-filterinput"
+                    placeholder="&searchBox.placeholder;"/>
+        <hbox class="devtools-separator"/>
+        <html:button id="add-button"
+                class="devtools-button add-button"></html:button>
+        <html:button id="refresh-button"
+                class="devtools-button refresh-button"></html:button>
+        <html:button class="devtools-button sidebar-toggle" hidden="true"></html:button>
       </hbox>
       <vbox id="storage-table" class="theme-sidebar" flex="1"/>
     </vbox>

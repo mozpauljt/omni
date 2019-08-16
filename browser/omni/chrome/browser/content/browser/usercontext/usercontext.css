@@ -98,11 +98,11 @@
 #userContext-indicator {
   height: 16px;
   width: 16px;
+  margin-inline-start: 3px;
 }
 
 #userContext-label {
-  margin-inline-start: 0;
-  margin-inline-end: 3px;
+  margin: 0;
   color: var(--identity-tab-color);
 }
 
@@ -117,6 +117,10 @@
 
 .tabbrowser-tab[pinned][usercontextid] > .tab-stack > .tab-background > .tab-bottom-line {
   background: linear-gradient(to right, transparent 30%, var(--identity-tab-color) 30%, var(--identity-tab-color) 70%, transparent 70%);
+}
+
+.userContext-icon-inprefs {
+  margin-right: 10px;
 }
 
 .userContext-icon,

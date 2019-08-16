@@ -1,9 +1,13 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 "use strict";
 
-const { FrontClassWithSpec, registerFront } = require("devtools/shared/protocol");
+const {
+  FrontClassWithSpec,
+  registerFront,
+} = require("devtools/shared/protocol");
 const {
   mediaRuleSpec,
   styleSheetSpec,
@@ -11,17 +15,25 @@ const {
 } = require("devtools/shared/specs/stylesheets");
 const promise = require("promise");
 
-loader.lazyRequireGetter(this, "getIndentationFromPrefs",
-  "devtools/shared/indentation", true);
-loader.lazyRequireGetter(this, "getIndentationFromString",
-  "devtools/shared/indentation", true);
+loader.lazyRequireGetter(
+  this,
+  "getIndentationFromPrefs",
+  "devtools/shared/indentation",
+  true
+);
+loader.lazyRequireGetter(
+  this,
+  "getIndentationFromString",
+  "devtools/shared/indentation",
+  true
+);
 
 /**
  * Corresponding client-side front for a MediaRuleActor.
  */
 class MediaRuleFront extends FrontClassWithSpec(mediaRuleSpec) {
-  constructor(client) {
-    super(client);
+  constructor(client, targetFront, parentFront) {
+    super(client, targetFront, parentFront);
 
     this._onMatchesChange = this._onMatchesChange.bind(this);
     this.on("matches-change", this._onMatchesChange);
@@ -52,7 +64,7 @@ class MediaRuleFront extends FrontClassWithSpec(mediaRuleSpec) {
     return this._form.column || -1;
   }
   get parentStyleSheet() {
-    return this.conn.getActor(this._form.parentStyleSheet);
+    return this.conn.getFrontByID(this._form.parentStyleSheet);
   }
 }
 
@@ -63,8 +75,8 @@ registerFront(MediaRuleFront);
  * StyleSheetFront is the client-side counterpart to a StyleSheetActor.
  */
 class StyleSheetFront extends FrontClassWithSpec(styleSheetSpec) {
-  constructor(conn, form) {
-    super(conn, form);
+  constructor(conn, targetFront, parentFront) {
+    super(conn, targetFront, parentFront);
 
     this._onPropertyChange = this._onPropertyChange.bind(this);
     this.on("property-change", this._onPropertyChange);
@@ -118,18 +130,18 @@ class StyleSheetFront extends FrontClassWithSpec(styleSheetSpec) {
   guessIndentation() {
     const prefIndent = getIndentationFromPrefs();
     if (prefIndent) {
-      const {indentUnit, indentWithTabs} = prefIndent;
+      const { indentUnit, indentWithTabs } = prefIndent;
       return promise.resolve(indentWithTabs ? "\t" : " ".repeat(indentUnit));
     }
 
-    return (async function() {
+    return async function() {
       const longStr = await this.getText();
       const source = await longStr.string();
 
-      const {indentUnit, indentWithTabs} = getIndentationFromString(source);
+      const { indentUnit, indentWithTabs } = getIndentationFromString(source);
 
       return indentWithTabs ? "\t" : " ".repeat(indentUnit);
-    }.bind(this))();
+    }.bind(this)();
   }
 }
 
@@ -140,8 +152,8 @@ registerFront(StyleSheetFront);
  * The corresponding Front object for the StyleSheetsActor.
  */
 class StyleSheetsFront extends FrontClassWithSpec(styleSheetsSpec) {
-  constructor(client) {
-    super(client);
+  constructor(client, targetFront, parentFront) {
+    super(client, targetFront, parentFront);
 
     // Attribute name from which to retrieve the actorID out of the target actor's form
     this.formAttributeName = "styleSheetsActor";

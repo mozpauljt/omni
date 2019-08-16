@@ -1,6 +1,7 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 "use strict";
 
 const {
@@ -13,8 +14,8 @@ const {
 } = require("devtools/shared/specs/animation");
 
 class AnimationPlayerFront extends FrontClassWithSpec(animationPlayerSpec) {
-  constructor(conn, form) {
-    super(conn, form);
+  constructor(conn, targetFront, parentFront) {
+    super(conn, targetFront, parentFront);
 
     this.state = {};
     this.before("changed", this.onChanged.bind(this));
@@ -34,7 +35,7 @@ class AnimationPlayerFront extends FrontClassWithSpec(animationPlayerSpec) {
       return null;
     }
 
-    return this.conn.getActor(this._form.animationTargetNodeActorID);
+    return this.conn.getFrontByID(this._form.animationTargetNodeActorID);
   }
 
   /**
@@ -72,7 +73,7 @@ class AnimationPlayerFront extends FrontClassWithSpec(animationPlayerSpec) {
    * update the local knowledge of the state.
    */
   onChanged(partialState) {
-    const {state} = this.reconstructState(partialState);
+    const { state } = this.reconstructState(partialState);
     this.state = state;
   }
 
@@ -94,7 +95,7 @@ class AnimationPlayerFront extends FrontClassWithSpec(animationPlayerSpec) {
   getCurrentState() {
     this.currentStateHasChanged = false;
     return super.getCurrentState().then(partialData => {
-      const {state, hasChanged} = this.reconstructState(partialData);
+      const { state, hasChanged } = this.reconstructState(partialData);
       this.currentStateHasChanged = hasChanged;
       return state;
     });
@@ -112,7 +113,7 @@ class AnimationPlayerFront extends FrontClassWithSpec(animationPlayerSpec) {
     }
 
     data.absoluteValues = this.calculateAbsoluteValues(data);
-    return {state: data, hasChanged};
+    return { state: data, hasChanged };
   }
 
   calculateAbsoluteValues(data) {
@@ -155,22 +156,28 @@ class AnimationPlayerFront extends FrontClassWithSpec(animationPlayerSpec) {
       // the graph duration as double of the delay amount. In case of no delay, handle
       // the duration as 1ms which is short enough so as to make the scrubber movable
       // and the limited duration is prioritized.
-      endTime = (absoluteDelay > 0 ? absoluteDelay * 2 : 1);
+      endTime = absoluteDelay > 0 ? absoluteDelay * 2 : 1;
     } else {
-      endTime = absoluteDelay +
-                toRate(duration * (iterationCount || 1)) +
-                absoluteEndDelay;
+      endTime =
+        absoluteDelay +
+        toRate(duration * (iterationCount || 1)) +
+        absoluteEndDelay;
     }
 
-    const absoluteCreatedTime =
-      isPositivePlaybackRate ? createdTime : createdTime - endTime;
-    const absoluteCurrentTimeAtCreated =
-      isPositivePlaybackRate ? currentTimeAtCreated : endTime - currentTimeAtCreated;
-    const animationCurrentTime =
-      isPositivePlaybackRate ? currentTime : endTime - currentTime;
-    const absoluteCurrentTime = absoluteCreatedTime + toRate(animationCurrentTime);
+    const absoluteCreatedTime = isPositivePlaybackRate
+      ? createdTime
+      : createdTime - endTime;
+    const absoluteCurrentTimeAtCreated = isPositivePlaybackRate
+      ? currentTimeAtCreated
+      : endTime - currentTimeAtCreated;
+    const animationCurrentTime = isPositivePlaybackRate
+      ? currentTime
+      : endTime - currentTime;
+    const absoluteCurrentTime =
+      absoluteCreatedTime + toRate(animationCurrentTime);
     const absoluteStartTime = absoluteCreatedTime + Math.min(absoluteDelay, 0);
-    const absoluteStartTimeAtCreated = absoluteCreatedTime + absoluteCurrentTimeAtCreated;
+    const absoluteStartTimeAtCreated =
+      absoluteCreatedTime + absoluteCurrentTimeAtCreated;
     // To show whole graph with endDelay, we add negative endDelay amount to endTime.
     const endTimeWithNegativeEndDelay = endTime - Math.min(absoluteEndDelay, 0);
     const absoluteEndTime = absoluteCreatedTime + endTimeWithNegativeEndDelay;
@@ -194,8 +201,8 @@ exports.AnimationPlayerFront = AnimationPlayerFront;
 registerFront(AnimationPlayerFront);
 
 class AnimationsFront extends FrontClassWithSpec(animationsSpec) {
-  constructor(client) {
-    super(client);
+  constructor(client, targetFront, parentFront) {
+    super(client, targetFront, parentFront);
 
     // Attribute name from which to retrieve the actorID out of the target actor's form
     this.formAttributeName = "animationsActor";

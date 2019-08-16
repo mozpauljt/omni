@@ -6,20 +6,29 @@
 const { Cc, Ci } = require("chrome");
 
 loader.lazyRequireGetter(this, "Services");
-loader.lazyRequireGetter(this, "DebuggerServer", "devtools/server/main", true);
-loader.lazyRequireGetter(this, "AppConstants",
-  "resource://gre/modules/AppConstants.jsm", true);
+loader.lazyRequireGetter(
+  this,
+  "DebuggerServer",
+  "devtools/server/debugger-server",
+  true
+);
+loader.lazyRequireGetter(
+  this,
+  "AppConstants",
+  "resource://gre/modules/AppConstants.jsm",
+  true
+);
 loader.lazyGetter(this, "hostname", () => {
   try {
     // On some platforms (Linux according to try), this service does not exist and fails.
-    return Cc["@mozilla.org/network/dns-service;1"]
-              .getService(Ci.nsIDNSService).myHostName;
+    return Cc["@mozilla.org/network/dns-service;1"].getService(Ci.nsIDNSService)
+      .myHostName;
   } catch (e) {
     return "";
   }
 });
 loader.lazyGetter(this, "endianness", () => {
-  if ((new Uint32Array((new Uint8Array([1, 2, 3, 4])).buffer))[0] === 0x04030201) {
+  if (new Uint32Array(new Uint8Array([1, 2, 3, 4]).buffer)[0] === 0x04030201) {
     return "LE";
   }
   return "BE";
@@ -43,13 +52,7 @@ function getSystemInfo() {
   const appInfo = Services.appinfo;
   const win = Services.wm.getMostRecentWindow(DebuggerServer.chromeWindowType);
   const [processor, compiler] = appInfo.XPCOMABI.split("-");
-  let dpi,
-    useragent,
-    width,
-    height,
-    physicalWidth,
-    physicalHeight,
-    brandName;
+  let dpi, useragent, width, height, physicalWidth, physicalHeight, brandName;
   const appid = appInfo.ID;
   const apptype = APP_MAP[appid];
   const geckoVersion = appInfo.platformVersion;
@@ -59,7 +62,9 @@ function getSystemInfo() {
   const os = appInfo.OS;
   version = appInfo.version;
 
-  const bundle = Services.strings.createBundle("chrome://branding/locale/brand.properties");
+  const bundle = Services.strings.createBundle(
+    "chrome://branding/locale/brand.properties"
+  );
   if (bundle) {
     brandName = bundle.GetStringFromName("brandFullName");
   } else {
@@ -77,7 +82,6 @@ function getSystemInfo() {
   }
 
   const info = {
-
     /**
      * Information from nsIXULAppInfo, regarding
      * the application itself.
@@ -184,8 +188,9 @@ function getProfileLocation() {
     // nsXREDirProvider never gets initialised and so the profile service
     // crashes on initialisation.
     const profd = Services.dirsvc.get("ProfD", Ci.nsIFile);
-    const profservice = Cc["@mozilla.org/toolkit/profile-service;1"]
-                        .getService(Ci.nsIToolkitProfileService);
+    const profservice = Cc["@mozilla.org/toolkit/profile-service;1"].getService(
+      Ci.nsIToolkitProfileService
+    );
     if (profservice.currentProfile) {
       return profservice.currentProfile.name;
     }

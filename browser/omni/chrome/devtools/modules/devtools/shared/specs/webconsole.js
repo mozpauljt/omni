@@ -4,13 +4,16 @@
 
 "use strict";
 
-const {types, generateActorSpec, RetVal, Option, Arg} = require("devtools/shared/protocol");
+const {
+  types,
+  generateActorSpec,
+  RetVal,
+  Option,
+  Arg,
+} = require("devtools/shared/protocol");
 
 types.addDictType("console.traits", {
   evaluateJSAsync: "boolean",
-  transferredResponseSize: "boolean",
-  selectedObjectActor: "boolean",
-  fetchCacheDescriptor: "boolean",
 });
 
 types.addDictType("console.startlisteners", {
@@ -49,6 +52,7 @@ const webconsoleSpecPrototype = {
       exception: Option(0, "nullable:json"),
       exceptionMessage: Option(0, "nullable:string"),
       exceptionDocURL: Option(0, "nullable:string"),
+      exceptionStack: Option(0, "nullable:json"),
       frame: Option(0, "nullable:json"),
       helperResult: Option(0, "nullable:json"),
       input: Option(0, "nullable:string"),
@@ -87,8 +91,7 @@ const webconsoleSpecPrototype = {
     inspectObject: {
       objectActor: Option(0, "json"),
     },
-    lastPrivateContextExited: {
-    },
+    lastPrivateContextExited: {},
     documentEvent: {
       name: Option(0, "string"),
       time: Option(0, "string"),
@@ -100,9 +103,9 @@ const webconsoleSpecPrototype = {
      * Start the given Web Console listeners.
      *
      * @see webconsoleFront LISTENERS
-     * @Arg array listeners
-     *        Array of listeners you want to start. See this.LISTENERS for
-     *        known listeners.
+     * @Arg array events
+     *        Array of events you want to start. See this.LISTENERS for
+     *        known events.
      */
     startListeners: {
       request: {
@@ -114,9 +117,9 @@ const webconsoleSpecPrototype = {
      * Stop the given Web Console listeners.
      *
      * @see webconsoleFront LISTENERS
-     * @Arg array listeners
-     *        Array of listeners you want to stop. See this.LISTENERS for
-     *        known listeners.
+     * @Arg array events
+     *        Array of events you want to stop. See this.LISTENERS for
+     *        known events.
      * @Arg function onResponse
      *        Function to invoke when the server response is received.
      */
@@ -146,7 +149,6 @@ const webconsoleSpecPrototype = {
     evaluateJS: {
       request: {
         text: Option(0, "string"),
-        bindObjectActor: Option(0, "string"),
         frameActor: Option(0, "string"),
         url: Option(0, "string"),
         selectedNodeActor: Option(0, "string"),
@@ -158,7 +160,6 @@ const webconsoleSpecPrototype = {
     evaluateJSAsync: {
       request: {
         text: Option(0, "string"),
-        bindObjectActor: Option(0, "string"),
         frameActor: Option(0, "string"),
         url: Option(0, "string"),
         selectedNodeActor: Option(0, "string"),
@@ -193,8 +194,8 @@ const webconsoleSpecPrototype = {
       response: RetVal("console.autocomplete"),
     },
     /**
-    * Clear the cache of messages (page errors and console API calls) expects no response.
-    */
+     * Clear the cache of messages (page errors and console API calls) expects no response.
+     */
     clearMessagesCache: {
       oneway: true,
     },
@@ -233,6 +234,18 @@ const webconsoleSpecPrototype = {
         request: Arg(0, "json"),
       },
       response: RetVal("json"),
+    },
+
+    blockRequest: {
+      request: {
+        filter: Arg(0, "json"),
+      },
+    },
+
+    unblockRequest: {
+      request: {
+        filter: Arg(0, "json"),
+      },
     },
   },
 };

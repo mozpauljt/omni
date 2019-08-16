@@ -4,9 +4,7 @@
 
 "use strict";
 
-const {
-  MESSAGES_CLEAR,
-} = require("devtools/client/webconsole/constants");
+const { MESSAGES_CLEAR } = require("devtools/client/webconsole/constants");
 
 /**
  * This enhancer is responsible for clearing the messages caches using the
@@ -18,10 +16,9 @@ function enableMessagesCacheClearing(webConsoleUI) {
     function messagesCacheClearingEnhancer(state, action) {
       state = reducer(state, action);
 
-      const webConsoleClient = webConsoleUI && webConsoleUI.webConsoleClient;
-      if (webConsoleClient && action.type === MESSAGES_CLEAR) {
-        webConsoleClient.clearNetworkRequests();
-        webConsoleClient.clearMessagesCache();
+      if (webConsoleUI && action.type === MESSAGES_CLEAR) {
+        webConsoleUI.clearNetworkRequests();
+        webConsoleUI.clearMessagesCache();
       }
       return state;
     }

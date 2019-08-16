@@ -1,6 +1,7 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 "use strict";
 
 const {
@@ -15,9 +16,10 @@ const {
 const events = require("devtools/shared/event-emitter");
 
 class AccessibleFront extends FrontClassWithSpec(accessibleSpec) {
-  constructor(client) {
-    super(client);
+  constructor(client, targetFront, parentFront) {
+    super(client, targetFront, parentFront);
 
+    this.before("audited", this.audited.bind(this));
     this.before("name-change", this.nameChange.bind(this));
     this.before("value-change", this.valueChange.bind(this));
     this.before("description-change", this.descriptionChange.bind(this));
@@ -78,9 +80,14 @@ class AccessibleFront extends FrontClassWithSpec(accessibleSpec) {
     return this._form.attributes;
   }
 
+  get checks() {
+    return this._form.checks;
+  }
+
   form(form) {
     this.actorID = form.actor;
-    this._form = form;
+    this._form = this._form || {};
+    Object.assign(this._form, form);
   }
 
   nameChange(name, parent, walker) {
@@ -136,11 +143,22 @@ class AccessibleFront extends FrontClassWithSpec(accessibleSpec) {
   attributesChange(attributes) {
     this._form.attributes = attributes;
   }
+
+  audited(checks) {
+    this._form.checks = this._form.checks || {};
+    Object.assign(this._form.checks, checks);
+  }
+
+  hydrate() {
+    return super.hydrate().then(properties => {
+      Object.assign(this._form, properties);
+    });
+  }
 }
 
 class AccessibleWalkerFront extends FrontClassWithSpec(accessibleWalkerSpec) {
-  constructor(client) {
-    super(client);
+  constructor(client, targetFront, parentFront) {
+    super(client, targetFront, parentFront);
     this.before("accessible-destroy", this.accessibleDestroy.bind(this));
   }
 
@@ -162,8 +180,8 @@ class AccessibleWalkerFront extends FrontClassWithSpec(accessibleWalkerSpec) {
 }
 
 class AccessibilityFront extends FrontClassWithSpec(accessibilitySpec) {
-  constructor(client) {
-    super(client);
+  constructor(client, targetFront, parentFront) {
+    super(client, targetFront, parentFront);
 
     this.before("init", this.init.bind(this));
     this.before("shutdown", this.shutdown.bind(this));

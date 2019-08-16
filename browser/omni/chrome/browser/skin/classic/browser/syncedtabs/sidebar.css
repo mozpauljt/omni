@@ -124,6 +124,14 @@ body {
   background-image: url("chrome://browser/skin/device-desktop.svg");
 }
 
+.item.client[clientType=tv] > .item-title-container > .item-icon-container {
+  background-image: url("chrome://browser/skin/device-tv.svg");
+}
+
+.item.client[clientType=vr] > .item-title-container > .item-icon-container {
+  background-image: url("chrome://browser/skin/device-vr.svg");
+}
+
 .item.tab > .item-title-container > .item-icon-container {
   background-image: url("chrome://mozapps/skin/places/defaultFavicon.svg");
   -moz-context-properties: fill;
@@ -233,10 +241,11 @@ body {
 
 .deck .syncIllustration,
 .deck .syncIllustrationIssue {
-  height: 91px;
+  height: 174px;
   margin: 38px 8px 15px;
   background-position: center;
   background-repeat: no-repeat;
+  background-size: contain;
 }
 
 .deck .syncIllustration {
@@ -341,10 +350,12 @@ body[lwt-sidebar-highlight] .item.selected:focus > .item-title-container {
 }
 
 .textbox-search-clear {
-  background-image: url(moz-icon://stock/gtk-clear?size=menu);
+  background-image: url(chrome://global/skin/icons/searchfield-cancel.svg);
   background-repeat: no-repeat;
-  width: 16px;
-  height: 16px;
+  background-size: 12px 12px;
+  width: 12px;
+  height: 12px;
+  margin-top: 3px;
 }
 
 .search-box > .textbox-input-box {
@@ -355,7 +366,7 @@ body[lwt-sidebar-highlight] .item.selected:focus > .item-title-container {
   padding-inline-start: 14px;
 }
 
-.search-box > .textbox-input-box:-moz-locale-dir(rtl) {
+.search-box > .textbox-input-box:dir(rtl) {
   background-position: right center;
 }
 

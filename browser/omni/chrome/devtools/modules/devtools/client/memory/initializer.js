@@ -6,7 +6,10 @@
 
 "use strict";
 
-const { createFactory, createElement } = require("devtools/client/shared/vendor/react");
+const {
+  createFactory,
+  createElement,
+} = require("devtools/client/shared/vendor/react");
 const ReactDOM = require("devtools/client/shared/vendor/react-dom");
 const { Provider } = require("devtools/client/shared/vendor/react-redux");
 const App = createFactory(require("devtools/client/memory/app"));
@@ -35,9 +38,12 @@ const initialize = async function() {
   window.gStore = store;
 };
 
-const destroy = async function() {
+const destroy = function() {
   const ok = ReactDOM.unmountComponentAtNode(root);
-  assert(ok, "Should successfully unmount the memory tool's top level React component");
+  assert(
+    ok,
+    "Should successfully unmount the memory tool's top level React component"
+  );
 
   unsubscribe();
 };

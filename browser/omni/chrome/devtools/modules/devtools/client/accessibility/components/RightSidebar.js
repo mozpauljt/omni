@@ -4,20 +4,26 @@
 "use strict";
 
 // React
-const { Component, createFactory } = require("devtools/client/shared/vendor/react");
+const {
+  Component,
+  createFactory,
+} = require("devtools/client/shared/vendor/react");
 const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
 const { div } = require("devtools/client/shared/vendor/react-dom-factories");
 
 const { L10N } = require("../utils/l10n");
 const Accessible = createFactory(require("./Accessible"));
-const Accordion = createFactory(require("devtools/client/shared/components/Accordion"));
+const Accordion = createFactory(
+  require("devtools/client/shared/components/Accordion")
+);
 const Checks = createFactory(require("./Checks"));
 
 // Component that is responsible for rendering accessible panel's sidebar.
 class RightSidebar extends Component {
   static get propTypes() {
     return {
-      walker: PropTypes.object.isRequired,
+      accessibilityWalker: PropTypes.object.isRequired,
+      getDOMWalker: PropTypes.func.isRequired,
     };
   }
 
@@ -28,28 +34,34 @@ class RightSidebar extends Component {
   render() {
     const propertiesHeaderID = "accessibility-properties-header";
     const checksHeaderID = "accessibility-checks-header";
-    const { walker } = this.props;
-    return (
-      div({
+    const { accessibilityWalker, getDOMWalker } = this.props;
+    return div(
+      {
         className: "right-sidebar",
         role: "presentation",
       },
-        Accordion({
-          items: [{
+      Accordion({
+        items: [
+          {
             className: "checks",
             component: Checks({ labelledby: checksHeaderID }),
             header: L10N.getStr("accessibility.checks"),
             labelledby: checksHeaderID,
             opened: true,
-          }, {
+          },
+          {
             className: "accessible",
-            component: Accessible({ walker, labelledby: propertiesHeaderID }),
+            component: Accessible({
+              accessibilityWalker,
+              getDOMWalker,
+              labelledby: propertiesHeaderID,
+            }),
             header: L10N.getStr("accessibility.properties"),
             labelledby: propertiesHeaderID,
             opened: true,
-          }],
-        })
-      )
+          },
+        ],
+      })
     );
   }
 }

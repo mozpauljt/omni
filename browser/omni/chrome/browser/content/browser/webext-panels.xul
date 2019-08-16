@@ -15,12 +15,13 @@
 <page id="webextpanels-window"
         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-  <script type="application/javascript" src="chrome://global/content/contentAreaUtils.js"/>
-  <script type="application/javascript" src="chrome://browser/content/browser.js"/>
-  <script type="application/javascript" src="chrome://browser/content/browser-places.js"/>
-  <script type="application/javascript" src="chrome://browser/content/webext-panels.js"/>
-  <script type="application/javascript" src="chrome://global/content/globalOverlay.js"/>
-  <script type="application/javascript" src="chrome://browser/content/utilityOverlay.js"/>
+  <script src="chrome://global/content/contentAreaUtils.js"/>
+  <script src="chrome://browser/content/browser.js"/>
+  <script src="chrome://browser/content/browser-places.js"/>
+  <script src="chrome://browser/content/webext-panels.js"/>
+  <script src="chrome://global/content/globalOverlay.js"/>
+  <script src="chrome://browser/content/utilityOverlay.js"/>
+  <script src="chrome://global/content/editMenuOverlay.js"/>
 
   <commandset id="mainCommandset">
     <command id="Browser:Back"
@@ -227,6 +228,11 @@
                 accesskey="&leaveDOMFullScreen.accesskey;"
                 label="&leaveDOMFullScreen.label;"
                 oncommand="gContextMenu.leaveDOMFullScreen();"/>
+      <menuitem id="context-video-pictureinpicture"
+                accesskey="&pictureInPicture.accesskey;"
+                label="&pictureInPicture.label;"
+                type="checkbox"
+                oncommand="gContextMenu.mediaCommand('pictureinpicture');"/>
       <menuseparator id="context-media-sep-commands"/>
       <menuitem id="context-reloadimage"
                 label="&reloadImageCmd.label;"
@@ -365,7 +371,7 @@
                 accesskey="&keywordfield.accesskey;"
                 oncommand="AddKeywordForSearchField();"/>
       <menuitem id="context-searchselect"
-                oncommand="BrowserSearch.loadSearchFromContext(this.searchTerms, this.principal);"/>
+                oncommand="BrowserSearch.loadSearchFromContext(this.searchTerms, this.principal, this.csp);"/>
       <menuseparator id="context-sep-sendlinktodevice" class="sync-ui-item"
                      hidden="true"/>
       <menu id="context-sendlinktodevice"
@@ -419,6 +425,9 @@
                     label="&viewFrameInfoCmd.label;"
                     accesskey="&viewFrameInfoCmd.accesskey;"
                     oncommand="gContextMenu.viewFrameInfo();"/>
+          <menuitem id="context-frameOsPid"
+                    label="PID: Unknown"
+                    disabled="true"/>
         </menupopup>
       </menu>
       <menuitem id="context-viewpartialsource-selection"
@@ -480,6 +489,12 @@
                     label="&noLoginSuggestions.label;"
                     disabled="true"
                     hidden="true"/>
+          <menuseparator id="generated-password-separator"/>
+          <menuitem id="fill-login-generated-password"
+                    label="&fillGeneratedPassword.label;"
+                    accesskey="&fillGeneratedPassword.accesskey;"
+                    hidden="true"
+                    oncommand="gContextMenu.fillGeneratedPassword();"/>
           <menuseparator id="saved-logins-separator"/>
           <menuitem id="fill-login-saved-passwords"
                     label="&viewSavedLogins.label;"
@@ -517,22 +532,4 @@
         />
     </menulist>
   </popupset>
-
-<script type="application/javascript" src="chrome://global/content/editMenuOverlay.js"/>
-<commandset id="editMenuCommands">
-  <commandset id="editMenuCommandSetAll" commandupdater="true" events="focus,select"
-              oncommandupdate="goUpdateGlobalEditMenuItems()"/>
-  <commandset id="editMenuCommandSetUndo" commandupdater="true" events="undo"
-              oncommandupdate="goUpdateUndoEditMenuItems()"/>
-  <commandset id="editMenuCommandSetPaste" commandupdater="true" events="clipboard"
-              oncommandupdate="goUpdatePasteMenuItems()"/>
-  <command id="cmd_undo" oncommand="goDoCommand('cmd_undo')"/>
-  <command id="cmd_redo" oncommand="goDoCommand('cmd_redo')"/>
-  <command id="cmd_cut" oncommand="goDoCommand('cmd_cut')"/>
-  <command id="cmd_copy" oncommand="goDoCommand('cmd_copy')"/>
-  <command id="cmd_paste" oncommand="goDoCommand('cmd_paste')"/>
-  <command id="cmd_delete" oncommand="goDoCommand('cmd_delete')"/>
-  <command id="cmd_selectAll" oncommand="goDoCommand('cmd_selectAll')"/>
-  <command id="cmd_switchTextDirection" oncommand="goDoCommand('cmd_switchTextDirection');"/>
-</commandset>
 </page>

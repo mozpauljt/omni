@@ -3,20 +3,22 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 :root {
-  --markup-hidden-attr-name-color: #BA89B8;
-  --markup-hidden-attr-value-color: #5C6D87;
-  --markup-hidden-punctuation-color: #909090;
+  --markup-hidden-attr-name-color: var(--grey-43);
+  --markup-hidden-attr-value-color: var(--grey-55);
+  --markup-hidden-punctuation-color: var(--grey-43);
   --markup-pseudoclass-disk-color: var(--yellow-60);
-  --markup-hidden-tag-color: #97A4B3;
+  --markup-hidden-tag-color: var(--grey-50);
   --markup-outline: var(--theme-splitter-color);
+  --markup-text-color-contrast: black;
 }
 
 .theme-dark:root {
-  --markup-hidden-attr-name-color: #B07EB3;
-  --markup-hidden-attr-value-color: #9893A3;
-  --markup-hidden-punctuation-color: #909090;
-  --markup-hidden-tag-color: #AFB5BF;
+  --markup-hidden-attr-name-color: #787878;
+  --markup-hidden-attr-value-color: #a4a4a4;
+  --markup-hidden-punctuation-color: #787878;
+  --markup-hidden-tag-color: var(--grey-45);
   --markup-outline: var(--theme-selection-background);
+  --markup-text-color-contrast: var(--theme-selection-color);
 }
 
 * {
@@ -38,6 +40,13 @@ body {
 #root {
   float: left;
   min-width: 100%;
+}
+
+/* Reset the global rotation of the icon done for RTL layout.
+   Markup view is always LTR */
+#root .theme-twisty:not(.open):dir(rtl),
+#root .theme-twisty:not([open]):-moz-locale-dir(rtl) {
+  transform: rotate(-90deg);
 }
 
 /* Don't display a parent-child outline for the root elements */
@@ -124,7 +133,7 @@ body.dragging .tag-line {
   /* Offset these by 1000px to make sure they cover the full width of the view */
   width: calc(100% + 1000px);
   left: -1000px;
-  background-color: var(--theme-content-color2);
+  background-color: var(--theme-body-color);
 }
 
 .tag-line.drop-target::before {
@@ -282,7 +291,7 @@ ul.children + .tag-line::before {
 }
 
 .flash-out {
-  transition: background .5s;
+  transition: background,color .5s;
 }
 
 .editor {
@@ -305,7 +314,7 @@ ul.children + .tag-line::before {
 }
 
 .theme-dark .editor.text pre {
-  color: var(--theme-content-color1);
+  color: var(--theme-text-color-strong);
 }
 
 /* Whitespace only text nodes are sometimes shown in the markup-view, and when they do
@@ -323,7 +332,7 @@ ul.children + .tag-line::before {
   margin: 0 2px;
   line-height: 7px;
   font-size: 0.6em;
-  color: var(--theme-body-color-inactive);
+  color: var(--theme-text-color-inactive);
   border-radius: 3px;
   border-style: solid;
   border-width: 1px;
@@ -395,6 +404,14 @@ ul.children + .tag-line::before {
 .theme-selected ~ .editor .theme-fg-color2,
 .theme-selected ~ .editor .theme-fg-color3 {
   color: var(--theme-selection-color);
+}
+
+/* Selected nodes being flashed in the tree should have dark selected text. Here we target
+   nodes with theme-selected text colors and apply a dark, accessible text color for when
+   the yellow flashing background is applied. */
+.theme-selected.theme-bg-yellow-contrast ~ .editor,
+.theme-selected ~ .editor [class*="theme-fg-color"].theme-fg-contrast {
+  color: var(--markup-text-color-contrast);
 }
 
 /* Applicable to the DOCTYPE */

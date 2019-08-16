@@ -1,3 +1,7 @@
+component {ea4e1414-779b-458b-9d1f-d18e8efbc145} EnterprisePolicies.js process=main
+contract @mozilla.org/enterprisepolicies;1 {ea4e1414-779b-458b-9d1f-d18e8efbc145} process=main
+component {dc6358f8-d167-4566-bf5b-4350b5e6a7a2} EnterprisePoliciesContent.js process=content
+contract @mozilla.org/enterprisepolicies;1 {dc6358f8-d167-4566-bf5b-4350b5e6a7a2} process=content
 category update-timer nsSearchService @mozilla.org/browser/search-service;1,getService,search-engine-update-timer,browser.search.update.interval,21600
 category update-timer nsBlocklistService @mozilla.org/extensions/blocklist;1,getService,blocklist-background-update-timer,extensions.blocklist.interval,86400
 category update-timer addonManager @mozilla.org/addons/integration;1,getService,addon-background-update-timer,extensions.update.interval,86400
@@ -11,10 +15,13 @@ contract @mozilla.org/uriloader/handler-service;1 {220cc253-b60f-41f6-b9cf-fdcb3
 resource services-sync resource://gre/modules/services-sync/
 resource services-common resource://gre/modules/services-common/
 resource services-settings resource://gre/modules/services-settings/
-category update-timer RemoteSettingsComponents @mozilla.org/services/settings;1,getService,services-settings-poll-changes,services.settings.poll_interval,86400
+category update-timer RemoteSettingsComponents @mozilla.org/services/settings;1,getService,services-settings-poll-changes,services.settings.poll_interval,86400,259200
 resource services-crypto resource://gre/modules/services-crypto/
+category profile-after-change TelemetryStartup @mozilla.org/base/telemetry-startup;1 process=main
 category app-startup PushServiceParent @mozilla.org/push/Service;1 process=main
 category android-push-service PushServiceParent @mozilla.org/push/Service;1 process=main
+category profile-after-change URLDecorationAnnotationsService @mozilla.org/tracking-url-decoration-service;1 process=main
+category l10n-registry 0-toolkit resource://gre/localization/{locale}/
 component {786a1369-dca5-4adc-8486-33d23c88010a} marionette.js
 contract @mozilla.org/remote/marionette;1 {786a1369-dca5-4adc-8486-33d23c88010a}
 category command-line-handler b-marionette @mozilla.org/remote/marionette;1

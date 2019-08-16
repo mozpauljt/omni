@@ -26,6 +26,7 @@
   padding: 0;
 }
 
+html|input,
 html|textarea {
   font: inherit;
 }
@@ -236,6 +237,11 @@ toolbar[mode="text"] .toolbarbutton-text {
   list-style-image: url("moz-icon://stock/gtk-orientation-landscape?size=button");
 }
 
+#print-preview-portrait-button > .toolbarbutton-icon,
+#print-preview-landscape-button > .toolbarbutton-icon {
+  margin-inline-end: 2px;
+}
+
 html|*#print-preview-pageNumber {
   /* 3 chars + (3px border + 1px padding) on both sides */
   width: calc(8px + 3ch);
@@ -341,14 +347,10 @@ popupnotificationcontent {
 }
 
 .popup-notification-panel > .panel-arrowcontainer > .panel-arrowcontent {
-  /* In order to display the action buttons near the edge of the arrow panel we
-   * have to reset its default padding and specify the padding in the individual
-   * "popupnotification" elements instead. To keep the rounded borders of the
-   * panel, we also have to ensure the contents are clipped to the border box
-   * by hiding the overflow, and we have to override the "display" property so
-   * that the height of the contents is computed correctly in that case. */
-  padding: 0;
-  overflow: hidden;
+  /* To keep the rounded borders of the panel, we use overflow: hidden; from the
+   * panel-no-padding class to ensure the contents are clipped to the border box.
+   * That causes us to override the "display" property so that the height of the
+   * contents is computed correctly. */
   display: flex;
   /* Make multiple popupnotifications stack vertically. */
   flex-direction: column;

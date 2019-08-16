@@ -1,19 +1,30 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 "use strict";
 
 const { memorySpec } = require("devtools/shared/specs/memory");
-const { FrontClassWithSpec, registerFront } = require("devtools/shared/protocol");
+const {
+  FrontClassWithSpec,
+  registerFront,
+} = require("devtools/shared/protocol");
 
-loader.lazyRequireGetter(this, "FileUtils",
-                         "resource://gre/modules/FileUtils.jsm", true);
-loader.lazyRequireGetter(this, "HeapSnapshotFileUtils",
-                         "devtools/shared/heapsnapshot/HeapSnapshotFileUtils");
+loader.lazyRequireGetter(
+  this,
+  "FileUtils",
+  "resource://gre/modules/FileUtils.jsm",
+  true
+);
+loader.lazyRequireGetter(
+  this,
+  "HeapSnapshotFileUtils",
+  "devtools/shared/heapsnapshot/HeapSnapshotFileUtils"
+);
 
 class MemoryFront extends FrontClassWithSpec(memorySpec) {
-  constructor(client) {
-    super(client);
+  constructor(client, targetFront, parentFront) {
+    super(client, targetFront, parentFront);
     this._client = client;
     this.heapSnapshotFileActorID = null;
 
@@ -42,8 +53,10 @@ class MemoryFront extends FrontClassWithSpec(memorySpec) {
   async saveHeapSnapshot(options = {}) {
     const snapshotId = await super.saveHeapSnapshot(options.boundaries);
 
-    if (!options.forceCopy &&
-        (await HeapSnapshotFileUtils.haveHeapSnapshotTempFile(snapshotId))) {
+    if (
+      !options.forceCopy &&
+      (await HeapSnapshotFileUtils.haveHeapSnapshotTempFile(snapshotId))
+    ) {
       return HeapSnapshotFileUtils.getHeapSnapshotTempFilePath(snapshotId);
     }
 
@@ -72,8 +85,7 @@ class MemoryFront extends FrontClassWithSpec(memorySpec) {
         snapshotId,
       });
 
-      const outFilePath =
-        HeapSnapshotFileUtils.getNewUniqueHeapSnapshotTempFilePath();
+      const outFilePath = HeapSnapshotFileUtils.getNewUniqueHeapSnapshotTempFilePath();
       const outFile = new FileUtils.File(outFilePath);
       const outFileStream = FileUtils.openSafeFileOutputStream(outFile);
 

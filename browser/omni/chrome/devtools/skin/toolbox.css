@@ -38,9 +38,14 @@
   border-inline-end: 1px solid var(--theme-splitter-color);
 }
 
+.debug-target-info .iconized-label img {
+  width: 20px;
+  height: 20px;
+}
+
 .debug-target-info img {
   -moz-context-properties: fill;
-  fill: var(--theme-toolbar-icon-color);
+  fill: var(--theme-toolbar-color);
 }
 
 /* Toolbox tabbar */
@@ -208,11 +213,11 @@
 }
 
 #toolbox-buttons-start > .devtools-separator {
-  --separator-inline-margin: 0;
+  margin-inline: 0;
 }
 
 #toolbox-buttons-end > .devtools-separator {
-  --separator-inline-margin: 5px;
+  margin-inline: 5px;
 }
 
 #toolbox-close::before {
@@ -237,6 +242,10 @@
 
 #toolbox-meatball-menu-dock-window {
   --menuitem-icon-image: url("chrome://devtools/skin/images/dock-undock.svg");
+}
+
+#toolbox-meatball-menu-dock-window:-moz-locale-dir(rtl) .label::before {
+  transform: scaleX(-1);
 }
 
 #toolbox-meatball-menu-splitconsole {
@@ -383,6 +392,15 @@
   -moz-user-focus: normal;
 }
 
+/* Let the component gain focus when a click hits an empty area */
+#toolbox-container {
+  -moz-user-focus: normal;
+}
+
+#toolbox-container:focus {
+  outline: 0;
+}
+
 /* Toolbox tabs reordering */
 #toolbox-container.tabs-reordering > .theme-body {
   pointer-events: none;
@@ -483,6 +501,10 @@
   background-color: var(--blue-60);
   transform: scale(1.25);
   transition-duration: 100ms;
+}
+
+.webreplay-player .message.uncached {
+  opacity: 0.5;
 }
 
 .webreplay-player .recording .message.highlighted {
@@ -629,4 +651,11 @@
 
 .webreplay-player #overlay .tick:hover ~ .tick {
   opacity: 0.5;
+}
+
+.webreplay-player .unscanned {
+  position: absolute;
+  height: 100%;
+  background: #000000;
+  opacity: 0.1;
 }
