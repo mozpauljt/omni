@@ -1,6 +1,8 @@
 !/bin/bash
 SRCDIR=$1
 if [ -f "$SRCDIR/omni.ja" ] && [ -f "$SRCDIR"/browser/omni.ja ]; then
+	mkdir -p omni
+	mkdir -p browser/omni
         # Unzip with overwrite (-o) and quietly (-q) and into destination omni/
         unzip -o -q "$SRCDIR"/omni.ja -d omni/
 
@@ -11,10 +13,10 @@ if [ -f "$SRCDIR/omni.ja" ] && [ -f "$SRCDIR"/browser/omni.ja ]; then
         read -r -p "Create commit for updated files? [Y/n]" answer
         case $answer in
            [nN]* ) echo "To create the commit yourself use "
-                   echo "git add *; git commit -m \"Updated to build id $BUILDID\""
+                   echo "git add omni browser/omni; git commit -m \"Updated to build id $BUILDID\""
                    exit;;
 
-           * )     git add -- *; git commit -m "Updated to build id $BUILDID"
+           * )     git add omni browser/omni; git commit -m "Updated to build id $BUILDID"
                    echo "Okay, ready to push to repo"
                    ;;
 
