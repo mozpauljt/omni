@@ -3,26 +3,19 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = void 0;
 
-var _propTypes = require("devtools/client/shared/vendor/react-prop-types");
+var _propTypes = _interopRequireDefault(require("devtools/client/shared/vendor/react-prop-types"));
 
-var _propTypes2 = _interopRequireDefault(_propTypes);
-
-var _react = require("devtools/client/shared/vendor/react");
-
-var _react2 = _interopRequireDefault(_react);
+var _react = _interopRequireWildcard(require("devtools/client/shared/vendor/react"));
 
 var _redux = require("devtools/client/shared/vendor/redux");
 
-var _reactDom = require("devtools/client/shared/vendor/react-dom");
-
-var _reactDom2 = _interopRequireDefault(_reactDom);
+var _reactDom = _interopRequireDefault(require("devtools/client/shared/vendor/react-dom"));
 
 loader.lazyRequireGetter(this, "_connect", "devtools/client/debugger/src/utils/connect");
 
-var _classnames = require("devtools/client/debugger/dist/vendors").vendored["classnames"];
-
-var _classnames2 = _interopRequireDefault(_classnames);
+var _classnames = _interopRequireDefault(require("devtools/client/debugger/dist/vendors").vendored["classnames"]);
 
 var _lodash = require("devtools/client/shared/vendor/lodash");
 
@@ -36,63 +29,39 @@ var _devtoolsContextmenu = require("devtools/client/debugger/dist/vendors").vend
 loader.lazyRequireGetter(this, "_breakpoints", "devtools/client/debugger/src/components/Editor/menus/breakpoints");
 loader.lazyRequireGetter(this, "_editor", "devtools/client/debugger/src/components/Editor/menus/editor");
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
-loader.lazyRequireGetter(this, "_actions", "devtools/client/debugger/src/actions/index");
 
-var _actions2 = _interopRequireDefault(_actions);
+var _actions = _interopRequireDefault(require("../../actions/index"));
 
-loader.lazyRequireGetter(this, "_SearchBar", "devtools/client/debugger/src/components/Editor/SearchBar");
+var _SearchBar = _interopRequireDefault(require("./SearchBar"));
 
-var _SearchBar2 = _interopRequireDefault(_SearchBar);
+var _HighlightLines = _interopRequireDefault(require("./HighlightLines"));
 
-loader.lazyRequireGetter(this, "_HighlightLines", "devtools/client/debugger/src/components/Editor/HighlightLines");
+var _Preview = _interopRequireDefault(require("./Preview/index"));
 
-var _HighlightLines2 = _interopRequireDefault(_HighlightLines);
+var _Breakpoints = _interopRequireDefault(require("./Breakpoints"));
 
-loader.lazyRequireGetter(this, "_Preview", "devtools/client/debugger/src/components/Editor/Preview/index");
+var _ColumnBreakpoints = _interopRequireDefault(require("./ColumnBreakpoints"));
 
-var _Preview2 = _interopRequireDefault(_Preview);
+var _DebugLine = _interopRequireDefault(require("./DebugLine"));
 
-loader.lazyRequireGetter(this, "_Breakpoints", "devtools/client/debugger/src/components/Editor/Breakpoints");
+var _HighlightLine = _interopRequireDefault(require("./HighlightLine"));
 
-var _Breakpoints2 = _interopRequireDefault(_Breakpoints);
+var _EmptyLines = _interopRequireDefault(require("./EmptyLines"));
 
-loader.lazyRequireGetter(this, "_ColumnBreakpoints", "devtools/client/debugger/src/components/Editor/ColumnBreakpoints");
+var _EditorMenu = _interopRequireDefault(require("./EditorMenu"));
 
-var _ColumnBreakpoints2 = _interopRequireDefault(_ColumnBreakpoints);
+var _ConditionalPanel = _interopRequireDefault(require("./ConditionalPanel"));
 
-loader.lazyRequireGetter(this, "_DebugLine", "devtools/client/debugger/src/components/Editor/DebugLine");
-
-var _DebugLine2 = _interopRequireDefault(_DebugLine);
-
-loader.lazyRequireGetter(this, "_HighlightLine", "devtools/client/debugger/src/components/Editor/HighlightLine");
-
-var _HighlightLine2 = _interopRequireDefault(_HighlightLine);
-
-loader.lazyRequireGetter(this, "_EmptyLines", "devtools/client/debugger/src/components/Editor/EmptyLines");
-
-var _EmptyLines2 = _interopRequireDefault(_EmptyLines);
-
-loader.lazyRequireGetter(this, "_EditorMenu", "devtools/client/debugger/src/components/Editor/EditorMenu");
-
-var _EditorMenu2 = _interopRequireDefault(_EditorMenu);
-
-loader.lazyRequireGetter(this, "_ConditionalPanel", "devtools/client/debugger/src/components/Editor/ConditionalPanel");
-
-var _ConditionalPanel2 = _interopRequireDefault(_ConditionalPanel);
-
-loader.lazyRequireGetter(this, "_InlinePreviews", "devtools/client/debugger/src/components/Editor/InlinePreviews");
-
-var _InlinePreviews2 = _interopRequireDefault(_InlinePreviews);
+var _InlinePreviews = _interopRequireDefault(require("./InlinePreviews"));
 
 loader.lazyRequireGetter(this, "_editor2", "devtools/client/debugger/src/utils/editor/index");
 loader.lazyRequireGetter(this, "_ui", "devtools/client/debugger/src/utils/ui");
 
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// Redux actions
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 const cssVars = {
   searchbarHeight: "var(--editor-searchbar-height)"
@@ -102,28 +71,32 @@ class Editor extends _react.PureComponent {
   constructor(props) {
     super(props);
 
-    this.onClosePress = (key, e) => {
-      const { cx, selectedSourceWithContent } = this.props;
-      if (selectedSourceWithContent) {
+    _defineProperty(this, "onClosePress", (key, e) => {
+      const {
+        cx,
+        selectedSource
+      } = this.props;
+
+      if (selectedSource) {
         e.preventDefault();
         e.stopPropagation();
-        this.props.closeTab(cx, selectedSourceWithContent.source);
+        this.props.closeTab(cx, selectedSource);
       }
-    };
+    });
 
-    this.onToggleBreakpoint = (key, e) => {
+    _defineProperty(this, "onToggleBreakpoint", (key, e) => {
       e.preventDefault();
       e.stopPropagation();
-
       const line = this.getCurrentLine();
+
       if (typeof line !== "number") {
         return;
       }
 
       this.props.toggleBreakpointAtLine(this.props.cx, line);
-    };
+    });
 
-    this.onToggleConditionalPanel = (key, e) => {
+    _defineProperty(this, "onToggleConditionalPanel", (key, e) => {
       e.stopPropagation();
       e.preventDefault();
       const line = this.getCurrentLine();
@@ -134,45 +107,49 @@ class Editor extends _react.PureComponent {
 
       const isLog = key === L10N.getStr("toggleCondPanel.logPoint.key");
       this.toggleConditionalPanel(line, isLog);
-    };
+    });
 
-    this.onEditorScroll = (0, _lodash.debounce)(this.props.updateViewport, 75);
+    _defineProperty(this, "onEditorScroll", (0, _lodash.debounce)(this.props.updateViewport, 75));
 
-    this.onEscape = (key, e) => {
+    _defineProperty(this, "onEscape", (key, e) => {
       if (!this.state.editor) {
         return;
       }
 
-      const { codeMirror } = this.state.editor;
+      const {
+        codeMirror
+      } = this.state.editor;
+
       if (codeMirror.listSelections().length > 1) {
         codeMirror.execCommand("singleSelection");
         e.preventDefault();
       }
-    };
+    });
 
-    this.clearContextMenu = () => {
-      this.setState({ contextMenu: null });
-    };
+    _defineProperty(this, "clearContextMenu", () => {
+      this.setState({
+        contextMenu: null
+      });
+    });
 
-    this.onGutterClick = (cm, line, gutter, ev) => {
+    _defineProperty(this, "onGutterClick", (cm, line, gutter, ev) => {
       const {
         cx,
-        selectedSourceWithContent,
+        selectedSource,
         conditionalPanelLocation,
         closeConditionalPanel,
         addBreakpointAtLine,
         continueToHere,
         toggleBlackBox
-      } = this.props;
+      } = this.props; // ignore right clicks in the gutter
 
-      // ignore right clicks in the gutter
-      if (ev.ctrlKey && ev.button === 0 || ev.button === 2 || !selectedSourceWithContent) {
+      if (ev.ctrlKey && ev.button === 0 || ev.button === 2 || !selectedSource) {
         return;
-      }
+      } // if user clicks gutter to set breakpoint on blackboxed source, un-blackbox the source.
 
-      // if user clicks gutter to set breakpoint on blackboxed source, un-blackbox the source.
-      if (selectedSourceWithContent && selectedSourceWithContent.source.isBlackBoxed) {
-        toggleBlackBox(cx, selectedSourceWithContent.source);
+
+      if (selectedSource && selectedSource.isBlackBoxed) {
+        toggleBlackBox(cx, selectedSource);
       }
 
       if (conditionalPanelLocation) {
@@ -183,7 +160,8 @@ class Editor extends _react.PureComponent {
         return;
       }
 
-      const sourceLine = (0, _editor2.toSourceLine)(selectedSourceWithContent.source.id, line);
+      const sourceLine = (0, _editor2.toSourceLine)(selectedSource.id, line);
+
       if (typeof sourceLine !== "number") {
         return;
       }
@@ -193,34 +171,34 @@ class Editor extends _react.PureComponent {
       }
 
       return addBreakpointAtLine(cx, sourceLine, ev.altKey, ev.shiftKey);
-    };
+    });
 
-    this.onGutterContextMenu = event => {
+    _defineProperty(this, "onGutterContextMenu", event => {
       return this.openMenu(event);
-    };
+    });
 
-    this.toggleConditionalPanel = (line, log = false) => {
+    _defineProperty(this, "toggleConditionalPanel", (line, log = false) => {
       const {
         conditionalPanelLocation,
         closeConditionalPanel,
         openConditionalPanel,
-        selectedSourceWithContent
+        selectedSource
       } = this.props;
 
       if (conditionalPanelLocation) {
         return closeConditionalPanel();
       }
 
-      if (!selectedSourceWithContent) {
+      if (!selectedSource) {
         return;
       }
 
       return openConditionalPanel({
         line: line,
-        sourceId: selectedSourceWithContent.source.id,
-        sourceUrl: selectedSourceWithContent.source.url
+        sourceId: selectedSource.id,
+        sourceUrl: selectedSource.url
       }, log);
-    };
+    });
 
     this.state = {
       highlightedLineRange: null,
@@ -232,7 +210,7 @@ class Editor extends _react.PureComponent {
   componentWillReceiveProps(nextProps) {
     let editor = this.state.editor;
 
-    if (!this.state.editor && nextProps.selectedSourceWithContent) {
+    if (!this.state.editor && nextProps.selectedSource) {
       editor = this.setupEditor();
     }
 
@@ -242,7 +220,7 @@ class Editor extends _react.PureComponent {
     this.scrollToLocation(nextProps, editor);
     (0, _editor2.endOperation)();
 
-    if (this.props.selectedSourceWithContent != nextProps.selectedSourceWithContent) {
+    if (this.props.selectedSource != nextProps.selectedSource) {
       this.props.updateViewport();
       (0, _ui.resizeBreakpointGutter)(editor.codeMirror);
       (0, _ui.resizeToggleButton)(editor.codeMirror);
@@ -250,23 +228,23 @@ class Editor extends _react.PureComponent {
   }
 
   setupEditor() {
-    const editor = (0, _editor2.getEditor)();
-
-    // disables the default search shortcuts
+    const editor = (0, _editor2.getEditor)(); // disables the default search shortcuts
     // $FlowIgnore
+
     editor._initShortcuts = () => {};
 
-    const node = _reactDom2.default.findDOMNode(this);
+    const node = _reactDom.default.findDOMNode(this);
+
     if (node instanceof HTMLElement) {
       editor.appendToLocalElement(node.querySelector(".editor-mount"));
     }
 
-    const { codeMirror } = editor;
+    const {
+      codeMirror
+    } = editor;
     const codeMirrorWrapper = codeMirror.getWrapperElement();
+    codeMirror.on("gutterClick", this.onGutterClick); // Set code editor wrapper to be focusable
 
-    codeMirror.on("gutterClick", this.onGutterClick);
-
-    // Set code editor wrapper to be focusable
     codeMirrorWrapper.tabIndex = 0;
     codeMirrorWrapper.addEventListener("keydown", e => this.onKeyDown(e));
     codeMirrorWrapper.addEventListener("click", e => this.onClick(e));
@@ -293,13 +271,16 @@ class Editor extends _react.PureComponent {
 
     codeMirror.on("scroll", this.onEditorScroll);
     this.onEditorScroll();
-    this.setState({ editor });
+    this.setState({
+      editor
+    });
     return editor;
   }
 
   componentDidMount() {
-    const { shortcuts } = this.context;
-
+    const {
+      shortcuts
+    } = this.context;
     shortcuts.on(L10N.getStr("toggleBreakpoint.key"), this.onToggleBreakpoint);
     shortcuts.on(L10N.getStr("toggleCondPanel.breakpoint.key"), this.onToggleConditionalPanel);
     shortcuts.on(L10N.getStr("toggleCondPanel.logPoint.key"), this.onToggleConditionalPanel);
@@ -311,7 +292,9 @@ class Editor extends _react.PureComponent {
     if (this.state.editor) {
       this.state.editor.destroy();
       this.state.editor.codeMirror.off("scroll", this.onEditorScroll);
-      this.setState({ editor: null });
+      this.setState({
+        editor: null
+      });
     }
 
     const shortcuts = this.context.shortcuts;
@@ -322,19 +305,29 @@ class Editor extends _react.PureComponent {
   }
 
   getCurrentLine() {
-    const { codeMirror } = this.state.editor;
-    const { selectedSourceWithContent } = this.props;
-    if (!selectedSourceWithContent) {
+    const {
+      codeMirror
+    } = this.state.editor;
+    const {
+      selectedSource
+    } = this.props;
+
+    if (!selectedSource) {
       return;
     }
 
     const line = (0, _editor2.getCursorLine)(codeMirror);
-    return (0, _editor2.toSourceLine)(selectedSourceWithContent.source.id, line);
+    return (0, _editor2.toSourceLine)(selectedSource.id, line);
   }
 
   onKeyDown(e) {
-    const { codeMirror } = this.state.editor;
-    const { key, target } = e;
+    const {
+      codeMirror
+    } = this.state.editor;
+    const {
+      key,
+      target
+    } = e;
     const codeWrapper = codeMirror.getWrapperElement();
     const textArea = codeWrapper.querySelector("textArea");
 
@@ -343,12 +336,11 @@ class Editor extends _react.PureComponent {
       e.preventDefault();
       codeWrapper.focus();
     } else if (key === "Enter" && target == codeWrapper) {
-      e.preventDefault();
-      // Focus into editor's text area
+      e.preventDefault(); // Focus into editor's text area
+
       textArea.focus();
     }
   }
-
   /*
    * The default Esc command is overridden in the CodeMirror keymap to allow
    * the Esc keypress event to be catched by the toolbox and trigger the
@@ -360,77 +352,102 @@ class Editor extends _react.PureComponent {
   openMenu(event) {
     event.stopPropagation();
     event.preventDefault();
-
     const {
       cx,
-      selectedSourceWithContent,
+      selectedSource,
       breakpointActions,
       editorActions,
       isPaused,
       conditionalPanelLocation,
       closeConditionalPanel
     } = this.props;
-    const { editor } = this.state;
-    if (!selectedSourceWithContent || !editor) {
-      return;
-    }
+    const {
+      editor
+    } = this.state;
 
-    // only allow one conditionalPanel location.
+    if (!selectedSource || !editor) {
+      return;
+    } // only allow one conditionalPanel location.
+
+
     if (conditionalPanelLocation) {
       closeConditionalPanel();
     }
 
     const target = event.target;
-    const { id: sourceId } = selectedSourceWithContent.source;
+    const {
+      id: sourceId
+    } = selectedSource;
     const line = (0, _editor2.lineAtHeight)(editor, sourceId, event);
 
     if (typeof line != "number") {
       return;
     }
 
-    const location = { line, column: undefined, sourceId };
+    const location = {
+      line,
+      column: undefined,
+      sourceId
+    };
 
     if (target.classList.contains("CodeMirror-linenumber")) {
-      return (0, _devtoolsContextmenu.showMenu)(event, [...(0, _breakpoints.createBreakpointItems)(cx, location, breakpointActions), { type: "separator" }, (0, _editor.continueToHereItem)(cx, location, isPaused, editorActions)]);
+      return (0, _devtoolsContextmenu.showMenu)(event, [...(0, _breakpoints.createBreakpointItems)(cx, location, breakpointActions), {
+        type: "separator"
+      }, (0, _editor.continueToHereItem)(cx, location, isPaused, editorActions)]);
     }
 
     if (target.getAttribute("id") === "columnmarker") {
       return;
     }
 
-    this.setState({ contextMenu: event });
+    this.setState({
+      contextMenu: event
+    });
   }
 
   onClick(e) {
-    const { cx, selectedSourceWithContent, jumpToMappedLocation } = this.props;
+    const {
+      cx,
+      selectedSource,
+      jumpToMappedLocation
+    } = this.props;
 
-    if (selectedSourceWithContent && e.metaKey && e.altKey) {
-      const sourceLocation = (0, _editor2.getSourceLocationFromMouseEvent)(this.state.editor, selectedSourceWithContent.source, e);
+    if (selectedSource && e.metaKey && e.altKey) {
+      const sourceLocation = (0, _editor2.getSourceLocationFromMouseEvent)(this.state.editor, selectedSource, e);
       jumpToMappedLocation(cx, sourceLocation);
     }
   }
 
   shouldScrollToLocation(nextProps, editor) {
-    const { selectedLocation, selectedSourceWithContent } = this.props;
-    if (!editor || !nextProps.selectedSourceWithContent || !nextProps.selectedLocation || !nextProps.selectedLocation.line || !nextProps.selectedSourceWithContent.content) {
+    const {
+      selectedLocation,
+      selectedSource
+    } = this.props;
+
+    if (!editor || !nextProps.selectedSource || !nextProps.selectedLocation || !nextProps.selectedLocation.line || !nextProps.selectedSource.content) {
       return false;
     }
 
-    const isFirstLoad = (!selectedSourceWithContent || !selectedSourceWithContent.content) && nextProps.selectedSourceWithContent.content;
+    const isFirstLoad = (!selectedSource || !selectedSource.content) && nextProps.selectedSource.content;
     const locationChanged = selectedLocation !== nextProps.selectedLocation;
     const symbolsChanged = nextProps.symbols != this.props.symbols;
-
     return isFirstLoad || locationChanged || symbolsChanged;
   }
 
   scrollToLocation(nextProps, editor) {
-    const { selectedLocation, selectedSourceWithContent } = nextProps;
+    const {
+      selectedLocation,
+      selectedSource
+    } = nextProps;
 
     if (selectedLocation && this.shouldScrollToLocation(nextProps, editor)) {
-      let { line, column } = (0, _editor2.toEditorPosition)(selectedLocation);
+      let {
+        line,
+        column
+      } = (0, _editor2.toEditorPosition)(selectedLocation);
 
-      if (selectedSourceWithContent && (0, _editor2.hasDocument)(selectedSourceWithContent.source.id)) {
-        const doc = (0, _editor2.getDocument)(selectedSourceWithContent.source.id);
+      if (selectedSource && (0, _editor2.hasDocument)(selectedSource.id)) {
+        const doc = (0, _editor2.getDocument)(selectedSource.id);
         const lineText = doc.getLine(line);
         column = Math.max(column, (0, _indentation.getIndentation)(lineText));
       }
@@ -450,23 +467,29 @@ class Editor extends _react.PureComponent {
   }
 
   setText(props, editor) {
-    const { selectedSourceWithContent, symbols } = props;
+    const {
+      selectedSource,
+      symbols
+    } = props;
 
     if (!editor) {
       return;
-    }
+    } // check if we previously had a selected source
 
-    // check if we previously had a selected source
-    if (!selectedSourceWithContent) {
+
+    if (!selectedSource) {
       return this.clearEditor();
     }
 
-    if (!selectedSourceWithContent.content) {
+    if (!selectedSource.content) {
       return (0, _editor2.showLoading)(editor);
     }
 
-    if (selectedSourceWithContent.content.state === "rejected") {
-      let { value } = selectedSourceWithContent.content;
+    if (selectedSource.content.state === "rejected") {
+      let {
+        value
+      } = selectedSource.content;
+
       if (typeof value !== "string") {
         value = "Unexpected source error";
       }
@@ -474,11 +497,14 @@ class Editor extends _react.PureComponent {
       return this.showErrorMessage(value);
     }
 
-    return (0, _editor2.showSourceText)(editor, selectedSourceWithContent.source, selectedSourceWithContent.content.value, symbols);
+    return (0, _editor2.showSourceText)(editor, selectedSource, selectedSource.content.value, symbols);
   }
 
   clearEditor() {
-    const { editor } = this.state;
+    const {
+      editor
+    } = this.state;
+
     if (!editor) {
       return;
     }
@@ -487,7 +513,10 @@ class Editor extends _react.PureComponent {
   }
 
   showErrorMessage(msg) {
-    const { editor } = this.state;
+    const {
+      editor
+    } = this.state;
+
     if (!editor) {
       return;
     }
@@ -496,7 +525,9 @@ class Editor extends _react.PureComponent {
   }
 
   getInlineEditorStyles() {
-    const { searchOn } = this.props;
+    const {
+      searchOn
+    } = this.props;
 
     if (searchOn) {
       return {
@@ -512,105 +543,115 @@ class Editor extends _react.PureComponent {
   renderItems() {
     const {
       cx,
-      selectedSourceWithContent,
+      selectedSource,
       conditionalPanelLocation,
-      isPaused
+      isPaused,
+      inlinePreviewEnabled
     } = this.props;
-    const { editor, contextMenu } = this.state;
+    const {
+      editor,
+      contextMenu
+    } = this.state;
 
-    if (!selectedSourceWithContent || !editor || !(0, _editor2.getDocument)(selectedSourceWithContent.source.id)) {
+    if (!selectedSource || !editor || !(0, _editor2.getDocument)(selectedSource.id)) {
       return null;
     }
 
-    return _react2.default.createElement(
-      "div",
-      null,
-      _react2.default.createElement(_DebugLine2.default, { editor: editor }),
-      _react2.default.createElement(_HighlightLine2.default, null),
-      _react2.default.createElement(_EmptyLines2.default, { editor: editor }),
-      _react2.default.createElement(_Breakpoints2.default, { editor: editor, cx: cx }),
-      _react2.default.createElement(_Preview2.default, { editor: editor, editorRef: this.$editorWrapper }),
-      _react2.default.createElement(_HighlightLines2.default, { editor: editor }),
-      _react2.default.createElement(_EditorMenu2.default, {
-        editor: editor,
-        contextMenu: contextMenu,
-        clearContextMenu: this.clearContextMenu,
-        selectedSourceWithContent: selectedSourceWithContent
-      }),
-      conditionalPanelLocation ? _react2.default.createElement(_ConditionalPanel2.default, { editor: editor }) : null,
-      _prefs.features.columnBreakpoints ? _react2.default.createElement(_ColumnBreakpoints2.default, { editor: editor }) : null,
-      isPaused && _prefs.features.inlinePreview ? _react2.default.createElement(_InlinePreviews2.default, {
-        editor: editor,
-        selectedSource: selectedSourceWithContent.source
-      }) : null
-    );
+    return _react.default.createElement("div", null, _react.default.createElement(_DebugLine.default, {
+      editor: editor
+    }), _react.default.createElement(_HighlightLine.default, null), _react.default.createElement(_EmptyLines.default, {
+      editor: editor
+    }), _react.default.createElement(_Breakpoints.default, {
+      editor: editor,
+      cx: cx
+    }), _react.default.createElement(_Preview.default, {
+      editor: editor,
+      editorRef: this.$editorWrapper
+    }), _react.default.createElement(_HighlightLines.default, {
+      editor: editor
+    }), _react.default.createElement(_EditorMenu.default, {
+      editor: editor,
+      contextMenu: contextMenu,
+      clearContextMenu: this.clearContextMenu,
+      selectedSource: selectedSource
+    }), conditionalPanelLocation ? _react.default.createElement(_ConditionalPanel.default, {
+      editor: editor
+    }) : null, _prefs.features.columnBreakpoints ? _react.default.createElement(_ColumnBreakpoints.default, {
+      editor: editor
+    }) : null, isPaused && inlinePreviewEnabled ? _react.default.createElement(_InlinePreviews.default, {
+      editor: editor,
+      selectedSource: selectedSource
+    }) : null);
   }
 
   renderSearchBar() {
-    const { editor } = this.state;
+    const {
+      editor
+    } = this.state;
 
-    if (!this.props.selectedSourceWithContent) {
+    if (!this.props.selectedSource) {
       return null;
     }
 
-    return _react2.default.createElement(_SearchBar2.default, { editor: editor });
+    return _react.default.createElement(_SearchBar.default, {
+      editor: editor
+    });
   }
 
   render() {
-    const { selectedSourceWithContent, skipPausing } = this.props;
-    return _react2.default.createElement(
-      "div",
-      {
-        className: (0, _classnames2.default)("editor-wrapper", {
-          blackboxed: selectedSourceWithContent && selectedSourceWithContent.source.isBlackBoxed,
-          "skip-pausing": skipPausing
-        }),
-        ref: c => this.$editorWrapper = c
-      },
-      _react2.default.createElement("div", {
-        className: "editor-mount devtools-monospace",
-        style: this.getInlineEditorStyles()
+    const {
+      selectedSource,
+      skipPausing
+    } = this.props;
+    return _react.default.createElement("div", {
+      className: (0, _classnames.default)("editor-wrapper", {
+        blackboxed: selectedSource && selectedSource.isBlackBoxed,
+        "skip-pausing": skipPausing
       }),
-      this.renderSearchBar(),
-      this.renderItems()
-    );
+      ref: c => this.$editorWrapper = c
+    }, _react.default.createElement("div", {
+      className: "editor-mount devtools-monospace",
+      style: this.getInlineEditorStyles()
+    }), this.renderSearchBar(), this.renderItems());
   }
+
 }
 
 Editor.contextTypes = {
-  shortcuts: _propTypes2.default.object
+  shortcuts: _propTypes.default.object
 };
 
 const mapStateToProps = state => {
-  const selectedSourceWithContent = (0, _selectors.getSelectedSourceWithContent)(state);
-
+  const selectedSource = (0, _selectors.getSelectedSourceWithContent)(state);
   return {
     cx: (0, _selectors.getThreadContext)(state),
     selectedLocation: (0, _selectors.getSelectedLocation)(state),
-    selectedSourceWithContent,
+    selectedSource,
     searchOn: (0, _selectors.getActiveSearch)(state) === "file",
     conditionalPanelLocation: (0, _selectors.getConditionalPanelLocation)(state),
-    symbols: (0, _selectors.getSymbols)(state, selectedSourceWithContent ? selectedSourceWithContent.source : null),
+    symbols: (0, _selectors.getSymbols)(state, selectedSource),
     isPaused: (0, _selectors.getIsPaused)(state, (0, _selectors.getCurrentThread)(state)),
-    skipPausing: (0, _selectors.getSkipPausing)(state)
+    skipPausing: (0, _selectors.getSkipPausing)(state),
+    inlinePreviewEnabled: (0, _selectors.getInlinePreview)(state)
   };
 };
 
-const mapDispatchToProps = dispatch => ({
-  ...(0, _redux.bindActionCreators)({
-    openConditionalPanel: _actions2.default.openConditionalPanel,
-    closeConditionalPanel: _actions2.default.closeConditionalPanel,
-    continueToHere: _actions2.default.continueToHere,
-    toggleBreakpointAtLine: _actions2.default.toggleBreakpointAtLine,
-    addBreakpointAtLine: _actions2.default.addBreakpointAtLine,
-    jumpToMappedLocation: _actions2.default.jumpToMappedLocation,
-    traverseResults: _actions2.default.traverseResults,
-    updateViewport: _actions2.default.updateViewport,
-    closeTab: _actions2.default.closeTab,
-    toggleBlackBox: _actions2.default.toggleBlackBox
+const mapDispatchToProps = dispatch => ({ ...(0, _redux.bindActionCreators)({
+    openConditionalPanel: _actions.default.openConditionalPanel,
+    closeConditionalPanel: _actions.default.closeConditionalPanel,
+    continueToHere: _actions.default.continueToHere,
+    toggleBreakpointAtLine: _actions.default.toggleBreakpointAtLine,
+    addBreakpointAtLine: _actions.default.addBreakpointAtLine,
+    jumpToMappedLocation: _actions.default.jumpToMappedLocation,
+    traverseResults: _actions.default.traverseResults,
+    updateViewport: _actions.default.updateViewport,
+    closeTab: _actions.default.closeTab,
+    toggleBlackBox: _actions.default.toggleBlackBox
   }, dispatch),
   breakpointActions: (0, _breakpoints.breakpointItemActions)(dispatch),
   editorActions: (0, _editor.editorItemActions)(dispatch)
 });
 
-exports.default = (0, _connect.connect)(mapStateToProps, mapDispatchToProps)(Editor);
+var _default = (0, _connect.connect)(mapStateToProps, mapDispatchToProps)(Editor);
+
+exports.default = _default;

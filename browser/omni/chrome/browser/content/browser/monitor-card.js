@@ -4,8 +4,12 @@
 
 /* eslint-env mozilla/frame-script */
 
-const MONITOR_SIGN_IN_URL = RPMGetStringPref(
+const MONITOR_URL = RPMGetStringPref(
   "browser.contentblocking.report.monitor.url",
+  ""
+);
+const MONITOR_SIGN_IN_URL = RPMGetStringPref(
+  "browser.contentblocking.report.monitor.sign_in_url",
   ""
 );
 const HOW_IT_WORKS_URL_PREF = RPMGetFormatURLPref(
@@ -19,7 +23,7 @@ export default class MonitorClass {
 
   init() {
     const monitorLinkTag = this.doc.getElementById("monitor-inline-link");
-    monitorLinkTag.href = MONITOR_SIGN_IN_URL;
+    monitorLinkTag.href = MONITOR_URL;
 
     RPMAddMessageListener("SendUserLoginsData", ({ data }) => {
       // Wait for monitor data and display the card.
@@ -71,7 +75,7 @@ export default class MonitorClass {
       monitorCard.classList.add("has-logins");
       headerContent.setAttribute(
         "data-l10n-id",
-        "monitor-header-content-logged-in"
+        "monitor-header-content-signed-in"
       );
       this.renderContentForUserWithLogins(monitorData);
     } else {
@@ -81,7 +85,10 @@ export default class MonitorClass {
       );
       signUpForMonitorLink.href = this.buildMonitorUrl(monitorData.userEmail);
       signUpForMonitorLink.setAttribute("data-l10n-id", "monitor-sign-up");
-      headerContent.setAttribute("data-l10n-id", "monitor-header-content");
+      headerContent.setAttribute(
+        "data-l10n-id",
+        "monitor-header-content-no-account"
+      );
       signUpForMonitorLink.addEventListener("click", () => {
         this.doc.sendTelemetryEvent("click", "mtr_signup_button");
       });
@@ -99,16 +106,7 @@ export default class MonitorClass {
    * @return URL to Monitor website.
    */
   buildMonitorUrl(email = null) {
-    let url = MONITOR_SIGN_IN_URL;
-
-    if (email) {
-      url += `/oauth/init?email=${email}&entrypoint=protection_report_monitor&utm_source=about-protections`;
-    } else {
-      url +=
-        "/?entrypoint=protection_report_monitor&utm_source=about-protections";
-    }
-
-    return url;
+    return email ? `${MONITOR_SIGN_IN_URL}${email}` : MONITOR_URL;
   }
 
   renderContentForUserWithLogins(monitorData) {
@@ -143,7 +141,7 @@ export default class MonitorClass {
     );
     infoMonitoredAddresses.setAttribute(
       "data-l10n-id",
-      "info-monitored-addresses"
+      "info-monitored-emails"
     );
 
     const infoKnownBreaches = this.doc.getElementById("info-known-breaches");
@@ -151,7 +149,7 @@ export default class MonitorClass {
       "data-l10n-args",
       JSON.stringify({ count: monitorData.numBreaches })
     );
-    infoKnownBreaches.setAttribute("data-l10n-id", "info-known-breaches");
+    infoKnownBreaches.setAttribute("data-l10n-id", "info-known-breaches-found");
 
     const infoExposedPasswords = this.doc.getElementById(
       "info-exposed-passwords"
@@ -160,7 +158,10 @@ export default class MonitorClass {
       "data-l10n-args",
       JSON.stringify({ count: monitorData.passwords })
     );
-    infoExposedPasswords.setAttribute("data-l10n-id", "info-exposed-passwords");
+    infoExposedPasswords.setAttribute(
+      "data-l10n-id",
+      "info-exposed-passwords-found"
+    );
 
     // Display Lockwise section if there are any potential breached logins to report.
     if (monitorData.potentiallyBreachedLogins > 0) {

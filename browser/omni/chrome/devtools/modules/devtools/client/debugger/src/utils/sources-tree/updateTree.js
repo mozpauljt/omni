@@ -9,16 +9,17 @@ loader.lazyRequireGetter(this, "_addToTree", "devtools/client/debugger/src/utils
 loader.lazyRequireGetter(this, "_collapseTree", "devtools/client/debugger/src/utils/sources-tree/collapseTree");
 loader.lazyRequireGetter(this, "_utils", "devtools/client/debugger/src/utils/sources-tree/utils");
 loader.lazyRequireGetter(this, "_treeOrder", "devtools/client/debugger/src/utils/sources-tree/treeOrder");
+
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-
 function getSourcesToAdd(newSources, prevSources) {
   const sourcesToAdd = [];
 
   for (const sourceId in newSources) {
     const newSource = newSources[sourceId];
     const prevSource = prevSources ? prevSources[sourceId] : null;
+
     if (!prevSource) {
       sourcesToAdd.push(newSource);
     }
@@ -33,7 +34,6 @@ function createTree({
   threads
 }) {
   const uncollapsedTree = (0, _utils.createDirectoryNode)("root", "", []);
-
   return updateTree({
     debuggeeUrl,
     newSources: sources,
@@ -52,9 +52,9 @@ function updateTree({
 }) {
   const debuggeeHost = (0, _treeOrder.getDomain)(debuggeeUrl);
   const contexts = Object.keys(newSources);
-
   contexts.forEach(context => {
     const thread = threads.find(t => t.actor === context);
+
     if (!thread) {
       return;
     }
@@ -65,9 +65,7 @@ function updateTree({
       (0, _addToTree.addToTree)(uncollapsedTree, source, debuggeeHost, thread.actor);
     }
   });
-
   const newSourceTree = (0, _collapseTree.collapseTree)(uncollapsedTree);
-
   return {
     uncollapsedTree,
     sourceTree: newSourceTree,

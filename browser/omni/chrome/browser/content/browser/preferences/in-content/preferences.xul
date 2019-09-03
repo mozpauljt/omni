@@ -832,6 +832,13 @@
   <checkbox id="searchStartTyping"
             data-l10n-id="browsing-search-on-start-typing"
             preference="accessibility.typeaheadfind"/>
+  <hbox id="pictureInPictureBox" align="center" hidden="true">
+    <checkbox id="pictureInPictureToggleEnabled"
+            class="tail-with-learn-more"
+            data-l10n-id="browsing-picture-in-picture-toggle-enabled"
+            preference="media.videocontrols.picture-in-picture.video-toggle.enabled"/>
+    <label id="pictureInPictureLearnMore" class="learnMore" data-l10n-id="browsing-picture-in-picture-learn-more" is="text-link"/>
+  </hbox>
   <hbox align="center" data-subcategory="cfraddons">
     <checkbox id="cfrRecommendations"
             class="tail-with-learn-more"
@@ -1115,7 +1122,7 @@
       <image id="trackingProtectionShield"/>
       <vbox flex="1">
         <description class="description-with-side-element">
-          <html:span id="contentBlockingDescription" class="tail-with-learn-more" data-l10n-id="content-blocking-section-description"></html:span>
+          <html:span id="contentBlockingDescription" class="tail-with-learn-more" data-l10n-id="content-blocking-section-top-level-description"></html:span>
           <label id="contentBlockingLearnMore" class="learnMore" data-l10n-id="content-blocking-learn-more" is="text-link"/>
         </description>
       </vbox>
@@ -1543,6 +1550,15 @@
                     search-l10n-ids="forms-generate-passwords.label"
                     preference="signon.generation.enabled"
                     flex="1" />
+        </hbox>
+        <hbox class="indent" id="breachAlertsBox" flex="1" align="center">
+          <checkbox id="breachAlerts"
+                    class="tail-with-learn-more"
+                    data-l10n-id="forms-breach-alerts"
+                    search-l10n-ids="breach-alerts.label"
+                    preference="signon.management.page.breach-alerts.enabled"/>
+          <label id="breachAlertsLearnMoreLink" class="learnMore" is="text-link"
+              data-l10n-id="forms-breach-alerts-learn-more-link"/>
         </hbox>
       </vbox>
       <vbox>

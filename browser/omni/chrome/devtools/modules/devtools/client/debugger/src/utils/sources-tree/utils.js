@@ -22,9 +22,10 @@ loader.lazyRequireGetter(this, "_url", "devtools/client/debugger/src/utils/url")
 loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
 loader.lazyRequireGetter(this, "_getURL", "devtools/client/debugger/src/utils/sources-tree/getURL");
 
-const IGNORED_URLS = ["debugger eval code", "XStringBundle"]; /* This Source Code Form is subject to the terms of the Mozilla Public
-                                                               * License, v. 2.0. If a copy of the MPL was not distributed with this
-                                                               * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+const IGNORED_URLS = ["debugger eval code", "XStringBundle"];
 
 function nodeHasChildren(item) {
   return Array.isArray(item.contents) && item.type == "directory";
@@ -32,10 +33,14 @@ function nodeHasChildren(item) {
 
 function isExactUrlMatch(pathPart, debuggeeUrl) {
   // compare to hostname with an optional 'www.' prefix
-  const { host } = (0, _url.parse)(debuggeeUrl);
+  const {
+    host
+  } = (0, _url.parse)(debuggeeUrl);
+
   if (!host) {
     return false;
   }
+
   return host.replace(/^www\./, "") === pathPart.replace(/^www\./, "");
 }
 
@@ -51,7 +56,10 @@ function isDirectory(item) {
 }
 
 function getSourceFromNode(item) {
-  const { contents } = item;
+  const {
+    contents
+  } = item;
+
   if (!isDirectory(item) && !Array.isArray(contents)) {
     return contents;
   }
@@ -63,9 +71,11 @@ function isSource(item) {
 
 function getFileExtension(source) {
   const parsedUrl = (0, _getURL.getURL)(source).path;
+
   if (!parsedUrl) {
     return "";
   }
+
   return parsedUrl.split(".").pop();
 }
 
@@ -107,6 +117,7 @@ function createParentMap(tree) {
     if (subtree.type === "directory") {
       for (const child of subtree.contents) {
         map.set(child, subtree);
+
         _traverse(child);
       }
     }
@@ -122,10 +133,14 @@ function createParentMap(tree) {
 }
 
 function getRelativePath(url) {
-  const { pathname } = (0, _url.parse)(url);
+  const {
+    pathname
+  } = (0, _url.parse)(url);
+
   if (!pathname) {
     return url;
   }
+
   const path = pathname.split("/");
   path.shift();
   return path.join("/");
@@ -133,8 +148,10 @@ function getRelativePath(url) {
 
 function getPathWithoutThread(path) {
   const pathParts = path.split(/(context\d+?\/)/).splice(2);
+
   if (pathParts && pathParts.length > 0) {
     return pathParts.join("");
   }
+
   return "";
 }

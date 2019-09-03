@@ -1,4 +1,3 @@
-/* vim:set ts=2 sw=2 sts=2 et: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -367,14 +366,10 @@ StyleEditorUI.prototype = {
           this._removeStyleSheetEditor(editor);
           editor = null;
 
-          for (const source of sources) {
-            const generatedId = sourceMapService.generatedToOriginalId(
-              id,
-              source
-            );
+          for (const { id: originalId, url: originalURL } of sources) {
             const original = new OriginalSource(
-              source,
-              generatedId,
+              originalURL,
+              originalId,
               sourceMapService
             );
 

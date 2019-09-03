@@ -3,31 +3,30 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = void 0;
 
-var _react = require("devtools/client/shared/vendor/react");
+var _react = _interopRequireDefault(require("devtools/client/shared/vendor/react"));
 
-var _react2 = _interopRequireDefault(_react);
-
-loader.lazyRequireGetter(this, "_AccessibleImage", "devtools/client/debugger/src/components/shared/AccessibleImage");
-
-var _AccessibleImage2 = _interopRequireDefault(_AccessibleImage);
+var _AccessibleImage = _interopRequireDefault(require("../AccessibleImage"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-
-function CloseButton({ handleClick, buttonClass, tooltip }) {
-  return _react2.default.createElement(
-    "button",
-    {
-      className: buttonClass ? `close-btn ${buttonClass}` : "close-btn",
-      onClick: handleClick,
-      title: tooltip
-    },
-    _react2.default.createElement(_AccessibleImage2.default, { className: "close" })
-  );
+function CloseButton({
+  handleClick,
+  buttonClass,
+  tooltip
+}) {
+  return _react.default.createElement("button", {
+    className: buttonClass ? `close-btn ${buttonClass}` : "close-btn",
+    onClick: handleClick,
+    title: tooltip
+  }, _react.default.createElement(_AccessibleImage.default, {
+    className: "close"
+  }));
 }
 
-exports.default = CloseButton;
+var _default = CloseButton;
+exports.default = _default;

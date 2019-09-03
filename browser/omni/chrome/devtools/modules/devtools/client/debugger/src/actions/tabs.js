@@ -14,6 +14,7 @@ var _devtoolsSourceMap = require("devtools/client/shared/source-map/index.js");
 loader.lazyRequireGetter(this, "_editor", "devtools/client/debugger/src/utils/editor/index");
 loader.lazyRequireGetter(this, "_sources", "devtools/client/debugger/src/actions/sources/index");
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
+
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
@@ -22,11 +23,12 @@ loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selec
  * Redux actions for the editor tabs
  * @module actions/tabs
  */
-
 function updateTab(source, framework) {
-  const { url, id: sourceId } = source;
+  const {
+    url,
+    id: sourceId
+  } = source;
   const isOriginal = (0, _devtoolsSourceMap.isOriginalId)(source.id);
-
   return {
     type: "UPDATE_TAB",
     url,
@@ -37,9 +39,11 @@ function updateTab(source, framework) {
 }
 
 function addTab(source) {
-  const { url, id: sourceId } = source;
+  const {
+    url,
+    id: sourceId
+  } = source;
   const isOriginal = (0, _devtoolsSourceMap.isOriginalId)(source.id);
-
   return {
     type: "ADD_TAB",
     url,
@@ -55,36 +59,53 @@ function moveTab(url, tabIndex) {
     tabIndex
   };
 }
-
 /**
  * @memberof actions/tabs
  * @static
  */
+
+
 function closeTab(cx, source) {
-  return ({ dispatch, getState, client }) => {
-    const { id, url } = source;
-
+  return ({
+    dispatch,
+    getState,
+    client
+  }) => {
+    const {
+      id,
+      url
+    } = source;
     (0, _editor.removeDocument)(id);
-
     const tabs = (0, _selectors.removeSourceFromTabList)((0, _selectors.getSourceTabs)(getState()), source);
     const sourceId = (0, _selectors.getNewSelectedSourceId)(getState(), tabs);
-    dispatch({ type: "CLOSE_TAB", url, tabs });
+    dispatch({
+      type: "CLOSE_TAB",
+      url,
+      tabs
+    });
     dispatch((0, _sources.selectSource)(cx, sourceId));
   };
 }
-
 /**
  * @memberof actions/tabs
  * @static
  */
+
+
 function closeTabs(cx, urls) {
-  return ({ dispatch, getState, client }) => {
+  return ({
+    dispatch,
+    getState,
+    client
+  }) => {
     const sources = urls.map(url => (0, _selectors.getSourceByURL)(getState(), url)).filter(Boolean);
     sources.map(source => (0, _editor.removeDocument)(source.id));
-
     const tabs = (0, _selectors.removeSourcesFromTabList)((0, _selectors.getSourceTabs)(getState()), sources);
-    dispatch({ type: "CLOSE_TABS", sources, tabs });
-
+    dispatch({
+      type: "CLOSE_TABS",
+      sources,
+      tabs
+    });
     const sourceId = (0, _selectors.getNewSelectedSourceId)(getState(), tabs);
     dispatch((0, _sources.selectSource)(cx, sourceId));
   };

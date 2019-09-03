@@ -560,6 +560,7 @@ function mainThreadFetch(
       ).loadGroup;
     }
 
+    /* eslint-disable complexity */
     const onResponse = (stream, status, request) => {
       if (!components.isSuccessCode(status)) {
         reject(new Error(`Failed to fetch ${url}. Code ${status}.`));
@@ -625,9 +626,21 @@ function mainThreadFetch(
         }
         const unicodeSource = NetworkHelper.convertToUnicode(source, charset);
 
+        // Look for any source map URL in the response.
+        let sourceMapURL;
+        try {
+          sourceMapURL = request.getResponseHeader("SourceMap");
+        } catch (e) {}
+        if (!sourceMapURL) {
+          try {
+            sourceMapURL = request.getResponseHeader("X-SourceMap");
+          } catch (e) {}
+        }
+
         resolve({
           content: unicodeSource,
           contentType: request.contentType,
+          sourceMapURL,
         });
       } catch (ex) {
         const uri = request.originalURI;
@@ -781,21 +794,25 @@ exports.openFileStream = function(filePath) {
 };
 
 /**
- * Open the file at the given path for writing.
+ * Save the given data to disk after asking the user where to do so.
  *
- * @param {String} filePath
+ * @param {Window} parentWindow
+ *        The parent window to use to display the filepicker.
+ * @param {UInt8Array} dataArray
+ *        The data to write to the file.
+ * @param {String} fileName
+ *        The suggested filename.
  */
-exports.saveFileStream = function(filePath, istream) {
-  return new Promise((resolve, reject) => {
-    const ostream = FileUtils.openSafeFileOutputStream(filePath);
-    NetUtil.asyncCopy(istream, ostream, status => {
-      if (!components.isSuccessCode(status)) {
-        reject(new Error(`Could not save "${filePath}"`));
-        return;
-      }
-      FileUtils.closeSafeFileOutputStream(ostream);
-      resolve();
-    });
+exports.saveAs = async function(parentWindow, dataArray, fileName = "") {
+  let returnFile;
+  try {
+    returnFile = await exports.showSaveFileDialog(parentWindow, fileName);
+  } catch (ex) {
+    return;
+  }
+
+  await OS.File.writeAtomic(returnFile.path, dataArray, {
+    tmpPath: returnFile.path + ".tmp",
   });
 };
 

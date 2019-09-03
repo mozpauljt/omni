@@ -199,6 +199,8 @@ convenience of Safari and Chrome users on macOS. See bug 1398988. -->
 <!ENTITY urlbar.emeNotificationAnchor.tooltip             "Manage use of DRM software">
 <!ENTITY urlbar.midiNotificationAnchor.tooltip            "Open MIDI panel">
 
+<!ENTITY urlbar.permissionsGranted.tooltip       "You have granted this website additional permissions.">
+
 <!ENTITY urlbar.cameraBlocked.tooltip            "You have blocked your camera for this website.">
 <!ENTITY urlbar.microphoneBlocked.tooltip        "You have blocked your microphone for this website.">
 <!ENTITY urlbar.screenBlocked.tooltip            "You have blocked this website from sharing your screen.">
@@ -670,12 +672,8 @@ you can use these alternative items. Otherwise, their values should be empty.  -
 <!ENTITY editBookmark.showForNewBookmarks.label       "Show editor when saving">
 <!ENTITY editBookmark.showForNewBookmarks.accesskey   "S">
 
-<!-- LOCALIZATION NOTE (identity.securityView.label2)
-     This is the header of the security subview in the Site Identity panel. -->
-<!ENTITY identity.securityView.label2 "Connection Security">
-
-<!ENTITY identity.connectionSecure2 "Connection Secure">
-<!ENTITY identity.connectionNotSecure "Connection Is Not Secure">
+<!ENTITY identity.connectionSecure3 "Connection secure">
+<!ENTITY identity.connectionNotSecure2 "Connection not secure">
 <!ENTITY identity.connectionNotSecureSecurityView "You are not securely connected to this site.">
 <!ENTITY identity.connectionFile "This page is stored on your computer.">
 <!ENTITY identity.connectionVerified3 "You are securely connected to this site.">
@@ -684,7 +682,7 @@ you can use these alternative items. Otherwise, their values should be empty.  -
 <!ENTITY identity.insecureLoginForms2 "Logins entered on this page could be compromised.">
 <!ENTITY identity.customRoot "Connection verified by a certificate issuer that is not recognized by Mozilla.">
 
-<!ENTITY identity.evOwnerLabel "Site owned by:">
+<!ENTITY identity.evOwnerLabel2 "Certificate issued to:">
 
 <!-- Strings for connection state warnings. -->
 <!ENTITY identity.activeBlocked "&brandShortName; has blocked parts of this page that are not secure.">
@@ -718,8 +716,7 @@ you can use these alternative items. Otherwise, their values should be empty.  -
 
 <!ENTITY identity.clearSiteData "Clear Cookies and Site Data…">
 
-<!-- LOCALIZATION NOTE (identity.permissions2): "set" as in "configured for this website" -->
-<!ENTITY identity.permissions2 "Permissions Set">
+<!ENTITY identity.permissions3 "Permissions">
 <!ENTITY identity.permissionsEmpty "You have not granted this site any special permissions.">
 <!ENTITY identity.permissionsReloadHint "You may need to reload the page for changes to apply.">
 
@@ -729,7 +726,7 @@ you can use these alternative items. Otherwise, their values should be empty.  -
      protections.etpMoreInfo.label: The text a screen reader speaks when focused on the info button. -->
 <!ENTITY protections.etpMoreInfo.label "More information about Enhanced Tracking Protection">
 <!ENTITY protections.settings.label "Protection Settings">
-<!ENTITY protections.report.label "Show Full Report">
+<!ENTITY protections.showreport.label "Show Report">
 <!-- LOCALIZATION NOTE:
      protections.siteNotWorking.label: The link to be clicked to open the sub-panel view
      protections.siteNotWorkingView.title: The heading/title of the sub-panel view -->
@@ -746,11 +743,20 @@ you can use these alternative items. Otherwise, their values should be empty.  -
 <!ENTITY protections.siteNotWorkingView.issueList.payments "Payments">
 <!ENTITY protections.siteNotWorkingView.issueList.comments "Comments">
 <!ENTITY protections.siteNotWorkingView.issueList.videos "Videos">
-<!ENTITY protections.siteNotWorkingView.siteStillBroken.label "Site still broken after turning off protections?">
 <!ENTITY protections.siteNotWorkingView.sendReport.label "Send a report">
 
-<!ENTITY protections.blocking.label "Blocking">
-<!ENTITY protections.notBlocking.label "Not Blocking">
+<!-- LOCALIZATION NOTE (protections.blocking2.label, protections.notBlocking2.label, protections.notFound.label):
+     In the protections panel, Content Blocking category items are in three sections:
+     "Blocked" for categories being blocked in the current page,
+     "Allowed" for categories detected but not blocked in the current page, and
+     "None Detected" for categories not detected in the current page.
+     These strings are used in the header labels of each of these sections. -->
+<!ENTITY protections.blocking2.label "Blocked">
+<!ENTITY protections.notBlocking2.label "Allowed">
+<!ENTITY protections.notFound.label "None Detected">
+<!-- LOCALIZATION NOTE (protections.notBlocking.why.label, protections.notBlocking.why.etp*.tooltip):
+     The "Allowed" header also includes a "Why?" link that, when hovered, shows
+     a tooltip explaining why these items were not blocked in the page. -->
 <!ENTITY protections.notBlocking.why.label "Why?">
 <!ENTITY protections.notBlocking.why.etpOn.tooltip "Blocking these could break elements of some websites. Without trackers, some buttons, forms, and login fields might not work.">
 <!ENTITY protections.notBlocking.why.etpOff.tooltip "Turning off protections will allow all trackers on this site. It may also improve some website functionality.">
@@ -764,7 +770,7 @@ you can use these alternative items. Otherwise, their values should be empty.  -
 <!ENTITY protections.crossSiteTrackingCookies.description "These cookies follow you from site to site to gather data about what you do online. They are set by third parties such as advertisers and analytics companies.">
 <!ENTITY protections.cryptominers.description "Cryptominers use your system’s computing power to mine digital money. Cryptomining scripts drain your battery, slow down your computer, and can increase your energy bill.">
 <!ENTITY protections.fingerprinters.description "Fingerprinters collect settings from your browser and computer to create a profile of you. Using this digital fingerprint, they can track you across different websites.">
-<!ENTITY protections.trackingContent.description "Websites may load external ads, videos, and other content that contain tracking code. Blocking tracking content can help sites load faster, but some buttons, forms, and login fields might not work.">
+<!ENTITY protections.trackingContent2.description "Websites may load external ads, videos, and other content with tracking code. Blocking tracking content can help sites load faster, but some buttons, forms, and login fields might not work.">
 <!ENTITY protections.socialMediaTrackers.description "Social networks place trackers on other websites to follow what you do, see, and watch online. This allows social media companies to learn more about you beyond what you share on your social media profiles.">
 
 <!-- Name for the tabs toolbar as spoken by screen readers.
@@ -793,8 +799,6 @@ you can use these alternative items. Otherwise, their values should be empty.  -
 
 <!ENTITY contentBlocking.manageSettings2.label "Manage Protection Settings">
 <!ENTITY contentBlocking.manageSettings.accesskey "M">
-
-<!ENTITY contentBlocking.trackersView.strictInfo.label "To block all trackers, set content blocking to “Strict”.">
 
 <!ENTITY contentBlocking.socialblock.label "Social Media Trackers">
 

@@ -3,14 +3,11 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = void 0;
 
-var _react = require("devtools/client/shared/vendor/react");
+var _react = _interopRequireWildcard(require("devtools/client/shared/vendor/react"));
 
-var _react2 = _interopRequireDefault(_react);
-
-loader.lazyRequireGetter(this, "_ColumnBreakpoint", "devtools/client/debugger/src/components/Editor/ColumnBreakpoint");
-
-var _ColumnBreakpoint2 = _interopRequireDefault(_ColumnBreakpoint);
+var _ColumnBreakpoint = _interopRequireDefault(require("./ColumnBreakpoint"));
 
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
 loader.lazyRequireGetter(this, "_connect", "devtools/client/debugger/src/utils/connect");
@@ -19,13 +16,12 @@ loader.lazyRequireGetter(this, "_breakpoints", "devtools/client/debugger/src/com
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// eslint-disable-next-line max-len
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-
 class ColumnBreakpoints extends _react.Component {
-
   render() {
     const {
       cx,
@@ -41,7 +37,7 @@ class ColumnBreakpoints extends _react.Component {
 
     let breakpoints;
     editor.codeMirror.operation(() => {
-      breakpoints = columnBreakpoints.map(breakpoint => _react2.default.createElement(_ColumnBreakpoint2.default, {
+      breakpoints = columnBreakpoints.map(breakpoint => _react.default.createElement(_ColumnBreakpoint.default, {
         cx: cx,
         key: (0, _breakpoint.makeBreakpointId)(breakpoint.location),
         columnBreakpoint: breakpoint,
@@ -50,12 +46,9 @@ class ColumnBreakpoints extends _react.Component {
         breakpointActions: breakpointActions
       }));
     });
-    return _react2.default.createElement(
-      "div",
-      null,
-      breakpoints
-    );
+    return _react.default.createElement("div", null, breakpoints);
   }
+
 }
 
 const mapStateToProps = state => ({
@@ -64,4 +57,8 @@ const mapStateToProps = state => ({
   columnBreakpoints: (0, _selectors.visibleColumnBreakpoints)(state)
 });
 
-exports.default = (0, _connect.connect)(mapStateToProps, dispatch => ({ breakpointActions: (0, _breakpoints.breakpointItemActions)(dispatch) }))(ColumnBreakpoints);
+var _default = (0, _connect.connect)(mapStateToProps, dispatch => ({
+  breakpointActions: (0, _breakpoints.breakpointItemActions)(dispatch)
+}))(ColumnBreakpoints);
+
+exports.default = _default;

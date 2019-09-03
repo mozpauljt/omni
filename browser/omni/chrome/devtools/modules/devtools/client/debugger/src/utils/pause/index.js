@@ -13,13 +13,3 @@ Object.keys(_why).forEach(function (key) {
     }
   });
 });
-loader.lazyRequireGetter(this, "_inlinePreview", "devtools/client/debugger/src/utils/pause/inlinePreview");
-Object.keys(_inlinePreview).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _inlinePreview[key];
-    }
-  });
-});

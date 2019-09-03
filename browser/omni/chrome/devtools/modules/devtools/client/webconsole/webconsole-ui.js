@@ -1,5 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set ft=javascript ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,7 +7,6 @@
 const { Utils: WebConsoleUtils } = require("devtools/client/webconsole/utils");
 const EventEmitter = require("devtools/shared/event-emitter");
 const Services = require("Services");
-const { gDevTools } = require("devtools/client/framework/devtools");
 const {
   WebConsoleConnectionProxy,
 } = require("devtools/client/webconsole/webconsole-connection-proxy");
@@ -25,6 +22,12 @@ loader.lazyRequireGetter(
   this,
   "AppConstants",
   "resource://gre/modules/AppConstants.jsm",
+  true
+);
+loader.lazyRequireGetter(
+  this,
+  "PREFS",
+  "devtools/client/webconsole/constants",
   true
 );
 
@@ -48,7 +51,6 @@ class WebConsoleUI {
     this.hud = hud;
     this.hudId = this.hud.hudId;
     this.isBrowserConsole = this.hud.isBrowserConsole;
-    this.fissionSupport = this.hud.fissionSupport;
     this.window = this.hud.iframeWindow;
 
     this._onPanelSelected = this._onPanelSelected.bind(this);
@@ -145,20 +147,21 @@ class WebConsoleUI {
       this.wrapper.destroy();
     }
 
-    const toolbox = gDevTools.getToolbox(this.hud.target);
+    const toolbox = this.hud.toolbox;
     if (toolbox) {
       toolbox.off("webconsole-selected", this._onPanelSelected);
       toolbox.off("split-console", this._onChangeSplitConsoleState);
       toolbox.off("select", this._onChangeSplitConsoleState);
     }
 
-    this.window = this.hud = this.wrapper = null;
-
     for (const proxy of this.getAllProxies()) {
       proxy.disconnect();
     }
     this.proxy = null;
     this.additionalProxies = null;
+
+    // Nullify `hud` last as it nullify also target which is used on destroy
+    this.window = this.hud = this.wrapper = null;
   }
 
   /**
@@ -224,7 +227,7 @@ class WebConsoleUI {
   }
 
   logWarningAboutReplacedAPI() {
-    return this.hud.target.logWarningInPage(
+    return this.hud.currentTarget.logWarningInPage(
       l10n.getStr("ConsoleAPIDisabled"),
       "ConsoleAPIDisabled"
     );
@@ -259,19 +262,21 @@ class WebConsoleUI {
    *         A promise object that is resolved/reject based on the proxies connections.
    */
   async _initConnection() {
+    const target = this.hud.currentTarget;
+    const fissionSupport = Services.prefs.getBoolPref(
+      PREFS.FEATURES.BROWSER_TOOLBOX_FISSION
+    );
+    const needContentProcessMessagesListener =
+      target.isParentProcess && !target.isAddon && !fissionSupport;
+
     this.proxy = new WebConsoleConnectionProxy(
       this,
-      this.hud.target,
-      this.isBrowserConsole,
-      this.fissionSupport
+      target,
+      needContentProcessMessagesListener
     );
 
-    if (
-      this.fissionSupport &&
-      this.hud.target.chrome &&
-      !this.hud.target.isAddon
-    ) {
-      const { mainRoot } = this.hud.target.client;
+    if (fissionSupport && target.isParentProcess && !target.isAddon) {
+      const { mainRoot } = target.client;
       const { processes } = await mainRoot.listProcesses();
 
       this.additionalProxies = [];
@@ -280,7 +285,7 @@ class WebConsoleUI {
 
         // Don't create a proxy for the "main" target,
         // as we already created it in this.proxy.
-        if (targetFront === this.hud.target) {
+        if (targetFront === target) {
           continue;
         }
 
@@ -293,12 +298,7 @@ class WebConsoleUI {
         }
 
         this.additionalProxies.push(
-          new WebConsoleConnectionProxy(
-            this,
-            targetFront,
-            this.isBrowserConsole,
-            this.fissionSupport
-          )
+          new WebConsoleConnectionProxy(this, targetFront)
         );
       }
     }
@@ -312,7 +312,7 @@ class WebConsoleUI {
 
     this.outputNode = this.document.getElementById("app-wrapper");
 
-    const toolbox = gDevTools.getToolbox(this.hud.target);
+    const toolbox = this.hud.toolbox;
 
     // Initialize module loader and load all the WebConsoleWrapper. The entire code-base
     // doesn't need any extra privileges and runs entirely in content scope.

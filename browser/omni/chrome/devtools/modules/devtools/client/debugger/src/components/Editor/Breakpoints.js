@@ -3,14 +3,11 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = void 0;
 
-var _react = require("devtools/client/shared/vendor/react");
+var _react = _interopRequireWildcard(require("devtools/client/shared/vendor/react"));
 
-var _react2 = _interopRequireDefault(_react);
-
-loader.lazyRequireGetter(this, "_Breakpoint", "devtools/client/debugger/src/components/Editor/Breakpoint");
-
-var _Breakpoint2 = _interopRequireDefault(_Breakpoint);
+var _Breakpoint = _interopRequireDefault(require("./Breakpoint"));
 
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
 loader.lazyRequireGetter(this, "_breakpoint", "devtools/client/debugger/src/utils/breakpoint/index");
@@ -20,6 +17,11 @@ loader.lazyRequireGetter(this, "_editor", "devtools/client/debugger/src/componen
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 class Breakpoints extends _react.Component {
   render() {
     const {
@@ -35,27 +37,22 @@ class Breakpoints extends _react.Component {
       return null;
     }
 
-    return _react2.default.createElement(
-      "div",
-      null,
-      breakpoints.map(bp => {
-        return _react2.default.createElement(_Breakpoint2.default, {
-          cx: cx,
-          key: (0, _breakpoint.makeBreakpointId)(bp.location),
-          breakpoint: bp,
-          selectedSource: selectedSource,
-          editor: editor,
-          breakpointActions: breakpointActions,
-          editorActions: editorActions
-        });
-      })
-    );
+    return _react.default.createElement("div", null, breakpoints.map(bp => {
+      return _react.default.createElement(_Breakpoint.default, {
+        cx: cx,
+        key: (0, _breakpoint.makeBreakpointId)(bp.location),
+        breakpoint: bp,
+        selectedSource: selectedSource,
+        editor: editor,
+        breakpointActions: breakpointActions,
+        editorActions: editorActions
+      });
+    }));
   }
-} /* This Source Code Form is subject to the terms of the Mozilla Public
-   * License, v. 2.0. If a copy of the MPL was not distributed with this
-   * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
-exports.default = (0, _connect.connect)(state => ({
+}
+
+var _default = (0, _connect.connect)(state => ({
   // Retrieves only the first breakpoint per line so that the
   // breakpoint marker represents only the first breakpoint
   breakpoints: (0, _selectors.getFirstVisibleBreakpoints)(state),
@@ -64,3 +61,5 @@ exports.default = (0, _connect.connect)(state => ({
   breakpointActions: (0, _breakpoints.breakpointItemActions)(dispatch),
   editorActions: (0, _editor.editorItemActions)(dispatch)
 }))(Breakpoints);
+
+exports.default = _default;

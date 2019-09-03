@@ -3,73 +3,41 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-loader.lazyRequireGetter(this, "_expressions", "devtools/client/debugger/src/reducers/expressions");
+exports.default = void 0;
 
-var _expressions2 = _interopRequireDefault(_expressions);
+var _expressions = _interopRequireDefault(require("./expressions"));
 
-loader.lazyRequireGetter(this, "_sourceActors", "devtools/client/debugger/src/reducers/source-actors");
+var _sourceActors = _interopRequireDefault(require("./source-actors"));
 
-var _sourceActors2 = _interopRequireDefault(_sourceActors);
+var _sources = _interopRequireDefault(require("./sources"));
 
-loader.lazyRequireGetter(this, "_sources", "devtools/client/debugger/src/reducers/sources");
+var _tabs = _interopRequireDefault(require("./tabs"));
 
-var _sources2 = _interopRequireDefault(_sources);
+var _breakpoints = _interopRequireDefault(require("./breakpoints"));
 
-loader.lazyRequireGetter(this, "_tabs", "devtools/client/debugger/src/reducers/tabs");
+var _pendingBreakpoints = _interopRequireDefault(require("./pending-breakpoints"));
 
-var _tabs2 = _interopRequireDefault(_tabs);
+var _asyncRequests = _interopRequireDefault(require("./async-requests"));
 
-loader.lazyRequireGetter(this, "_breakpoints", "devtools/client/debugger/src/reducers/breakpoints");
+var _pause = _interopRequireDefault(require("./pause"));
 
-var _breakpoints2 = _interopRequireDefault(_breakpoints);
+var _ui = _interopRequireDefault(require("./ui"));
 
-loader.lazyRequireGetter(this, "_pendingBreakpoints", "devtools/client/debugger/src/reducers/pending-breakpoints");
+var _fileSearch = _interopRequireDefault(require("./file-search"));
 
-var _pendingBreakpoints2 = _interopRequireDefault(_pendingBreakpoints);
+var _ast = _interopRequireDefault(require("./ast"));
 
-loader.lazyRequireGetter(this, "_asyncRequests", "devtools/client/debugger/src/reducers/async-requests");
+var _preview = _interopRequireDefault(require("./preview"));
 
-var _asyncRequests2 = _interopRequireDefault(_asyncRequests);
+var _projectTextSearch = _interopRequireDefault(require("./project-text-search"));
 
-loader.lazyRequireGetter(this, "_pause", "devtools/client/debugger/src/reducers/pause");
+var _quickOpen = _interopRequireDefault(require("./quick-open"));
 
-var _pause2 = _interopRequireDefault(_pause);
+var _sourceTree = _interopRequireDefault(require("./source-tree"));
 
-loader.lazyRequireGetter(this, "_ui", "devtools/client/debugger/src/reducers/ui");
+var _threads = _interopRequireDefault(require("./threads"));
 
-var _ui2 = _interopRequireDefault(_ui);
-
-loader.lazyRequireGetter(this, "_fileSearch", "devtools/client/debugger/src/reducers/file-search");
-
-var _fileSearch2 = _interopRequireDefault(_fileSearch);
-
-loader.lazyRequireGetter(this, "_ast", "devtools/client/debugger/src/reducers/ast");
-
-var _ast2 = _interopRequireDefault(_ast);
-
-loader.lazyRequireGetter(this, "_preview", "devtools/client/debugger/src/reducers/preview");
-
-var _preview2 = _interopRequireDefault(_preview);
-
-loader.lazyRequireGetter(this, "_projectTextSearch", "devtools/client/debugger/src/reducers/project-text-search");
-
-var _projectTextSearch2 = _interopRequireDefault(_projectTextSearch);
-
-loader.lazyRequireGetter(this, "_quickOpen", "devtools/client/debugger/src/reducers/quick-open");
-
-var _quickOpen2 = _interopRequireDefault(_quickOpen);
-
-loader.lazyRequireGetter(this, "_sourceTree", "devtools/client/debugger/src/reducers/source-tree");
-
-var _sourceTree2 = _interopRequireDefault(_sourceTree);
-
-loader.lazyRequireGetter(this, "_debuggee", "devtools/client/debugger/src/reducers/debuggee");
-
-var _debuggee2 = _interopRequireDefault(_debuggee);
-
-loader.lazyRequireGetter(this, "_eventListeners", "devtools/client/debugger/src/reducers/event-listeners");
-
-var _eventListeners2 = _interopRequireDefault(_eventListeners);
+var _eventListeners = _interopRequireDefault(require("./event-listeners"));
 
 var _devtoolsReps = require("devtools/client/shared/components/reps/reps.js");
 
@@ -83,26 +51,25 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * Reducer index
  * @module reducers/index
  */
-
-exports.default = {
-  expressions: _expressions2.default,
-  sourceActors: _sourceActors2.default,
-  sources: _sources2.default,
-  tabs: _tabs2.default,
-  breakpoints: _breakpoints2.default,
-  pendingBreakpoints: _pendingBreakpoints2.default,
-  asyncRequests: _asyncRequests2.default,
-  pause: _pause2.default,
-  ui: _ui2.default,
-  fileSearch: _fileSearch2.default,
-  ast: _ast2.default,
-  projectTextSearch: _projectTextSearch2.default,
-  quickOpen: _quickOpen2.default,
-  sourceTree: _sourceTree2.default,
-  debuggee: _debuggee2.default,
-  objectInspector: _devtoolsReps.objectInspector.reducer.default,
-  eventListenerBreakpoints: _eventListeners2.default,
-  preview: _preview2.default
-};
-
 // eslint-disable-next-line import/named
+var _default = {
+  expressions: _expressions.default,
+  sourceActors: _sourceActors.default,
+  sources: _sources.default,
+  tabs: _tabs.default,
+  breakpoints: _breakpoints.default,
+  pendingBreakpoints: _pendingBreakpoints.default,
+  asyncRequests: _asyncRequests.default,
+  pause: _pause.default,
+  ui: _ui.default,
+  fileSearch: _fileSearch.default,
+  ast: _ast.default,
+  projectTextSearch: _projectTextSearch.default,
+  quickOpen: _quickOpen.default,
+  sourceTree: _sourceTree.default,
+  threads: _threads.default,
+  objectInspector: _devtoolsReps.objectInspector.reducer.default,
+  eventListenerBreakpoints: _eventListeners.default,
+  preview: _preview.default
+};
+exports.default = _default;

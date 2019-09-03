@@ -3,63 +3,45 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = void 0;
 
-var _react = require("devtools/client/shared/vendor/react");
+var _react = _interopRequireWildcard(require("devtools/client/shared/vendor/react"));
 
-var _react2 = _interopRequireDefault(_react);
-
-loader.lazyRequireGetter(this, "_AccessibleImage", "devtools/client/debugger/src/components/shared/AccessibleImage");
-
-var _AccessibleImage2 = _interopRequireDefault(_AccessibleImage);
+var _AccessibleImage = _interopRequireDefault(require("./AccessibleImage"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 class Accordion extends _react.Component {
-  constructor(props) {
-    super(props);
+  constructor(...args) {
+    super(...args);
 
-    this.renderContainer = (item, i) => {
-      const { opened } = item;
-
-      return _react2.default.createElement(
-        "li",
-        { className: item.className, key: i },
-        _react2.default.createElement(
-          "h2",
-          {
-            className: "_header",
-            tabIndex: "0",
-            onKeyDown: e => this.onHandleHeaderKeyDown(e, i),
-            onClick: () => this.handleHeaderClick(i)
-          },
-          _react2.default.createElement(_AccessibleImage2.default, { className: `arrow ${opened ? "expanded" : ""}` }),
-          _react2.default.createElement(
-            "span",
-            { className: "header-label" },
-            item.header
-          ),
-          item.buttons ? _react2.default.createElement(
-            "div",
-            { className: "header-buttons", tabIndex: "-1" },
-            item.buttons
-          ) : null
-        ),
-        opened && _react2.default.createElement(
-          "div",
-          { className: "_content" },
-          (0, _react.cloneElement)(item.component, item.componentProps || {})
-        )
-      );
-    };
-
-    this.state = {
-      opened: props.items.map(item => item.opened),
-      created: []
-    };
+    _defineProperty(this, "renderContainer", (item, i) => {
+      const {
+        opened
+      } = item;
+      return _react.default.createElement("li", {
+        className: item.className,
+        key: i
+      }, _react.default.createElement("h2", {
+        className: "_header",
+        tabIndex: "0",
+        onKeyDown: e => this.onHandleHeaderKeyDown(e, i),
+        onClick: () => this.handleHeaderClick(i)
+      }, _react.default.createElement(_AccessibleImage.default, {
+        className: `arrow ${opened ? "expanded" : ""}`
+      }), _react.default.createElement("span", {
+        className: "header-label"
+      }, item.header), item.buttons ? _react.default.createElement("div", {
+        className: "header-buttons",
+        tabIndex: "-1"
+      }, item.buttons) : null), opened && _react.default.createElement("div", {
+        className: "_content"
+      }, (0, _react.cloneElement)(item.component, item.componentProps || {})));
+    });
   }
 
   handleHeaderClick(i) {
@@ -69,10 +51,10 @@ class Accordion extends _react.Component {
 
     if (item.onToggle) {
       item.onToggle(opened);
-    }
-
-    // We force an update because otherwise the accordion
+    } // We force an update because otherwise the accordion
     // would not re-render
+
+
     this.forceUpdate();
   }
 
@@ -83,12 +65,12 @@ class Accordion extends _react.Component {
   }
 
   render() {
-    return _react2.default.createElement(
-      "ul",
-      { className: "accordion" },
-      this.props.items.map(this.renderContainer)
-    );
+    return _react.default.createElement("ul", {
+      className: "accordion"
+    }, this.props.items.map(this.renderContainer));
   }
+
 }
 
-exports.default = Accordion;
+var _default = Accordion;
+exports.default = _default;

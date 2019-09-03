@@ -9,16 +9,16 @@ loader.lazyRequireGetter(this, "_sources", "devtools/client/debugger/src/reducer
 loader.lazyRequireGetter(this, "_breakpoints", "devtools/client/debugger/src/reducers/breakpoints");
 loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
 
-
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 function getColumn(column, selectedSource) {
   if (column) {
     return column;
   }
 
   return (0, _source.isGenerated)(selectedSource) ? undefined : 0;
-} /* This Source Code Form is subject to the terms of the Mozilla Public
-   * License, v. 2.0. If a copy of the MPL was not distributed with this
-   * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+}
 
 function getLocation(bp, selectedSource) {
   return (0, _source.isGenerated)(selectedSource) ? bp.generatedLocation || bp.location : bp.location;
@@ -26,17 +26,20 @@ function getLocation(bp, selectedSource) {
 
 function getBreakpointsForSource(state, selectedSource) {
   const breakpoints = (0, _breakpoints.getBreakpointsList)(state);
-
   return breakpoints.filter(bp => {
     const location = getLocation(bp, selectedSource);
     return location.sourceId === selectedSource.id;
   });
 }
 
-function findBreakpointAtLocation(breakpoints, selectedSource, { line, column }) {
+function findBreakpointAtLocation(breakpoints, selectedSource, {
+  line,
+  column
+}) {
   return breakpoints.find(breakpoint => {
     const location = getLocation(breakpoint, selectedSource);
     const sameLine = location.line === line;
+
     if (!sameLine) {
       return false;
     }
@@ -48,7 +51,6 @@ function findBreakpointAtLocation(breakpoints, selectedSource, { line, column })
     return location.column === getColumn(column, selectedSource);
   });
 }
-
 /*
  * Finds a breakpoint at a location (line, column) of the
  * selected source.
@@ -56,22 +58,26 @@ function findBreakpointAtLocation(breakpoints, selectedSource, { line, column })
  * This is useful for finding a breakpoint when the
  * user clicks in the gutter or on a token.
  */
+
+
 function getBreakpointAtLocation(state, location) {
   const selectedSource = (0, _sources.getSelectedSource)(state);
+
   if (!selectedSource) {
     throw new Error("no selectedSource");
   }
-  const breakpoints = getBreakpointsForSource(state, selectedSource);
 
+  const breakpoints = getBreakpointsForSource(state, selectedSource);
   return findBreakpointAtLocation(breakpoints, selectedSource, location);
 }
 
 function getBreakpointsAtLine(state, line) {
   const selectedSource = (0, _sources.getSelectedSource)(state);
+
   if (!selectedSource) {
     throw new Error("no selectedSource");
   }
-  const breakpoints = getBreakpointsForSource(state, selectedSource);
 
+  const breakpoints = getBreakpointsForSource(state, selectedSource);
   return breakpoints.filter(breakpoint => getLocation(breakpoint, selectedSource).line === line);
 }

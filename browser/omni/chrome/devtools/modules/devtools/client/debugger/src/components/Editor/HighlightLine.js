@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.HighlightLine = undefined;
+exports.default = exports.HighlightLine = void 0;
 
 var _react = require("devtools/client/shared/vendor/react");
 
@@ -12,6 +12,7 @@ loader.lazyRequireGetter(this, "_sourceDocuments", "devtools/client/debugger/src
 loader.lazyRequireGetter(this, "_connect", "devtools/client/debugger/src/utils/connect");
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function isDebugLine(selectedFrame, selectedLocation) {
   if (!selectedFrame) {
@@ -19,24 +20,27 @@ function isDebugLine(selectedFrame, selectedLocation) {
   }
 
   return selectedFrame.location.sourceId == selectedLocation.sourceId && selectedFrame.location.line == selectedLocation.line;
-} /* This Source Code Form is subject to the terms of the Mozilla Public
-   * License, v. 2.0. If a copy of the MPL was not distributed with this
-   * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+}
 
-function isDocumentReady(selectedSourceWithContent, selectedLocation) {
-  return selectedLocation && selectedSourceWithContent && selectedSourceWithContent.content && (0, _sourceDocuments.hasDocument)(selectedLocation.sourceId);
+function isDocumentReady(selectedSource, selectedLocation) {
+  return selectedLocation && selectedSource && selectedSource.content && (0, _sourceDocuments.hasDocument)(selectedLocation.sourceId);
 }
 
 class HighlightLine extends _react.Component {
   constructor(...args) {
-    var _temp;
+    super(...args);
 
-    return _temp = super(...args), this.isStepping = false, this.previousEditorLine = null, _temp;
+    _defineProperty(this, "isStepping", false);
+
+    _defineProperty(this, "previousEditorLine", null);
   }
 
   shouldComponentUpdate(nextProps) {
-    const { selectedLocation, selectedSourceWithContent } = nextProps;
-    return this.shouldSetHighlightLine(selectedLocation, selectedSourceWithContent);
+    const {
+      selectedLocation,
+      selectedSource
+    } = nextProps;
+    return this.shouldSetHighlightLine(selectedLocation, selectedSource);
   }
 
   componentDidUpdate(prevProps) {
@@ -47,11 +51,14 @@ class HighlightLine extends _react.Component {
     this.completeHighlightLine(null);
   }
 
-  shouldSetHighlightLine(selectedLocation, selectedSourceWithContent) {
-    const { sourceId, line } = selectedLocation;
+  shouldSetHighlightLine(selectedLocation, selectedSource) {
+    const {
+      sourceId,
+      line
+    } = selectedLocation;
     const editorLine = (0, _editor.toEditorLine)(sourceId, line);
 
-    if (!isDocumentReady(selectedSourceWithContent, selectedLocation)) {
+    if (!isDocumentReady(selectedSource, selectedLocation)) {
       return false;
     }
 
@@ -67,23 +74,30 @@ class HighlightLine extends _react.Component {
       pauseCommand,
       selectedLocation,
       selectedFrame,
-      selectedSourceWithContent
+      selectedSource
     } = this.props;
+
     if (pauseCommand) {
       this.isStepping = true;
     }
 
     (0, _editor.startOperation)();
+
     if (prevProps) {
-      this.clearHighlightLine(prevProps.selectedLocation, prevProps.selectedSourceWithContent);
+      this.clearHighlightLine(prevProps.selectedLocation, prevProps.selectedSource);
     }
-    this.setHighlightLine(selectedLocation, selectedFrame, selectedSourceWithContent);
+
+    this.setHighlightLine(selectedLocation, selectedFrame, selectedSource);
     (0, _editor.endOperation)();
   }
 
-  setHighlightLine(selectedLocation, selectedFrame, selectedSourceWithContent) {
-    const { sourceId, line } = selectedLocation;
-    if (!this.shouldSetHighlightLine(selectedLocation, selectedSourceWithContent)) {
+  setHighlightLine(selectedLocation, selectedFrame, selectedSource) {
+    const {
+      sourceId,
+      line
+    } = selectedLocation;
+
+    if (!this.shouldSetHighlightLine(selectedLocation, selectedSource)) {
       return;
     }
 
@@ -109,19 +123,20 @@ class HighlightLine extends _react.Component {
 
     const style = getComputedStyle(editorWrapper);
     const durationString = style.getPropertyValue("--highlight-line-duration");
-
     let duration = durationString.match(/\d+/);
     duration = duration.length ? Number(duration[0]) : 0;
-
     setTimeout(() => doc && doc.removeLineClass(editorLine, "line", "highlight-line"), duration);
   }
 
-  clearHighlightLine(selectedLocation, selectedSourceWithContent) {
-    if (!isDocumentReady(selectedSourceWithContent, selectedLocation)) {
+  clearHighlightLine(selectedLocation, selectedSource) {
+    if (!isDocumentReady(selectedSource, selectedLocation)) {
       return;
     }
 
-    const { line, sourceId } = selectedLocation;
+    const {
+      line,
+      sourceId
+    } = selectedLocation;
     const editorLine = (0, _editor.toEditorLine)(sourceId, line);
     const doc = (0, _sourceDocuments.getDocument)(sourceId);
     doc.removeLineClass(editorLine, "line", "highlight-line");
@@ -130,12 +145,16 @@ class HighlightLine extends _react.Component {
   render() {
     return null;
   }
+
 }
 
 exports.HighlightLine = HighlightLine;
-exports.default = (0, _connect.connect)(state => ({
+
+var _default = (0, _connect.connect)(state => ({
   pauseCommand: (0, _selectors.getPauseCommand)(state, (0, _selectors.getCurrentThread)(state)),
   selectedFrame: (0, _selectors.getVisibleSelectedFrame)(state),
   selectedLocation: (0, _selectors.getSelectedLocation)(state),
-  selectedSourceWithContent: (0, _selectors.getSelectedSourceWithContent)(state)
+  selectedSource: (0, _selectors.getSelectedSourceWithContent)(state)
 }))(HighlightLine);
+
+exports.default = _default;

@@ -114,6 +114,10 @@ const L10N = new MultiLocalizationHelper(
   "devtools/startup/locales/key-shortcuts.properties"
 );
 
+// URL to direct people to the deprecated tools panel
+const DEPRECATION_URL =
+  "https://developer.mozilla.org/docs/Tools/Deprecated_tools";
+
 var Tools = {};
 exports.Tools = Tools;
 
@@ -163,9 +167,8 @@ Tools.inspector = {
   // preventRaisingOnKey is used to keep the focus on the content window for shortcuts
   // that trigger the element picker.
   preventRaisingOnKey: true,
-  onkey: async function(panel, toolbox) {
-    const inspectorFront = await toolbox.target.getFront("inspector");
-    inspectorFront.nodePicker.togglePicker();
+  onkey: function(panel, toolbox) {
+    toolbox.nodePicker.togglePicker();
   },
 
   isTargetSupported: function(target) {
@@ -390,6 +393,8 @@ Tools.storage = {
 
 Tools.scratchpad = {
   id: "scratchpad",
+  deprecated: true,
+  deprecationURL: `${DEPRECATION_URL}#Scratchpad`,
   ordinal: 12,
   visibilityswitch: "devtools.scratchpad.enabled",
   icon: "chrome://devtools/skin/images/tool-scratchpad.svg",

@@ -289,6 +289,10 @@
   padding: 0 6px 2px;
 }
 
+:root[uidensity=compact] #PersonalToolbar {
+  padding-inline: 2px;
+}
+
 :root[sessionrestored] #PersonalToolbar {
   transition: min-height 170ms ease-out, max-height 170ms ease-out, background-color 0.1s cubic-bezier(.17,.67,.83,.67);
 }
@@ -311,6 +315,21 @@
 #PersonalToolbar[customizing]:empty {
   /* Avoid the toolbar having no height when there's no items in it */
   min-height: 22px;
+}
+
+/* rules for menupopup drop indicators */
+menupopup::part(drop-indicator-bar) {
+  position: relative;
+  /* these two margins must together compensate the indicator's height */
+  margin-top: -1px;
+  margin-bottom: -1px;
+}
+
+menupopup::part(drop-indicator) {
+  list-style-image: none;
+  height: 2px;
+  margin-inline-end: -4em;
+  background-color: Highlight;
 }
 
 /* Required for Library animation */
@@ -464,6 +483,11 @@
   margin-inline-end: 4px;
 }
 
+#contextual-feature-recommendation-notification .cfr-doorhanger-large-icon {
+  width: 64px;
+  height: 64px;
+}
+
 #contextual-feature-recommendation-notification .popup-notification-body-container {
   padding-bottom: 0;
 }
@@ -483,10 +507,33 @@
   font-size: 13px;
 }
 
-#contextual-feature-recommendation-notification[data-notification-category="cfrFeatures"] .popup-notification-body-container,
-#contextual-feature-recommendation-notification[data-notification-category="cfrFeatures"] #cfr-notification-footer-addon-info,
-#contextual-feature-recommendation-notification[data-notification-category="cfrAddons"] #cfr-notification-feature-steps {
+#contextual-feature-recommendation-notification[data-notification-category="message_and_animation"] .popup-notification-body-container,
+#contextual-feature-recommendation-notification[data-notification-category="message_and_animation"] #cfr-notification-footer-addon-info,
+#contextual-feature-recommendation-notification[data-notification-category="addon_recommendation"] #cfr-notification-feature-steps,
+#contextual-feature-recommendation-notification[data-notification-category="icon_and_message"] .popup-notification-footer-container {
   display: none;
+}
+
+/*
+ * `icon_and_message` CFR doorhanger with: icon, title and subtitle.
+ * No panel header is shown
+ */
+#contextual-feature-recommendation-notification[data-notification-category="icon_and_message"] #cfr-notification-header {
+  display: none;
+}
+
+#contextual-feature-recommendation-notification[data-notification-category="icon_and_message"] .popup-notification-description {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+#contextual-feature-recommendation-notification[data-notification-category="icon_and_message"] popupnotificationcontent {
+  display: block; /* This forces the subtitle content to wrap */
+}
+
+#contextual-feature-recommendation-notification[data-notification-category="icon_and_message"] .popup-notification-body-container {
+  padding-bottom: 20px;
 }
 
 #cfr-notification-feature-steps {
@@ -510,7 +557,7 @@
   inset-inline-start: 0;
 }
 
-#contextual-feature-recommendation-notification[data-notification-category="cfrFeatures"] #cfr-notification-footer-text {
+#contextual-feature-recommendation-notification[data-notification-category="message_and_animation"] #cfr-notification-footer-text {
   font-size: 14px;
   font-weight: 600;
 }
@@ -596,7 +643,7 @@
   }
 }
 
-#contextual-feature-recommendation-notification[data-notification-category="cfrAddons"] #cfr-notification-footer-pintab-animation-container {
+#contextual-feature-recommendation-notification[data-notification-category="addon_recommendation"] #cfr-notification-footer-pintab-animation-container {
   display: none;
 }
 
@@ -2032,15 +2079,19 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
   --urlbar-icon-padding: 7px;
 }
 
+#urlbar-container,
+#search-container {
+  padding: 3px 5px;
+}
+
 #urlbar,
 #searchbar {
   background-color: -moz-Field;
   color: -moz-FieldText;
-  background-clip: content-box;
+  background-clip: padding-box;
   border: 1px solid hsla(240,5%,5%,.25);
   border-radius: var(--toolbarbutton-border-radius);
   box-shadow: 0 1px 4px rgba(0,0,0,.05);
-  margin: 3px 5px;
   min-height: 30px;
   overflow: -moz-hidden-unscrollable;
   text-shadow: none;
@@ -2087,6 +2138,25 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
   border-color: var(--toolbar-field-focus-border-color);
 }
 
+#urlbar[breakout] {
+  position: absolute;
+  /* The z-index needs to be big enough to trump other positioned UI pieces
+     that we want to overlay. 3 is used in the tab bar. */
+  z-index: 3;
+  top: 0;
+  margin-top: -4px;
+  margin-inline-start: -55px;
+  width: calc(var(--urlbar-width) + 2 * 55px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+#urlbar[breakout] > #urlbar-input-container {
+  height: calc(var(--urlbar-toolbar-height) + 2 * 4px - 2px /* urlbar border */);
+  width: 100%;
+  padding-block: calc(4px + (var(--urlbar-toolbar-height) - var(--urlbar-height)) / 2);
+  padding-inline: 55px;
+}
+
 #urlbar:not(.hidden-focus):-moz-lwtheme[focused="true"],
 #navigator-toolbox #searchbar:focus-within:-moz-lwtheme {
   background-color: var(--lwt-toolbar-field-focus, var(--lwt-toolbar-field-background-color, white));
@@ -2102,8 +2172,6 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
 :root[uidensity=compact] #urlbar,
 :root[uidensity=compact] #searchbar {
   min-height: 26px;
-  margin-top: 3px;
-  margin-bottom: 3px;
 }
 
 :root[uidensity=touch] #urlbar,
@@ -2111,9 +2179,9 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
   min-height: 32px;
 }
 
-:root[chromehidden~="toolbar"] #urlbar {
+:root[chromehidden~="toolbar"] #urlbar-container {
   /* Remove excess space between the address bar and the menu button in popups. */
-  margin-inline-end: 0;
+  padding-inline-end: 0;
 }
 
 :root[customizing] .urlbar-input-box {
@@ -2270,7 +2338,7 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
 }
 
 #pageActionSeparator {
-  /* This draws the separator the same way that #urlbar-display-box draws its
+  /* This draws the separator the same way that #urlbar-label-box draws its
      left and right borders, which end up looking like separators.  It might not
      be the best way in this case, but it makes sure that all these vertical
      lines in the urlbar look the same: same height, vertical position, etc. */
@@ -2362,12 +2430,12 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
   transition: opacity 0.15s ease;
 }
 
-#urlbar[switchingtabs] > .urlbar-history-dropmarker {
+#urlbar[switchingtabs] > #urlbar-input-container > .urlbar-history-dropmarker {
   transition: none;
 }
 
-#nav-bar:not([customizing="true"]) > #nav-bar-customization-target > #urlbar-container:not(:hover) > #urlbar:not([focused]) > .urlbar-history-dropmarker,
-#nav-bar:not([customizing="true"]) > #nav-bar-customization-target > #urlbar-container:not(:hover) > #urlbar.hidden-focus > .urlbar-history-dropmarker {
+#nav-bar:not([customizing="true"]) > #nav-bar-customization-target > #urlbar-container:not(:hover) > #urlbar:not([focused]) > #urlbar-input-container > .urlbar-history-dropmarker,
+#nav-bar:not([customizing="true"]) > #nav-bar-customization-target > #urlbar-container:not(:hover) > #urlbar.hidden-focus > #urlbar-input-container > .urlbar-history-dropmarker {
   opacity: 0;
 }
 
@@ -2692,11 +2760,25 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
 /* Zoom button */
 
 #urlbar-zoom-button {
+  -moz-appearance: none;
+  color: inherit;
   font-size: .8em;
   padding: 0 8px;
   border-radius: 1em;
   background-color: hsla(0,0%,0%,.05);
   border: 1px solid hsla(210,4%,50%,.3);
+}
+
+@keyframes urlbar-zoom-reset-pulse {
+  0% {
+    transform: scale(0);
+  }
+  75% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(1.0);
+  }
 }
 
 #urlbar-zoom-button[animate="true"] {
@@ -2735,6 +2817,10 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
 }
 
 /* Search bar */
+
+#search-container {
+  min-width: calc(54px + 11ch);
+}
 
 .searchbar-search-button {
   -moz-box-align: center;
@@ -2801,40 +2887,6 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
   border-color: ThreeDShadow;
 }
 
-/* ::::: URL Bar Zoom Reset Button ::::: */
-@keyframes urlbar-zoom-reset-pulse {
-  0% {
-    transform: scale(0);
-  }
-  75% {
-    transform: scale(1.5);
-  }
-  100% {
-    transform: scale(1.0);
-  }
-}
-
-#urlbar-zoom-button {
-  -moz-appearance: none;
-  color: inherit;
-}
-
-#urlbar-display-box {
-  margin-top: -1px;
-  margin-bottom: -1px;
-}
-
-.urlbar-display {
-  margin-top: 0;
-  margin-bottom: 0;
-  margin-inline-start: 0;
-  color: GrayText;
-}
-
-#search-container {
-  min-width: calc(54px + 11ch);
-}
-
 /* identity box */
 
 
@@ -2851,18 +2903,19 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
 /* The tracking protection icon will be hidden if it is a chrome page. There
    will be only the brand icon in the url bar. So, we need to change the padding
    start for proper positing the icon. */
-#urlbar[pageproxystate="valid"] > #identity-box.chromeUI {
+#identity-box[pageproxystate="valid"].chromeUI {
   padding-inline-start: 8px;
 }
 
-#urlbar[pageproxystate="invalid"] > #identity-box > #blocked-permissions-container,
-#urlbar[pageproxystate="invalid"] > #identity-box > #notification-popup-box,
-#urlbar[pageproxystate="invalid"] > #identity-box > #identity-icon-labels,
-#urlbar[pageproxystate="invalid"] > #identity-box > #remote-control-icon {
+#identity-box[pageproxystate="invalid"] > #permissions-granted-icon,
+#identity-box[pageproxystate="invalid"] > #blocked-permissions-container,
+#identity-box[pageproxystate="invalid"] > #notification-popup-box,
+#identity-box[pageproxystate="invalid"] > #identity-icon-labels,
+#identity-box[pageproxystate="invalid"] > #remote-control-icon {
   display: none;
 }
 
-#urlbar[pageproxystate="invalid"] > #identity-box {
+#identity-box[pageproxystate="invalid"] {
   pointer-events: none;
   /* This would make the spaces around the glass icon balanced. */
   margin-inline-end: 2px;
@@ -2890,15 +2943,16 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
   -moz-outline-radius: var(--toolbarbutton-border-radius);
 }
 
-#urlbar[pageproxystate="valid"] > #identity-box.verifiedIdentity > #identity-icon-labels {
+#identity-box[pageproxystate="valid"].verifiedIdentity > #identity-icon-labels {
   color: #058B00;
 }
 
-:root[lwt-toolbar-field-brighttext] #urlbar[pageproxystate="valid"] > #identity-box.verifiedIdentity > #identity-icon-labels {
+:root[lwt-toolbar-field-brighttext] #identity-box[pageproxystate="valid"].verifiedIdentity > #identity-icon-labels {
   color: #30e60b;
 }
 
-#urlbar[pageproxystate="valid"] > #identity-box.chromeUI > #identity-icon-labels {
+#identity-box[pageproxystate="valid"].chromeUI > #identity-icon-labels,
+.urlbar-label {
   opacity: .6;
 }
 
@@ -2911,37 +2965,40 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
 #identity-box:not(.chromeUI):not(.extensionPage):not(.notSecureText) {
   --urlbar-separator-color: transparent;
 }
-#urlbar[pageproxystate=valid] > #identity-box.verifiedIdentity {
+#identity-box[pageproxystate="valid"].verifiedIdentity {
   --urlbar-separator-color: rgba(18, 188, 0, .5);
 }
 
-#urlbar[pageproxystate=valid] > #identity-box.notSecureText,
-#urlbar[pageproxystate=valid] > #identity-box.verifiedIdentity,
-#urlbar[pageproxystate=valid] > #identity-box.chromeUI,
-#urlbar[pageproxystate=valid] > #identity-box.extensionPage,
-#urlbar-display-box {
+#identity-box[pageproxystate="valid"].notSecureText,
+#identity-box[pageproxystate="valid"].verifiedIdentity,
+#identity-box[pageproxystate="valid"].chromeUI,
+#identity-box[pageproxystate="valid"].extensionPage,
+#urlbar-label-box {
   margin-inline-end: 8px;
   border-inline-end: 1px solid var(--urlbar-separator-color);
   border-image: linear-gradient(transparent 15%, var(--urlbar-separator-color) 15%, var(--urlbar-separator-color) 85%, transparent 85%);
   border-image-slice: 1;
 }
 
-#urlbar[pageproxystate=valid] > #identity-box.notSecureText,
-#urlbar[pageproxystate=valid] > #identity-box.verifiedIdentity,
-#urlbar[pageproxystate=valid] > #identity-box.chromeUI,
-#urlbar[pageproxystate=valid] > #identity-box.extensionPage {
+#identity-box[pageproxystate="valid"].notSecureText,
+#identity-box[pageproxystate="valid"].verifiedIdentity,
+#identity-box[pageproxystate="valid"].chromeUI,
+#identity-box[pageproxystate="valid"].extensionPage {
   padding-inline-end: 8px;
 }
 
-#urlbar-display-box {
-  padding-inline-start: 4px;
+#urlbar-label-box {
+  padding-inline: 4px;
   border-inline-start: 1px solid var(--urlbar-separator-color);
-  border-image: linear-gradient(transparent 15%, var(--urlbar-separator-color) 15%, var(--urlbar-separator-color) 85%, transparent 85%);
-  border-image-slice: 1;
+}
+
+.urlbar-label {
+  margin: 0;
 }
 
 .sharing-icon,
 #identity-icon,
+#permissions-granted-icon,
 #tracking-protection-icon,
 .notification-anchor-icon,
 #blocked-permissions-container > .blocked-permission-icon {
@@ -2961,52 +3018,56 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
   list-style-image: url(chrome://browser/skin/identity-icon.svg);
 }
 
-#urlbar[pageproxystate="valid"] > #identity-box.chromeUI > #identity-icon {
+#identity-box[pageproxystate="valid"].chromeUI > #identity-icon {
   list-style-image: url(chrome://branding/content/identity-icons-brand.svg);
 }
 
-#urlbar[pageproxystate="invalid"] > #identity-box > #identity-icon {
+#identity-box[pageproxystate="invalid"] > #identity-icon {
   list-style-image: url(chrome://browser/skin/search-glass.svg);
   fill-opacity: .4;
 }
 
-#urlbar[actiontype="extension"] > #identity-box > #identity-icon {
+#urlbar[actiontype="extension"] > #urlbar-input-container > #identity-box > #identity-icon {
   list-style-image: url(chrome://mozapps/skin/extensions/extensionGeneric-16.svg);
 }
 
-#urlbar[pageproxystate="valid"] #identity-box.extensionPage > #identity-icon {
+#identity-box[pageproxystate="valid"].extensionPage > #identity-icon {
   list-style-image: url(chrome://mozapps/skin/extensions/extensionGeneric-16.svg);
 }
 
-#urlbar[pageproxystate="valid"] > #identity-box.verifiedDomain > #identity-icon,
-#urlbar[pageproxystate="valid"] > #identity-box.verifiedIdentity > #identity-icon,
-#urlbar[pageproxystate="valid"] > #identity-box.mixedActiveBlocked > #identity-icon {
+#identity-box[pageproxystate="valid"].verifiedDomain > #identity-icon,
+#identity-box[pageproxystate="valid"].verifiedIdentity > #identity-icon,
+#identity-box[pageproxystate="valid"].mixedActiveBlocked > #identity-icon {
   list-style-image: url(chrome://browser/skin/connection-secure.svg);
-  -moz-context-properties: fill;
+}
+
+#identity-box[pageproxystate="valid"].verifiedDomain > #identity-icon:not([lock-icon-gray]),
+#identity-box[pageproxystate="valid"].verifiedIdentity > #identity-icon:not([lock-icon-gray]),
+#identity-box[pageproxystate="valid"].mixedActiveBlocked > #identity-icon:not([lock-icon-gray]) {
+  fill-opacity: 1;
   fill: #12BC00;
 }
 
-#urlbar[pageproxystate="valid"] > #identity-box.verifiedDomain > #identity-icon[lock-icon-gray],
-#urlbar[pageproxystate="valid"] > #identity-box.verifiedIdentity > #identity-icon[lock-icon-gray],
-#urlbar[pageproxystate="valid"] > #identity-box.mixedActiveBlocked > #identity-icon[lock-icon-gray] {
-  fill-opacity: 0.6;
-  -moz-context-properties: fill, fill-opacity;
-  fill: currentColor;
-}
-
-#urlbar[pageproxystate="valid"] > #identity-box.weakCipher > #identity-icon,
-#urlbar[pageproxystate="valid"] > #identity-box.mixedDisplayContent > #identity-icon,
-#urlbar[pageproxystate="valid"] > #identity-box.mixedDisplayContentLoadedActiveBlocked > #identity-icon,
-#urlbar[pageproxystate="valid"] > #identity-box.certUserOverridden > #identity-icon {
+#identity-box[pageproxystate="valid"].weakCipher > #identity-icon,
+#identity-box[pageproxystate="valid"].mixedDisplayContent > #identity-icon,
+#identity-box[pageproxystate="valid"].mixedDisplayContentLoadedActiveBlocked > #identity-icon,
+#identity-box[pageproxystate="valid"].certUserOverridden > #identity-icon {
   list-style-image: url(chrome://browser/skin/connection-mixed-passive-loaded.svg);
   fill: unset;
-  -moz-context-properties: fill, fill-opacity;
 }
 
-#urlbar[pageproxystate="valid"] > #identity-box.notSecure > #identity-icon,
-#urlbar[pageproxystate="valid"] > #identity-box.insecureLoginForms > #identity-icon,
-#urlbar[pageproxystate="valid"] > #identity-box.mixedActiveContent > #identity-icon {
+#identity-box[pageproxystate="valid"].notSecure > #identity-icon,
+#identity-box[pageproxystate="valid"].insecureLoginForms > #identity-icon,
+#identity-box[pageproxystate="valid"].mixedActiveContent > #identity-icon {
   list-style-image: url(chrome://browser/skin/connection-mixed-active-loaded.svg);
+}
+
+#permissions-granted-icon {
+  list-style-image: url(chrome://browser/skin/permissions.svg);
+}
+
+#identity-box:not(.grantedPermissions) > #permissions-granted-icon {
+  display: none;
 }
 
 /* SHARING ICON */
@@ -3056,7 +3117,7 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
   position: relative;
 }
 
-#urlbar[pageproxystate="valid"] > #tracking-protection-icon-container.chromeUI {
+#urlbar-input-container[pageproxystate="valid"] > #tracking-protection-icon-container.chromeUI {
   display: none;
 }
 
@@ -3130,19 +3191,19 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
   max-width: 500px;
 }
 
-#urlbar[pageproxystate="valid"] > #tracking-protection-icon-container > #tracking-protection-icon-box > #tracking-protection-icon {
+#urlbar-input-container[pageproxystate="valid"] > #tracking-protection-icon-container > #tracking-protection-icon-box > #tracking-protection-icon {
   list-style-image: url(chrome://browser/skin/tracking-protection.svg);
 }
 
-#urlbar[pageproxystate="valid"] > #tracking-protection-icon-container > #tracking-protection-icon-box[hasException] > #tracking-protection-icon {
+#urlbar-input-container[pageproxystate="valid"] > #tracking-protection-icon-container > #tracking-protection-icon-box[hasException] > #tracking-protection-icon {
   list-style-image: url(chrome://browser/skin/tracking-protection-disabled.svg);
 }
 
-#urlbar[pageproxystate="valid"] > #tracking-protection-icon-container > #tracking-protection-icon-box > #tracking-protection-icon:-moz-locale-dir(rtl) {
+#urlbar-input-container[pageproxystate="valid"] > #tracking-protection-icon-container > #tracking-protection-icon-box > #tracking-protection-icon:-moz-locale-dir(rtl) {
   transform: scaleX(-1);
 }
 
-#urlbar[pageproxystate="invalid"] > #tracking-protection-icon-container {
+#urlbar-input-container[pageproxystate="invalid"] > #tracking-protection-icon-container {
   visibility: collapse;
 }
 
@@ -3937,21 +3998,23 @@ notification[value="translation"] menulist > .menulist-dropmarker {
   --urlbar-popup-action-color: #30e60b;
 }
 
-#urlbar-results {
-  position: fixed;
-  z-index: 1;
-  background: var(--autocomplete-popup-background);
-  color: var(--autocomplete-popup-color);
+.urlbarView {
+  /* Don't handle window drag events in case we are overlapping a toolbar */
+  -moz-window-dragging: no-drag;
   text-shadow: none;
 }
 
-#urlbar-results.megabar {
-  margin-inline-start: 5px;
+.urlbarView.megabar {
+  margin-inline: 8px;
 }
 
-#urlbar-results:not(.megabar) {
+.urlbarView:not(.megabar) {
+  position: fixed;
+  z-index: 1;
   left: 0;
   right: 0;
+  background: var(--autocomplete-popup-background);
+  color: var(--autocomplete-popup-color);
   border-block: 1px solid var(--chrome-content-separator-color);
 }
 
@@ -3962,6 +4025,11 @@ notification[value="translation"] menulist > .menulist-dropmarker {
 
   padding-top: 24px;
   padding-bottom: 24px;
+  padding-inline-start: calc((55px - 16px /* type icon width */ - 8px - 2px /* border */));
+  padding-inline-end: calc(55px - 8px);
+}
+
+.urlbarView:not(.megabar) #urlbar-contextual-tip {
   padding-inline-start: var(--item-padding-start, calc(5px + (4px + 16px /* type icon width */ + 8px)));
   padding-inline-end: var(--item-padding-end, 5px);
 }
@@ -3997,14 +4065,18 @@ notification[value="translation"] menulist > .menulist-dropmarker {
   text-align: end;
 }
 
-.urlbarView-body-inner {
-  box-sizing: border-box;
+.urlbarView.megabar .urlbarView-body-inner {
+  width: calc(var(--urlbar-width) + 2 * 55px - 2 * 8px - 2px /* urlbar border */);
+  border-top: 1px solid var(--panel-separator-color);
 }
 
-#urlbarView-results {
-  box-sizing: border-box;
-  padding: 4px;
+.urlbarView-results {
+  padding-block: 4px;
   white-space: nowrap;
+}
+
+.urlbarView:not(.megabar) .urlbarView-results {
+  padding-inline: 4px;
 }
 
 .urlbarView-row {
@@ -4013,6 +4085,11 @@ notification[value="translation"] menulist > .menulist-dropmarker {
   fill-opacity: .6;
   padding-top: 6px;
   padding-bottom: 6px;
+  padding-inline-start: calc((55px - 16px /* type icon width */ - 8px - 2px /* border */));
+  padding-inline-end: calc(55px - 8px);
+}
+
+.urlbarView:not(.megabar) .urlbarView-row {
   padding-inline-start: calc(var(--item-padding-start, calc(5px + (4px + 16px /* type icon width */ + 8px))) - (4px + 16px /* type icon width */ + 8px));
   padding-inline-end: var(--item-padding-end, 5px);
 }
@@ -4085,7 +4162,7 @@ notification[value="translation"] menulist > .menulist-dropmarker {
 }
 
 .urlbarView-row[type=remotetab] > .urlbarView-row-inner > .urlbarView-type-icon,
-#urlbar-results:not([actionoverride]) .urlbarView-row[type=switchtab] > .urlbarView-row-inner > .urlbarView-type-icon {
+.urlbarView:not([actionoverride]) .urlbarView-row[type=switchtab] > .urlbarView-row-inner > .urlbarView-type-icon {
   background-image: url(chrome://browser/skin/tab.svg);
 }
 
@@ -4139,10 +4216,10 @@ notification[value="translation"] menulist > .menulist-dropmarker {
 .urlbarView-row[type=remotetab][selected] > .urlbarView-row-inner > .urlbarView-action,
 .urlbarView-row[type=remotetab]:hover > .urlbarView-row-inner > .urlbarView-action,
 .urlbarView-row[type=remotetab]:not([selected]):not(:hover) > .urlbarView-row-inner > .urlbarView-url,
-.urlbarView-row[type=search]:not([selected]):not(:hover) > .urlbarView-row-inner > .urlbarView-action,
+.urlbarView-row[type=search]:not([selected]):not(:hover) > .urlbarView-row-inner > .urlbarView-title:not(:empty) ~ .urlbarView-action,
 .urlbarView-row[type=search]:not([selected]):not(:hover) > .urlbarView-row-inner > .urlbarView-title-separator,
-#urlbar-results[actionoverride] .urlbarView-row[type=switchtab] > .urlbarView-row-inner > .urlbarView-action,
-#urlbar-results:not([actionoverride]) .urlbarView-row[type=switchtab] > .urlbarView-row-inner > .urlbarView-url {
+.urlbarView[actionoverride] .urlbarView-row[type=switchtab] > .urlbarView-row-inner > .urlbarView-action,
+.urlbarView:not([actionoverride]) .urlbarView-row[type=switchtab] > .urlbarView-row-inner > .urlbarView-url {
   /* Use visibility:collapse instead of display:none since the latter can
      confuse the overflow state of title and url elements when their content
      changes while they're hidden. */
@@ -4167,30 +4244,32 @@ notification[value="translation"] menulist > .menulist-dropmarker {
 }
 
 /* Search one-offs. */
-#urlbar-results > .search-one-offs {
+#urlbar .search-one-offs {
   -moz-box-orient: horizontal;
-  padding-top: 16px;
-  padding-bottom: 16px;
+  padding-block: 16px;
 }
 
-#urlbar-results:not(.megabar) > .search-one-offs {
+.urlbarView.megabar .search-one-offs {
+  padding-inline: calc(55px - 8px);
+}
+
+#urlbar:not(.megabar) .search-one-offs {
   padding-inline-start: var(--item-padding-start, 5px);
   padding-inline-end: var(--item-padding-end, 5px);
 }
 
-#urlbar-results .search-panel-one-offs {
-  padding-left: 12px;
-  padding-right: 12px;
+#urlbar .search-panel-one-offs {
+  padding-inline: 12px;
 }
 
-#urlbar-results .search-panel-header {
+#urlbar .search-panel-header {
   padding: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-#urlbar-results .searchbar-engine-one-off-item {
+#urlbar .searchbar-engine-one-off-item {
   min-width: 32px;
   height: 32px;
   margin: 0 4px;
@@ -4219,7 +4298,7 @@ notification[value="translation"] menulist > .menulist-dropmarker {
   border-top: 1px solid ThreeDShadow;
 }
 
-#urlbar-results {
+.urlbarView {
   font-size: 1.05em;
 }
 
@@ -4245,6 +4324,11 @@ notification[value="translation"] menulist > .menulist-dropmarker {
 
 .panel-info-button:hover {
   background-color: var(--toolbarbutton-hover-background);
+}
+
+.panel-info-button:focus {
+  background-color: var(--toolbarbutton-hover-background);
+  box-shadow: var(--focus-ring-box-shadow);
 }
 
 .panel-info-button > image {
@@ -5270,7 +5354,7 @@ toolbarseparator + #sidebar-extensions-separator {
 
 /* New tab button */
 
-.tabs-newtab-button,
+#tabs-newtab-button,
 #TabsToolbar #new-tab-button {
   list-style-image: url(chrome://browser/skin/add.svg);
 }

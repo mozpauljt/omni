@@ -4,6 +4,7 @@
 
 "use strict";
 
+const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
 const {
   createFactory,
   PureComponent,
@@ -12,19 +13,38 @@ const {
   section,
 } = require("devtools/client/shared/vendor/react-dom-factories");
 
-const FluentReact = require("devtools/client/shared/vendor/fluent-react");
-const Localized = createFactory(FluentReact.Localized);
+const { connect } = require("devtools/client/shared/vendor/react-redux");
+
+const ManifestLoader = createFactory(require("../manifest/ManifestLoader"));
+
+const Manifest = createFactory(require("./Manifest"));
+const ManifestEmpty = createFactory(require("./ManifestEmpty"));
 
 class ManifestPage extends PureComponent {
+  // TODO: Use well-defined types
+  //       See https://bugzilla.mozilla.org/show_bug.cgi?id=1576881
+  static get propTypes() {
+    return {
+      manifest: PropTypes.object,
+    };
+  }
+
   render() {
-    return Localized(
+    const { manifest } = this.props;
+
+    return section(
       {
-        id: "manifest-empty-intro",
+        className: `app-page ${!manifest ? "app-page--empty" : ""}`,
       },
-      section({ className: `manifest-page` })
+      ManifestLoader({}),
+      manifest ? Manifest({ ...manifest }) : ManifestEmpty({})
     );
   }
 }
-
+function mapStateToProps(state) {
+  return {
+    manifest: state.manifest.manifest,
+  };
+}
 // Exports
-module.exports = ManifestPage;
+module.exports = connect(mapStateToProps)(ManifestPage);

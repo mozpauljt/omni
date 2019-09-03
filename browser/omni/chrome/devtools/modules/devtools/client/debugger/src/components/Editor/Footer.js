@@ -3,48 +3,57 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = void 0;
 
-var _react = require("devtools/client/shared/vendor/react");
-
-var _react2 = _interopRequireDefault(_react);
+var _react = _interopRequireWildcard(require("devtools/client/shared/vendor/react"));
 
 loader.lazyRequireGetter(this, "_connect", "devtools/client/debugger/src/utils/connect");
 
-var _classnames = require("devtools/client/debugger/dist/vendors").vendored["classnames"];
+var _classnames = _interopRequireDefault(require("devtools/client/debugger/dist/vendors").vendored["classnames"]);
 
-var _classnames2 = _interopRequireDefault(_classnames);
-
-loader.lazyRequireGetter(this, "_actions", "devtools/client/debugger/src/actions/index");
-
-var _actions2 = _interopRequireDefault(_actions);
+var _actions = _interopRequireDefault(require("../../actions/index"));
 
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
-loader.lazyRequireGetter(this, "_asyncValue", "devtools/client/debugger/src/utils/async-value");
 loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
 loader.lazyRequireGetter(this, "_sources", "devtools/client/debugger/src/reducers/sources");
-loader.lazyRequireGetter(this, "_editor", "devtools/client/debugger/src/utils/editor/index");
 loader.lazyRequireGetter(this, "_Button", "devtools/client/debugger/src/components/shared/Button/index");
-loader.lazyRequireGetter(this, "_AccessibleImage", "devtools/client/debugger/src/components/shared/AccessibleImage");
 
-var _AccessibleImage2 = _interopRequireDefault(_AccessibleImage);
+var _AccessibleImage = _interopRequireDefault(require("../shared/AccessibleImage"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 class SourceFooter extends _react.PureComponent {
   constructor() {
     super();
 
-    this.onCursorChange = event => {
-      const { line, ch } = event.doc.getCursor();
-      this.setState({ cursorPosition: { line, column: ch } });
-    };
+    _defineProperty(this, "onCursorChange", event => {
+      const {
+        line,
+        ch
+      } = event.doc.getCursor();
+      this.setState({
+        cursorPosition: {
+          line,
+          column: ch
+        }
+      });
+    });
 
-    this.state = { cursorPosition: { line: 0, column: 0 } };
+    this.state = {
+      cursorPosition: {
+        line: 0,
+        column: 0
+      }
+    };
   }
 
   componentDidUpdate() {
-    const eventDoc = document.querySelector(".editor-mount .CodeMirror");
-    // querySelector can return null
+    const eventDoc = document.querySelector(".editor-mount .CodeMirror"); // querySelector can return null
+
     if (eventDoc) {
       this.toggleCodeMirror(eventDoc, true);
     }
@@ -67,77 +76,78 @@ class SourceFooter extends _react.PureComponent {
   }
 
   prettyPrintButton() {
-    const { cx, selectedSourceWithContent, togglePrettyPrint } = this.props;
+    const {
+      cx,
+      selectedSource,
+      canPrettyPrint,
+      togglePrettyPrint
+    } = this.props;
 
-    if (!selectedSourceWithContent) {
+    if (!selectedSource) {
       return;
     }
 
-    if (!selectedSourceWithContent.content && selectedSourceWithContent.source.isPrettyPrinted) {
-      return _react2.default.createElement(
-        "div",
-        { className: "loader", key: "pretty-loader" },
-        _react2.default.createElement(_AccessibleImage2.default, { className: "loader" })
-      );
+    if (!selectedSource.content && selectedSource.isPrettyPrinted) {
+      return _react.default.createElement("div", {
+        className: "loader",
+        key: "pretty-loader"
+      }, _react.default.createElement(_AccessibleImage.default, {
+        className: "loader"
+      }));
     }
 
-    const sourceContent = selectedSourceWithContent.content && (0, _asyncValue.isFulfilled)(selectedSourceWithContent.content) ? selectedSourceWithContent.content.value : null;
-    if (!(0, _editor.shouldShowPrettyPrint)(selectedSourceWithContent.source, sourceContent || { type: "text", value: "", contentType: undefined })) {
+    if (!canPrettyPrint) {
       return;
     }
 
     const tooltip = L10N.getStr("sourceTabs.prettyPrint");
-    const sourceLoaded = !!selectedSourceWithContent.content;
-
+    const sourceLoaded = !!selectedSource.content;
     const type = "prettyPrint";
-    return _react2.default.createElement(
-      "button",
-      {
-        onClick: () => togglePrettyPrint(cx, selectedSourceWithContent.source.id),
-        className: (0, _classnames2.default)("action", type, {
-          active: sourceLoaded,
-          pretty: (0, _source.isPretty)(selectedSourceWithContent.source)
-        }),
-        key: type,
-        title: tooltip,
-        "aria-label": tooltip
-      },
-      _react2.default.createElement(_AccessibleImage2.default, { className: type })
-    );
+    return _react.default.createElement("button", {
+      onClick: () => togglePrettyPrint(cx, selectedSource.id),
+      className: (0, _classnames.default)("action", type, {
+        active: sourceLoaded,
+        pretty: (0, _source.isPretty)(selectedSource)
+      }),
+      key: type,
+      title: tooltip,
+      "aria-label": tooltip
+    }, _react.default.createElement(_AccessibleImage.default, {
+      className: type
+    }));
   }
 
   blackBoxButton() {
-    const { cx, selectedSourceWithContent, toggleBlackBox } = this.props;
-    const sourceLoaded = selectedSourceWithContent && selectedSourceWithContent.content;
+    const {
+      cx,
+      selectedSource,
+      toggleBlackBox
+    } = this.props;
+    const sourceLoaded = selectedSource && selectedSource.content;
 
-    if (!selectedSourceWithContent) {
+    if (!selectedSource) {
       return;
     }
 
-    if (!(0, _source.shouldBlackbox)(selectedSourceWithContent.source)) {
+    if (!(0, _source.shouldBlackbox)(selectedSource)) {
       return;
     }
 
-    const blackboxed = selectedSourceWithContent.source.isBlackBoxed;
-
+    const blackboxed = selectedSource.isBlackBoxed;
     const tooltip = blackboxed ? L10N.getStr("sourceFooter.unblackbox") : L10N.getStr("sourceFooter.blackbox");
-
     const type = "black-box";
-
-    return _react2.default.createElement(
-      "button",
-      {
-        onClick: () => toggleBlackBox(cx, selectedSourceWithContent.source),
-        className: (0, _classnames2.default)("action", type, {
-          active: sourceLoaded,
-          blackboxed: blackboxed
-        }),
-        key: type,
-        title: tooltip,
-        "aria-label": tooltip
-      },
-      _react2.default.createElement(_AccessibleImage2.default, { className: "blackBox" })
-    );
+    return _react.default.createElement("button", {
+      onClick: () => toggleBlackBox(cx, selectedSource),
+      className: (0, _classnames.default)("action", type, {
+        active: sourceLoaded,
+        blackboxed: blackboxed
+      }),
+      key: type,
+      title: tooltip,
+      "aria-label": tooltip
+    }, _react.default.createElement(_AccessibleImage.default, {
+      className: "blackBox"
+    }));
   }
 
   renderToggleButton() {
@@ -145,7 +155,7 @@ class SourceFooter extends _react.PureComponent {
       return;
     }
 
-    return _react2.default.createElement(_Button.PaneToggleButton, {
+    return _react.default.createElement(_Button.PaneToggleButton, {
       key: "toggle",
       collapsed: this.props.endPanelCollapsed,
       horizontal: this.props.horizontal,
@@ -156,12 +166,9 @@ class SourceFooter extends _react.PureComponent {
 
   renderCommands() {
     const commands = [this.blackBoxButton(), this.prettyPrintButton()].filter(Boolean);
-
-    return commands.length ? _react2.default.createElement(
-      "div",
-      { className: "commands" },
-      commands
-    ) : null;
+    return commands.length ? _react.default.createElement("div", {
+      className: "commands"
+    }, commands) : null;
   }
 
   renderSourceSummary() {
@@ -169,10 +176,10 @@ class SourceFooter extends _react.PureComponent {
       cx,
       mappedSource,
       jumpToMappedLocation,
-      selectedSourceWithContent
+      selectedSource
     } = this.props;
 
-    if (!mappedSource || !selectedSourceWithContent || !(0, _source.isOriginal)(selectedSourceWithContent.source)) {
+    if (!mappedSource || !selectedSource || !(0, _source.isOriginal)(selectedSource)) {
       return null;
     }
 
@@ -180,78 +187,63 @@ class SourceFooter extends _react.PureComponent {
     const tooltip = L10N.getFormatStr("sourceFooter.mappedSourceTooltip", filename);
     const title = L10N.getFormatStr("sourceFooter.mappedSource", filename);
     const mappedSourceLocation = {
-      sourceId: selectedSourceWithContent.source.id,
+      sourceId: selectedSource.id,
       line: 1,
       column: 1
     };
-    return _react2.default.createElement(
-      "button",
-      {
-        className: "mapped-source",
-        onClick: () => jumpToMappedLocation(cx, mappedSourceLocation),
-        title: tooltip
-      },
-      _react2.default.createElement(
-        "span",
-        null,
-        title
-      )
-    );
+    return _react.default.createElement("button", {
+      className: "mapped-source",
+      onClick: () => jumpToMappedLocation(cx, mappedSourceLocation),
+      title: tooltip
+    }, _react.default.createElement("span", null, title));
   }
 
   renderCursorPosition() {
-    if (!this.props.selectedSourceWithContent) {
+    if (!this.props.selectedSource) {
       return null;
     }
 
-    const { line, column } = this.state.cursorPosition;
-
+    const {
+      line,
+      column
+    } = this.state.cursorPosition;
     const text = L10N.getFormatStr("sourceFooter.currentCursorPosition", line + 1, column + 1);
     const title = L10N.getFormatStr("sourceFooter.currentCursorPosition.tooltip", line + 1, column + 1);
-    return _react2.default.createElement(
-      "div",
-      { className: "cursor-position", title: title },
-      text
-    );
+    return _react.default.createElement("div", {
+      className: "cursor-position",
+      title: title
+    }, text);
   }
 
   render() {
-    return _react2.default.createElement(
-      "div",
-      { className: "source-footer" },
-      _react2.default.createElement(
-        "div",
-        { className: "source-footer-start" },
-        this.renderCommands()
-      ),
-      _react2.default.createElement(
-        "div",
-        { className: "source-footer-end" },
-        this.renderSourceSummary(),
-        this.renderCursorPosition(),
-        this.renderToggleButton()
-      )
-    );
+    return _react.default.createElement("div", {
+      className: "source-footer"
+    }, _react.default.createElement("div", {
+      className: "source-footer-start"
+    }, this.renderCommands()), _react.default.createElement("div", {
+      className: "source-footer-end"
+    }, this.renderSourceSummary(), this.renderCursorPosition(), this.renderToggleButton()));
   }
-} /* This Source Code Form is subject to the terms of the Mozilla Public
-   * License, v. 2.0. If a copy of the MPL was not distributed with this
-   * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+
+}
 
 const mapStateToProps = state => {
-  const selectedSourceWithContent = (0, _selectors.getSelectedSourceWithContent)(state);
-
+  const selectedSource = (0, _selectors.getSelectedSourceWithContent)(state);
   return {
     cx: (0, _selectors.getContext)(state),
-    selectedSourceWithContent,
-    mappedSource: (0, _sources.getGeneratedSource)(state, selectedSourceWithContent && selectedSourceWithContent.source),
-    prettySource: (0, _selectors.getPrettySource)(state, selectedSourceWithContent ? selectedSourceWithContent.source.id : null),
-    endPanelCollapsed: (0, _selectors.getPaneCollapse)(state, "end")
+    selectedSource,
+    mappedSource: (0, _sources.getGeneratedSource)(state, selectedSource),
+    prettySource: (0, _selectors.getPrettySource)(state, selectedSource ? selectedSource.id : null),
+    endPanelCollapsed: (0, _selectors.getPaneCollapse)(state, "end"),
+    canPrettyPrint: selectedSource ? (0, _sources.canPrettyPrintSource)(state, selectedSource.id) : false
   };
 };
 
-exports.default = (0, _connect.connect)(mapStateToProps, {
-  togglePrettyPrint: _actions2.default.togglePrettyPrint,
-  toggleBlackBox: _actions2.default.toggleBlackBox,
-  jumpToMappedLocation: _actions2.default.jumpToMappedLocation,
-  togglePaneCollapse: _actions2.default.togglePaneCollapse
+var _default = (0, _connect.connect)(mapStateToProps, {
+  togglePrettyPrint: _actions.default.togglePrettyPrint,
+  toggleBlackBox: _actions.default.toggleBlackBox,
+  jumpToMappedLocation: _actions.default.jumpToMappedLocation,
+  togglePaneCollapse: _actions.default.togglePaneCollapse
 })(SourceFooter);
+
+exports.default = _default;

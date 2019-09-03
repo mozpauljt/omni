@@ -3,13 +3,14 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = void 0;
 
 var _lodash = require("devtools/client/shared/vendor/lodash");
 
-let newQueuedSources; /* This Source Code Form is subject to the terms of the Mozilla Public
-                       * License, v. 2.0. If a copy of the MPL was not distributed with this
-                       * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+let newQueuedSources;
 let queuedSources;
 let currentWork;
 
@@ -20,8 +21,7 @@ async function dispatchNewSources() {
 }
 
 const queue = (0, _lodash.throttle)(dispatchNewSources, 100);
-
-exports.default = {
+var _default = {
   initialize: actions => {
     newQueuedSources = actions.newQueuedSources;
     queuedSources = [];
@@ -36,10 +36,10 @@ exports.default = {
       queue();
     }
   },
-
   flush: () => Promise.all([queue.flush(), currentWork]),
   clear: () => {
     queuedSources = [];
     queue.cancel();
   }
 };
+exports.default = _default;

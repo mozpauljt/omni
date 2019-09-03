@@ -68,9 +68,10 @@ export default class LoginList extends HTMLElement {
     this._createLoginButton.addEventListener("click", this);
   }
 
-  async render() {
+  render() {
     let visibleLoginGuids = this._applyFilter();
     this._updateVisibleLoginCount(visibleLoginGuids.size);
+    this.classList.toggle("empty-search", visibleLoginGuids.size == 0);
 
     // Add all of the logins that are not in the DOM yet.
     let fragment = document.createDocumentFragment();
@@ -90,16 +91,15 @@ export default class LoginList extends HTMLElement {
     // Show, hide, and update state of the list items per the applied search filter.
     for (let guid of this._loginGuidsSortedOrder) {
       let { listItem } = this._logins[guid];
+
       if (guid == this._selectedGuid) {
         this._setListItemAsSelected(listItem);
       }
-      if (
-        this._breachesByLoginGUID &&
-        this._breachesByLoginGUID.has(listItem.dataset.guid)
-      ) {
-        listItem.classList.add("breached");
-      }
-
+      listItem.classList.toggle(
+        "breached",
+        !!this._breachesByLoginGUID &&
+          this._breachesByLoginGUID.has(listItem.dataset.guid)
+      );
       listItem.hidden = !visibleLoginGuids.has(listItem.dataset.guid);
     }
 
@@ -159,19 +159,34 @@ export default class LoginList extends HTMLElement {
         if (!this._loginGuidsSortedOrder.length) {
           return;
         }
-        // Select the first visible login after any possible filter is applied.
+
         let firstVisibleListItem = this._list.querySelector(
           ".login-list-item[data-guid]:not([hidden])"
         );
+        let newlySelectedLogin;
         if (firstVisibleListItem) {
-          let { login } = this._logins[firstVisibleListItem.dataset.guid];
+          newlySelectedLogin = this._logins[firstVisibleListItem.dataset.guid]
+            .login;
+        } else {
+          // Clear the filter if all items have been filtered out.
+          this.classList.remove("create-login-selected");
+          this._createLoginButton.disabled = false;
           window.dispatchEvent(
-            new CustomEvent("AboutLoginsLoginSelected", {
-              detail: login,
-              cancelable: true,
+            new CustomEvent("AboutLoginsFilterLogins", {
+              detail: "",
             })
           );
+          newlySelectedLogin = this._logins[this._loginGuidsSortedOrder[0]]
+            .login;
         }
+
+        // Select the first visible login after any possible filter is applied.
+        window.dispatchEvent(
+          new CustomEvent("AboutLoginsLoginSelected", {
+            detail: newlySelectedLogin,
+            cancelable: true,
+          })
+        );
         break;
       }
       case "AboutLoginsFilterLogins": {
@@ -274,6 +289,7 @@ export default class LoginList extends HTMLElement {
   updateBreaches(breachesByLoginGUID) {
     this._breachesByLoginGUID = breachesByLoginGUID;
     if (this._breachesByLoginGUID.size === 0) {
+      this.render();
       return;
     }
     const breachedSortOptionElement = this._sortSelect.namedItem("breached");
@@ -283,6 +299,7 @@ export default class LoginList extends HTMLElement {
     this._sortSelect.dispatchEvent(
       new CustomEvent("change", { bubbles: true })
     );
+    this.render();
   }
 
   /**
@@ -366,6 +383,8 @@ export default class LoginList extends HTMLElement {
           let { login } = this._logins[guid];
           return (
             login.origin.toLocaleLowerCase().includes(this._filter) ||
+            (!!login.httpRealm &&
+              login.httpRealm.toLocaleLowerCase().includes(this._filter)) ||
             login.username.toLocaleLowerCase().includes(this._filter)
           );
         })
@@ -472,7 +491,7 @@ export default class LoginList extends HTMLElement {
     this._list.setAttribute("aria-activedescendant", newlyFocusedItem.id);
     activeDescendant.classList.remove("keyboard-selected");
     newlyFocusedItem.classList.add("keyboard-selected");
-    newlyFocusedItem.scrollIntoView(false);
+    newlyFocusedItem.scrollIntoView({ block: "nearest" });
   }
 
   _setListItemAsSelected(listItem) {
@@ -485,9 +504,11 @@ export default class LoginList extends HTMLElement {
     this._createLoginButton.disabled = !listItem.dataset.guid;
     listItem.classList.add("selected");
     listItem.setAttribute("aria-selected", "true");
-    listItem.scrollIntoView();
     this._list.setAttribute("aria-activedescendant", listItem.id);
     this._selectedGuid = listItem.dataset.guid;
+
+    // Scroll item into view if it isn't visible
+    listItem.scrollIntoView({ block: "nearest" });
   }
 }
 customElements.define("login-list", LoginList);

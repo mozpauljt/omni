@@ -15,12 +15,7 @@ const {
 } = require("../utils/request-utils");
 
 loader.lazyRequireGetter(this, "Curl", "devtools/client/shared/curl", true);
-loader.lazyRequireGetter(
-  this,
-  "saveAs",
-  "devtools/client/shared/file-saver",
-  true
-);
+loader.lazyRequireGetter(this, "saveAs", "devtools/shared/DevToolsUtils", true);
 loader.lazyRequireGetter(
   this,
   "copyString",
@@ -39,6 +34,8 @@ loader.lazyRequireGetter(
   "devtools/client/netmonitor/src/har/har-menu-utils",
   true
 );
+
+const OS = Services.appinfo.OS;
 
 class RequestListContextMenu {
   constructor(props) {
@@ -107,23 +104,69 @@ class RequestListContextMenu {
       click: () => this.copyPostData(id, formDataSections, requestPostData),
     });
 
-    copySubmenu.push({
-      id: "request-list-context-copy-as-curl",
-      label: L10N.getStr("netmonitor.context.copyAsCurl"),
-      accesskey: L10N.getStr("netmonitor.context.copyAsCurl.accesskey"),
-      // Menu item will be visible even if data hasn't arrived, so we need to check
-      // *Available property and then fetch data lazily once user triggers the action.
-      visible: !!clickedRequest,
-      click: () =>
-        this.copyAsCurl(
-          id,
-          url,
-          method,
-          httpVersion,
-          requestHeaders,
-          requestPostData
+    if (OS === "WINNT") {
+      copySubmenu.push({
+        id: "request-list-context-copy-as-curl-win",
+        label: L10N.getFormatStr(
+          "netmonitor.context.copyAsCurl.win",
+          L10N.getStr("netmonitor.context.copyAsCurl")
         ),
-    });
+        accesskey: L10N.getStr("netmonitor.context.copyAsCurl.win.accesskey"),
+        // Menu item will be visible even if data hasn't arrived, so we need to check
+        // *Available property and then fetch data lazily once user triggers the action.
+        visible: !!clickedRequest,
+        click: () =>
+          this.copyAsCurl(
+            id,
+            url,
+            method,
+            httpVersion,
+            requestHeaders,
+            requestPostData,
+            "WINNT"
+          ),
+      });
+
+      copySubmenu.push({
+        id: "request-list-context-copy-as-curl-posix",
+        label: L10N.getFormatStr(
+          "netmonitor.context.copyAsCurl.posix",
+          L10N.getStr("netmonitor.context.copyAsCurl")
+        ),
+        accesskey: L10N.getStr("netmonitor.context.copyAsCurl.posix.accesskey"),
+        // Menu item will be visible even if data hasn't arrived, so we need to check
+        // *Available property and then fetch data lazily once user triggers the action.
+        visible: !!clickedRequest,
+        click: () =>
+          this.copyAsCurl(
+            id,
+            url,
+            method,
+            httpVersion,
+            requestHeaders,
+            requestPostData,
+            "Linux"
+          ),
+      });
+    } else {
+      copySubmenu.push({
+        id: "request-list-context-copy-as-curl",
+        label: L10N.getStr("netmonitor.context.copyAsCurl"),
+        accesskey: L10N.getStr("netmonitor.context.copyAsCurl.accesskey"),
+        // Menu item will be visible even if data hasn't arrived, so we need to check
+        // *Available property and then fetch data lazily once user triggers the action.
+        visible: !!clickedRequest,
+        click: () =>
+          this.copyAsCurl(
+            id,
+            url,
+            method,
+            httpVersion,
+            requestHeaders,
+            requestPostData
+          ),
+      });
+    }
 
     copySubmenu.push({
       id: "request-list-context-copy-as-fetch",
@@ -340,24 +383,6 @@ class RequestListContextMenu {
         this.useAsFetch(id, url, method, requestHeaders, requestPostData),
     });
 
-    if (Services.prefs.getBoolPref("devtools.netmonitor.features.search")) {
-      const { toggleSearchPanel, panelOpen } = this.props;
-
-      menu.push({
-        type: "separator",
-      });
-
-      menu.push({
-        id: "request-list-context-search",
-        label: "Search...", // TODO localization
-        accesskey: "S", // TODO localization
-        type: "checkbox",
-        checked: panelOpen,
-        visible: !!clickedRequest,
-        click: () => toggleSearchPanel(),
-      });
-    }
-
     showMenu(menu, {
       screenX: event.screenX,
       screenY: event.screenY,
@@ -440,7 +465,8 @@ class RequestListContextMenu {
     method,
     httpVersion,
     requestHeaders,
-    requestPostData
+    requestPostData,
+    platform
   ) {
     requestHeaders =
       requestHeaders ||
@@ -458,7 +484,7 @@ class RequestListContextMenu {
       httpVersion,
       postDataText: requestPostData ? requestPostData.postData.text : "",
     };
-    copyString(Curl.generateCommand(data));
+    copyString(Curl.generateCommand(data, platform));
   }
 
   /**
@@ -628,9 +654,9 @@ class RequestListContextMenu {
         data[i] = decoded.charCodeAt(i);
       }
     } else {
-      data = text;
+      data = new TextEncoder().encode(text);
     }
-    saveAs(new Blob([data]), fileName, document);
+    saveAs(window, data, fileName);
   }
 
   /**

@@ -10,14 +10,16 @@ exports.updateResources = updateResources;
 exports.makeIdentity = makeIdentity;
 exports.getResourcePair = getResourcePair;
 exports.getResourceValues = getResourceValues;
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 function createInitial() {
   return {
     identity: {},
     values: {}
   };
-} /* This Source Code Form is subject to the terms of the Mozilla Public
-   * License, v. 2.0. If a copy of the MPL was not distributed with this
-   * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+}
 
 function insertResources(state, resources) {
   if (resources.length === 0) {
@@ -25,15 +27,21 @@ function insertResources(state, resources) {
   }
 
   state = {
-    identity: { ...state.identity },
-    values: { ...state.values }
+    identity: { ...state.identity
+    },
+    values: { ...state.values
+    }
   };
 
   for (const resource of resources) {
-    const { id } = resource;
+    const {
+      id
+    } = resource;
+
     if (state.identity[id]) {
       throw new Error(`Resource "${id}" already exists, cannot insert`);
     }
+
     if (state.values[id]) {
       throw new Error(`Resource state corrupt: ${id} has value but no identity`);
     }
@@ -41,6 +49,7 @@ function insertResources(state, resources) {
     state.identity[resource.id] = makeIdentity();
     state.values[resource.id] = resource;
   }
+
   return state;
 }
 
@@ -50,8 +59,10 @@ function removeResources(state, resources) {
   }
 
   state = {
-    identity: { ...state.identity },
-    values: { ...state.values }
+    identity: { ...state.identity
+    },
+    values: { ...state.values
+    }
   };
 
   for (let id of resources) {
@@ -62,6 +73,7 @@ function removeResources(state, resources) {
     if (!state.identity[id]) {
       throw new Error(`Resource "${id}" does not exists, cannot remove`);
     }
+
     if (!state.values[id]) {
       throw new Error(`Resource state corrupt: ${id} has identity but no value`);
     }
@@ -69,6 +81,7 @@ function removeResources(state, resources) {
     delete state.identity[id];
     delete state.values[id];
   }
+
   return state;
 }
 
@@ -80,11 +93,14 @@ function updateResources(state, resources) {
   let didCopyValues = false;
 
   for (const subset of resources) {
-    const { id } = subset;
+    const {
+      id
+    } = subset;
 
     if (!state.identity[id]) {
       throw new Error(`Resource "${id}" does not exists, cannot update`);
     }
+
     if (!state.values[id]) {
       throw new Error(`Resource state corrupt: ${id} has identity but no value`);
     }
@@ -107,11 +123,14 @@ function updateResources(state, resources) {
         didCopyValues = true;
         state = {
           identity: state.identity,
-          values: { ...state.values }
+          values: { ...state.values
+          }
         };
       }
 
-      state.values[id] = { ...existing, ...updated };
+      state.values[id] = { ...existing,
+        ...updated
+      };
     }
   }
 
@@ -125,11 +144,15 @@ function makeIdentity() {
 function getResourcePair(state, id) {
   const value = state.values[id];
   const identity = state.identity[id];
+
   if (value && !identity || !value && identity) {
     throw new Error(`Resource state corrupt: ${id} has mismatched value and identity`);
   }
 
-  return value ? { value, identity } : null;
+  return value ? {
+    value,
+    identity
+  } : null;
 }
 
 function getResourceValues(state) {

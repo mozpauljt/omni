@@ -3,25 +3,21 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = void 0;
 
-var _react = require("devtools/client/shared/vendor/react");
-
-var _react2 = _interopRequireDefault(_react);
+var _react = _interopRequireWildcard(require("devtools/client/shared/vendor/react"));
 
 loader.lazyRequireGetter(this, "_Button", "devtools/client/debugger/src/components/shared/Button/index");
-loader.lazyRequireGetter(this, "_AccessibleImage", "devtools/client/debugger/src/components/shared/AccessibleImage");
 
-var _AccessibleImage2 = _interopRequireDefault(_AccessibleImage);
+var _AccessibleImage = _interopRequireDefault(require("./AccessibleImage"));
 
-var _classnames = require("devtools/client/debugger/dist/vendors").vendored["classnames"];
-
-var _classnames2 = _interopRequireDefault(_classnames);
+var _classnames = _interopRequireDefault(require("devtools/client/debugger/dist/vendors").vendored["classnames"]);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 const arrowBtn = (onClick, type, className, tooltip) => {
   const props = {
@@ -31,43 +27,49 @@ const arrowBtn = (onClick, type, className, tooltip) => {
     title: tooltip,
     type
   };
-
-  return _react2.default.createElement(
-    "button",
-    props,
-    _react2.default.createElement(_AccessibleImage2.default, { className: type })
-  );
+  return _react.default.createElement("button", props, _react.default.createElement(_AccessibleImage.default, {
+    className: type
+  }));
 };
 
 class SearchInput extends _react.Component {
-
   constructor(props) {
     super(props);
 
-    this.onFocus = e => {
-      const { onFocus } = this.props;
+    _defineProperty(this, "onFocus", e => {
+      const {
+        onFocus
+      } = this.props;
 
       if (onFocus) {
         onFocus(e);
       }
-    };
+    });
 
-    this.onBlur = e => {
-      const { onBlur } = this.props;
+    _defineProperty(this, "onBlur", e => {
+      const {
+        onBlur
+      } = this.props;
 
       if (onBlur) {
         onBlur(e);
       }
-    };
+    });
 
-    this.onKeyDown = e => {
-      const { onHistoryScroll, onKeyDown } = this.props;
+    _defineProperty(this, "onKeyDown", e => {
+      const {
+        onHistoryScroll,
+        onKeyDown
+      } = this.props;
+
       if (!onHistoryScroll) {
         return onKeyDown(e);
       }
 
       const inputValue = e.target.value;
-      const { history } = this.state;
+      const {
+        history
+      } = this.state;
       const currentHistoryIndex = history.indexOf(inputValue);
 
       if (e.key === "Enter") {
@@ -78,21 +80,24 @@ class SearchInput extends _react.Component {
       if (e.key === "ArrowUp") {
         const previous = currentHistoryIndex > -1 ? currentHistoryIndex - 1 : history.length - 1;
         const previousInHistory = history[previous];
+
         if (previousInHistory) {
           e.preventDefault();
           onHistoryScroll(previousInHistory);
         }
+
         return;
       }
 
       if (e.key === "ArrowDown") {
         const next = currentHistoryIndex + 1;
         const nextInHistory = history[next];
+
         if (nextInHistory) {
           onHistoryScroll(nextInHistory);
         }
       }
-    };
+    });
 
     this.state = {
       history: []
@@ -116,66 +121,84 @@ class SearchInput extends _react.Component {
 
       if (!input.value) {
         return;
-      }
+      } // omit prefix @:# from being selected
 
-      // omit prefix @:# from being selected
+
       const selectStartPos = this.props.hasPrefix ? 1 : 0;
       input.setSelectionRange(selectStartPos, input.value.length + 1);
     }
   }
 
   renderSvg() {
-    return _react2.default.createElement(_AccessibleImage2.default, { className: "search" });
+    return _react.default.createElement(_AccessibleImage.default, {
+      className: "search"
+    });
   }
 
   renderArrowButtons() {
-    const { handleNext, handlePrev } = this.props;
-
-    return [arrowBtn(handlePrev, "arrow-up", (0, _classnames2.default)("nav-btn", "prev"), L10N.getFormatStr("editor.searchResults.prevResult")), arrowBtn(handleNext, "arrow-down", (0, _classnames2.default)("nav-btn", "next"), L10N.getFormatStr("editor.searchResults.nextResult"))];
+    const {
+      handleNext,
+      handlePrev
+    } = this.props;
+    return [arrowBtn(handlePrev, "arrow-up", (0, _classnames.default)("nav-btn", "prev"), L10N.getFormatStr("editor.searchResults.prevResult")), arrowBtn(handleNext, "arrow-down", (0, _classnames.default)("nav-btn", "next"), L10N.getFormatStr("editor.searchResults.nextResult"))];
   }
 
   saveEnteredTerm(query) {
-    const { history } = this.state;
+    const {
+      history
+    } = this.state;
     const previousIndex = history.indexOf(query);
+
     if (previousIndex !== -1) {
       history.splice(previousIndex, 1);
     }
+
     history.push(query);
-    this.setState({ history });
+    this.setState({
+      history
+    });
   }
 
   renderSummaryMsg() {
-    const { summaryMsg } = this.props;
+    const {
+      summaryMsg
+    } = this.props;
 
     if (!summaryMsg) {
       return null;
     }
 
-    return _react2.default.createElement(
-      "div",
-      { className: "search-field-summary" },
-      summaryMsg
-    );
+    return _react.default.createElement("div", {
+      className: "search-field-summary"
+    }, summaryMsg);
   }
 
   renderSpinner() {
-    const { isLoading } = this.props;
+    const {
+      isLoading
+    } = this.props;
+
     if (isLoading) {
-      return _react2.default.createElement(_AccessibleImage2.default, { className: "loader" });
+      return _react.default.createElement(_AccessibleImage.default, {
+        className: "loader"
+      });
     }
   }
 
   renderNav() {
-    const { count, handleNext, handlePrev } = this.props;
+    const {
+      count,
+      handleNext,
+      handlePrev
+    } = this.props;
+
     if (!handleNext && !handlePrev || !count || count == 1) {
       return;
     }
 
-    return _react2.default.createElement(
-      "div",
-      { className: "search-nav-buttons" },
-      this.renderArrowButtons()
-    );
+    return _react.default.createElement("div", {
+      className: "search-nav-buttons"
+    }, this.renderArrowButtons());
   }
 
   render() {
@@ -191,9 +214,8 @@ class SearchInput extends _react.Component {
       size,
       showClose
     } = this.props;
-
     const inputProps = {
-      className: (0, _classnames2.default)({
+      className: (0, _classnames.default)({
         empty: showErrorEmoji
       }),
       onChange,
@@ -209,35 +231,29 @@ class SearchInput extends _react.Component {
       spellCheck: false,
       ref: c => this.$input = c
     };
-
-    return _react2.default.createElement(
-      "div",
-      { className: "search-outline" },
-      _react2.default.createElement(
-        "div",
-        {
-          className: (0, _classnames2.default)("search-field", size),
-          role: "combobox",
-          "aria-haspopup": "listbox",
-          "aria-owns": "result-list",
-          "aria-expanded": expanded
-        },
-        this.renderSvg(),
-        _react2.default.createElement("input", inputProps),
-        this.renderSpinner(),
-        this.renderSummaryMsg(),
-        this.renderNav(),
-        showClose && _react2.default.createElement(_Button.CloseButton, { handleClick: handleClose, buttonClass: size })
-      )
-    );
+    return _react.default.createElement("div", {
+      className: "search-outline"
+    }, _react.default.createElement("div", {
+      className: (0, _classnames.default)("search-field", size),
+      role: "combobox",
+      "aria-haspopup": "listbox",
+      "aria-owns": "result-list",
+      "aria-expanded": expanded
+    }, this.renderSvg(), _react.default.createElement("input", inputProps), this.renderSpinner(), this.renderSummaryMsg(), this.renderNav(), showClose && _react.default.createElement(_Button.CloseButton, {
+      handleClick: handleClose,
+      buttonClass: size
+    })));
   }
+
 }
 
-SearchInput.defaultProps = {
+_defineProperty(SearchInput, "defaultProps", {
   expanded: false,
   hasPrefix: false,
   selectedItemId: "",
   size: "",
   showClose: true
-};
-exports.default = SearchInput;
+});
+
+var _default = SearchInput;
+exports.default = _default;

@@ -3,9 +3,6 @@
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 const { LocalizationHelper } = require("devtools/shared/l10n");
-const {
-  gDevToolsBrowser,
-} = require("devtools/client/framework/devtools-browser");
 loader.lazyRequireGetter(
   this,
   "openContentLink",
@@ -20,6 +17,17 @@ function DebuggerPanel(iframeWindow, toolbox) {
   this.panelWin = iframeWindow;
   this.panelWin.L10N = L10N;
   this.toolbox = toolbox;
+}
+
+async function getNodeFront(gripOrFront, toolbox) {
+  // Given a NodeFront
+  if ("actorID" in gripOrFront) {
+    return new Promise(resolve => resolve(gripOrFront));
+  }
+  // TODO: Bug1574506 - Use the contextual WalkerFront for gripToNodeFront.
+  // Given a grip
+  const walkerFront = (await toolbox.target.getFront("inspector")).walker;
+  return walkerFront.gripToNodeFront(gripOrFront);
 }
 
 DebuggerPanel.prototype = {
@@ -79,19 +87,15 @@ DebuggerPanel.prototype = {
     openContentLink(url);
   },
 
-  openWorkerToolbox: function(workerTargetFront) {
-    return gDevToolsBrowser.openWorkerToolbox(workerTargetFront, "jsdebugger");
-  },
-
   openConsoleAndEvaluate: async function(input) {
     const { hud } = await this.toolbox.selectTool("webconsole");
     hud.ui.wrapper.dispatchEvaluateExpression(input);
   },
 
-  openElementInInspector: async function(grip) {
-    await this.toolbox.initInspector();
+  openElementInInspector: async function(gripOrFront) {
     const onSelectInspector = this.toolbox.selectTool("inspector");
-    const onGripNodeToFront = this.toolbox.walker.gripToNodeFront(grip);
+    const onGripNodeToFront = getNodeFront(gripOrFront, this.toolbox);
+
     const [front, inspector] = await Promise.all([
       onGripNodeToFront,
       onSelectInspector,
@@ -105,19 +109,19 @@ DebuggerPanel.prototype = {
     return Promise.all([onNodeFrontSet, onInspectorUpdated]);
   },
 
-  highlightDomElement: async function(grip) {
-    await this.toolbox.initInspector();
-    if (!this.toolbox.highlighter) {
-      return null;
-    }
-    const nodeFront = await this.toolbox.walker.gripToNodeFront(grip);
-    return this.toolbox.highlighter.highlight(nodeFront);
+  highlightDomElement: async function(gripOrFront) {
+    const nodeFront = await getNodeFront(gripOrFront, this.toolbox);
+    nodeFront.highlighterFront.highlight(nodeFront);
   },
 
-  unHighlightDomElement: function() {
-    return this.toolbox.highlighter
-      ? this.toolbox.highlighter.unhighlight(false)
-      : null;
+  unHighlightDomElement: async function(gripOrFront) {
+    try {
+      const nodeFront = await getNodeFront(gripOrFront, this.toolbox);
+      nodeFront.highlighterFront.unhighlight();
+    } catch (e) {
+      // This call might fail if called asynchrously after the toolbox is finished
+      // closing.
+    }
   },
 
   getFrames: function() {

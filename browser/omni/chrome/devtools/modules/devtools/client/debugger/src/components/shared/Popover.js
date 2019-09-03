@@ -3,41 +3,41 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = void 0;
 
-var _react = require("devtools/client/shared/vendor/react");
+var _react = _interopRequireWildcard(require("devtools/client/shared/vendor/react"));
 
-var _react2 = _interopRequireDefault(_react);
+var _classnames = _interopRequireDefault(require("devtools/client/debugger/dist/vendors").vendored["classnames"]);
 
-var _classnames = require("devtools/client/debugger/dist/vendors").vendored["classnames"];
+var _BracketArrow = _interopRequireDefault(require("./BracketArrow"));
 
-var _classnames2 = _interopRequireDefault(_classnames);
-
-loader.lazyRequireGetter(this, "_BracketArrow", "devtools/client/debugger/src/components/shared/BracketArrow");
-
-var _BracketArrow2 = _interopRequireDefault(_BracketArrow);
-
-loader.lazyRequireGetter(this, "_SmartGap", "devtools/client/debugger/src/components/shared/SmartGap");
-
-var _SmartGap2 = _interopRequireDefault(_SmartGap);
+var _SmartGap = _interopRequireDefault(require("./SmartGap"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 class Popover extends _react.Component {
   constructor(...args) {
-    var _temp;
+    super(...args);
 
-    return _temp = super(...args), this.state = {
+    _defineProperty(this, "state", {
       coords: {
         left: 0,
         top: 0,
         orientation: "down",
-        targetMid: { x: 0, y: 0 }
+        targetMid: {
+          x: 0,
+          y: 0
+        }
       }
-    }, this.firstRender = true, this.onTimeout = () => {
+    });
+
+    _defineProperty(this, "firstRender", true);
+
+    _defineProperty(this, "onTimeout", () => {
       const isHoveredOnGap = this.$gap && this.$gap.matches(":hover");
       const isHoveredOnPopover = this.$popover && this.$popover.matches(":hover");
       const isHoveredOnTooltip = this.$tooltip && this.$tooltip.matches(":hover");
@@ -49,11 +49,12 @@ class Popover extends _react.Component {
           this.timerId = setTimeout(this.onTimeout, 200);
           return;
         }
-        return this.props.mouseout();
-      }
 
-      // Don't clear the current preview if mouse is hovered on
+        return this.props.mouseout();
+      } // Don't clear the current preview if mouse is hovered on
       // the current preview's token (target) or the popup element
+
+
       if (isHoveredOnPopover || isHoveredOnTooltip || isHoveredOnTarget) {
         this.wasOnGap = false;
         this.timerId = setTimeout(this.onTimeout, 0);
@@ -61,39 +62,53 @@ class Popover extends _react.Component {
       }
 
       this.props.mouseout();
-    }, this.calculateTopForRightOrientation = (target, editor, popover) => {
+    });
+
+    _defineProperty(this, "calculateTopForRightOrientation", (target, editor, popover) => {
       if (popover.height <= editor.height) {
         const rightOrientationTop = target.top - popover.height / 2;
+
         if (rightOrientationTop < editor.top) {
           return editor.top - target.height;
         }
+
         const rightOrientationBottom = rightOrientationTop + popover.height;
+
         if (rightOrientationBottom > editor.bottom) {
           return editor.bottom + target.height - popover.height + this.gapHeight;
         }
+
         return rightOrientationTop;
       }
+
       return editor.top - target.height;
-    }, this.calculateTop = (target, editor, popover, orientation) => {
+    });
+
+    _defineProperty(this, "calculateTop", (target, editor, popover, orientation) => {
       if (orientation === "down") {
         return target.bottom;
       }
+
       if (orientation === "up") {
         return target.top - popover.height;
       }
 
       return this.calculateTopForRightOrientation(target, editor, popover);
-    }, _temp;
+    });
   }
 
   componentDidMount() {
-    const { type } = this.props;
-    // $FlowIgnore
+    const {
+      type
+    } = this.props; // $FlowIgnore
+
     this.gapHeight = this.$gap.getBoundingClientRect().height;
     const coords = type == "popover" ? this.getPopoverCoords() : this.getTooltipCoords();
 
     if (coords) {
-      this.setState({ coords });
+      this.setState({
+        coords
+      });
     }
 
     this.firstRender = false;
@@ -114,22 +129,28 @@ class Popover extends _react.Component {
     const estimatedLeft = target.left;
     const estimatedRight = estimatedLeft + popover.width;
     const isOverflowingRight = estimatedRight > editor.right;
+
     if (orientation === "right") {
       return target.left + target.width;
     }
+
     if (isOverflowingRight) {
       const adjustedLeft = editor.right - popover.width - 8;
       return adjustedLeft;
     }
+
     return estimatedLeft;
   }
 
   calculateOrientation(target, editor, popover) {
     const estimatedBottom = target.bottom + popover.height;
+
     if (editor.bottom > estimatedBottom) {
       return "down";
     }
+
     const upOrientationTop = target.top - popover.height;
+
     if (upOrientationTop > editor.top) {
       return "up";
     }
@@ -151,6 +172,7 @@ class Popover extends _react.Component {
     const top = this.calculateTop(targetRect, editorRect, popoverRect, orientation);
     const popoverLeft = this.calculateLeft(targetRect, editorRect, popoverRect, orientation);
     let targetMid;
+
     if (orientation === "right") {
       targetMid = {
         x: -14,
@@ -175,6 +197,7 @@ class Popover extends _react.Component {
     if (!this.$tooltip || !this.props.editorRef) {
       return null;
     }
+
     const tooltip = this.$tooltip;
     const editor = this.props.editorRef;
     const tooltipRect = tooltip.getBoundingClientRect();
@@ -183,90 +206,116 @@ class Popover extends _react.Component {
     const left = this.calculateLeft(targetRect, editorRect, tooltipRect);
     const enoughRoomForTooltipAbove = targetRect.top - editorRect.top > tooltipRect.height;
     const top = enoughRoomForTooltipAbove ? targetRect.top - tooltipRect.height : targetRect.bottom;
-
     return {
       left,
       top,
       orientation: enoughRoomForTooltipAbove ? "up" : "down",
-      targetMid: { x: 0, y: 0 }
+      targetMid: {
+        x: 0,
+        y: 0
+      }
     };
   }
 
   getChildren() {
-    const { children } = this.props;
+    const {
+      children
+    } = this.props;
     const coords = this.state.coords;
     const gap = this.getGap();
-
     return coords.orientation === "up" ? [children, gap] : [gap, children];
   }
 
   getGap() {
     if (this.firstRender) {
-      return _react2.default.createElement("div", { className: "gap", key: "gap", ref: a => this.$gap = a });
+      return _react.default.createElement("div", {
+        className: "gap",
+        key: "gap",
+        ref: a => this.$gap = a
+      });
     }
 
-    return _react2.default.createElement(
-      "div",
-      { className: "gap", key: "gap", ref: a => this.$gap = a },
-      _react2.default.createElement(_SmartGap2.default, {
-        token: this.props.target,
-        preview: this.$tooltip || this.$popover,
-        type: this.props.type,
-        gapHeight: this.gapHeight,
-        coords: this.state.coords
-        // $FlowIgnore
-        , offset: this.$gap.getBoundingClientRect().left
-      })
-    );
+    return _react.default.createElement("div", {
+      className: "gap",
+      key: "gap",
+      ref: a => this.$gap = a
+    }, _react.default.createElement(_SmartGap.default, {
+      token: this.props.target,
+      preview: this.$tooltip || this.$popover,
+      type: this.props.type,
+      gapHeight: this.gapHeight,
+      coords: this.state.coords // $FlowIgnore
+      ,
+      offset: this.$gap.getBoundingClientRect().left
+    }));
   }
 
   getPopoverArrow(orientation, left, top) {
     let arrowProps = {};
 
     if (orientation === "up") {
-      arrowProps = { orientation: "down", bottom: 10, left };
+      arrowProps = {
+        orientation: "down",
+        bottom: 10,
+        left
+      };
     } else if (orientation === "down") {
-      arrowProps = { orientation: "up", top: -2, left };
+      arrowProps = {
+        orientation: "up",
+        top: -2,
+        left
+      };
     } else {
-      arrowProps = { orientation: "left", top, left: -4 };
+      arrowProps = {
+        orientation: "left",
+        top,
+        left: -4
+      };
     }
 
-    return _react2.default.createElement(_BracketArrow2.default, arrowProps);
+    return _react.default.createElement(_BracketArrow.default, arrowProps);
   }
 
   renderPopover() {
-    const { top, left, orientation, targetMid } = this.state.coords;
+    const {
+      top,
+      left,
+      orientation,
+      targetMid
+    } = this.state.coords;
     const arrow = this.getPopoverArrow(orientation, targetMid.x, targetMid.y);
-
-    return _react2.default.createElement(
-      "div",
-      {
-        className: (0, _classnames2.default)("popover", `orientation-${orientation}`, {
-          up: orientation === "up"
-        }),
-        style: { top, left },
-        ref: c => this.$popover = c
+    return _react.default.createElement("div", {
+      className: (0, _classnames.default)("popover", `orientation-${orientation}`, {
+        up: orientation === "up"
+      }),
+      style: {
+        top,
+        left
       },
-      arrow,
-      this.getChildren()
-    );
+      ref: c => this.$popover = c
+    }, arrow, this.getChildren());
   }
 
   renderTooltip() {
-    const { top, left, orientation } = this.state.coords;
-    return _react2.default.createElement(
-      "div",
-      {
-        className: (0, _classnames2.default)("tooltip", `orientation-${orientation}`),
-        style: { top, left },
-        ref: c => this.$tooltip = c
+    const {
+      top,
+      left,
+      orientation
+    } = this.state.coords;
+    return _react.default.createElement("div", {
+      className: (0, _classnames.default)("tooltip", `orientation-${orientation}`),
+      style: {
+        top,
+        left
       },
-      this.getChildren()
-    );
+      ref: c => this.$tooltip = c
+    }, this.getChildren());
   }
 
   render() {
-    const { type } = this.props;
+    const {
+      type
+    } = this.props;
 
     if (type === "tooltip") {
       return this.renderTooltip();
@@ -274,9 +323,12 @@ class Popover extends _react.Component {
 
     return this.renderPopover();
   }
+
 }
 
-Popover.defaultProps = {
+_defineProperty(Popover, "defaultProps", {
   type: "popover"
-};
-exports.default = Popover;
+});
+
+var _default = Popover;
+exports.default = _default;

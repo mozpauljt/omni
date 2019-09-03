@@ -33,7 +33,6 @@ XPCOMUtils.defineLazyModuleGetters(this, {
   DownloadUtils: "resource://gre/modules/DownloadUtils.jsm",
   E10SUtils: "resource://gre/modules/E10SUtils.jsm",
   ExtensionsUI: "resource:///modules/ExtensionsUI.jsm",
-  FormValidationHandler: "resource:///modules/FormValidationHandler.jsm",
   HomePage: "resource:///modules/HomePage.jsm",
   LightweightThemeConsumer:
     "resource://gre/modules/LightweightThemeConsumer.jsm",
@@ -69,7 +68,6 @@ XPCOMUtils.defineLazyModuleGetters(this, {
   SimpleServiceDiscovery: "resource://gre/modules/SimpleServiceDiscovery.jsm",
   SiteDataManager: "resource:///modules/SiteDataManager.jsm",
   SitePermissions: "resource:///modules/SitePermissions.jsm",
-  SubframeCrashHandler: "resource:///modules/ContentCrashHandlers.jsm",
   TabModalPrompt: "chrome://global/content/tabprompts.jsm",
   TabCrashHandler: "resource:///modules/ContentCrashHandlers.jsm",
   TelemetryEnvironment: "resource://gre/modules/TelemetryEnvironment.jsm",
@@ -2865,11 +2863,11 @@ function focusAndSelectUrlBar() {
   gURLBar.select();
 }
 
-function openLocation() {
+function openLocation(event) {
   if (window.location.href == AppConstants.BROWSER_CHROME_URL) {
     focusAndSelectUrlBar();
     if (gURLBar.openViewOnFocus && !gURLBar.view.isOpen) {
-      gURLBar.startQuery();
+      gURLBar.startQuery({ event });
     }
     return;
   }
@@ -3403,6 +3401,7 @@ function losslessDecodeURI(aURI) {
   // This includes all bidirectional formatting characters.
   // (RFC 3987 sections 3.2 and 4.1 paragraph 6)
   value = value.replace(
+    // eslint-disable-next-line no-misleading-character-class
     /[\u00ad\u034f\u061c\u115f-\u1160\u17b4-\u17b5\u180b-\u180d\u200b\u200e-\u200f\u202a-\u202e\u2060-\u206f\u3164\ufe00-\ufe0f\ufeff\uffa0\ufff0-\ufff8]|\ud834[\udd73-\udd7a]|[\udb40-\udb43][\udc00-\udfff]/g,
     encodeURIComponent
   );
@@ -3484,10 +3483,7 @@ function SetPageProxyState(aState, updatePopupNotifications) {
   }
 
   let oldPageProxyState = gURLBar.getAttribute("pageproxystate");
-  // The "browser_urlbar_stop_pending.js" test uses a MutationObserver to do
-  // some verifications at this point, and it breaks if we don't write the
-  // attribute, even if it hasn't changed (bug 1338115).
-  gURLBar.setAttribute("pageproxystate", aState);
+  gURLBar.setPageProxyState(aState);
 
   // the page proxy state is set to valid via OnLocationChange, which
   // gets called when we switch tabs.
@@ -4439,10 +4435,12 @@ const BrowserSearch = {
   delayedStartupInit() {
     // Asynchronously initialize the search service if necessary, to get the
     // current engine for working out the placeholder.
-    Services.search.getDefault().then(defaultEngine => {
+    this._updateURLBarPlaceholderFromDefaultEngine(
+      this._usePrivateSettings,
       // Delay the update for this until so that we don't change it while
       // the user is looking at it / isn't expecting it.
-      this._updateURLBarPlaceholder(defaultEngine.name, true);
+      true
+    ).then(() => {
       this._searchInitComplete = true;
     });
   },
@@ -4474,11 +4472,29 @@ const BrowserSearch = {
         this._removeMaybeOfferedEngine(engineName);
         break;
       case "engine-default":
-        if (this._searchInitComplete) {
-          this._updateURLBarPlaceholder(engineName);
+        if (this._searchInitComplete && !this._usePrivateSettings) {
+          this._updateURLBarPlaceholder(engineName, false);
+        }
+        break;
+      case "engine-default-private":
+        if (this._searchInitComplete && this._usePrivateSettings) {
+          this._updateURLBarPlaceholder(engineName, true);
         }
         break;
     }
+  },
+
+  /**
+   * @returns True if we are using a separate default private engine, and
+   *          we are in a private window.
+   */
+  get _usePrivateSettings() {
+    return (
+      Services.prefs.getBoolPref(
+        "browser.search.separatePrivateDefault",
+        true
+      ) && PrivateBrowsingUtils.isWindowPrivate(window)
+    );
   },
 
   _addMaybeOfferedEngine(engineName) {
@@ -4536,14 +4552,34 @@ const BrowserSearch = {
    * placeholder is a string which doesn't have the engine name.
    */
   initPlaceHolder() {
-    let engineName = Services.prefs.getStringPref(
-      "browser.urlbar.placeholderName",
-      ""
-    );
+    const prefName =
+      "browser.urlbar.placeholderName" +
+      (this._usePrivateSettings ? ".private" : "");
+    let engineName = Services.prefs.getStringPref(prefName, "");
     if (engineName) {
       // We can do this directly, since we know we're at DOMContentLoaded.
       this._setURLBarPlaceholder(engineName);
     }
+  },
+
+  /**
+   * This is a wrapper around '_updateURLBarPlaceholder' that uses the
+   * appropraite default engine to get the engine name.
+   *
+   * @param {Boolean} isPrivate      Set to true if this is a private window.
+   * @param {Boolean} [delayUpdate]  Set to true, to delay update until the
+   *                                 placeholder is not displayed.
+   */
+  async _updateURLBarPlaceholderFromDefaultEngine(
+    isPrivate,
+    delayUpdate = false
+  ) {
+    const getDefault = isPrivate
+      ? Services.search.getDefaultPrivate
+      : Services.search.getDefault;
+    let defaultEngine = await getDefault();
+
+    this._updateURLBarPlaceholder(defaultEngine.name, isPrivate, delayUpdate);
   },
 
   /**
@@ -4555,24 +4591,24 @@ const BrowserSearch = {
    * know they should have short names.
    *
    * @param {String}  engineName     The search engine name to use for the update.
-   * @param {Boolean} delayUpdate    Set to true, to delay update until the
+   * @param {Boolean} isPrivate      Set to true if this is a private window.
+   * @param {Boolean} [delayUpdate]  Set to true, to delay update until the
    *                                 placeholder is not displayed.
    */
-  async _updateURLBarPlaceholder(engineName, delayUpdate = false) {
+  async _updateURLBarPlaceholder(engineName, isPrivate, delayUpdate = false) {
     if (!engineName) {
       throw new Error("Expected an engineName to be specified");
     }
 
     let defaultEngines = await Services.search.getDefaultEngines();
+    const prefName =
+      "browser.urlbar.placeholderName" + (isPrivate ? ".private" : "");
     if (
       defaultEngines.some(defaultEngine => defaultEngine.name == engineName)
     ) {
-      Services.prefs.setStringPref(
-        "browser.urlbar.placeholderName",
-        engineName
-      );
+      Services.prefs.setStringPref(prefName, engineName);
     } else {
-      Services.prefs.clearUserPref("browser.urlbar.placeholderName");
+      Services.prefs.clearUserPref(prefName);
       // Set the engine name to an empty string for non-default engines, which'll
       // make sure we display the default placeholder string.
       engineName = "";
@@ -4586,7 +4622,11 @@ const BrowserSearch = {
       // a tab switch to a tab which has a url loaded.
       let placeholderUpdateListener = () => {
         if (gURLBar.value) {
-          this._setURLBarPlaceholder(engineName);
+          // By the time the user has switched, they may have changed the engine
+          // again, so we need to call this function again but with the
+          // new engine name.
+          // No need to await for this to finish, we're in a listener here anyway.
+          this._updateURLBarPlaceholderFromDefaultEngine(isPrivate, false);
           gURLBar.removeEventListener("input", placeholderUpdateListener);
           gBrowser.tabContainer.removeEventListener(
             "TabSelect",
@@ -4782,14 +4822,22 @@ const BrowserSearch = {
    * @return engine The search engine used to perform a search, or null if no
    *                search was performed.
    */
-  _loadSearch(searchText, useNewTab, purpose, triggeringPrincipal, csp) {
+  _loadSearch(
+    searchText,
+    useNewTab,
+    usePrivate,
+    purpose,
+    triggeringPrincipal,
+    csp
+  ) {
     if (!triggeringPrincipal) {
       throw new Error(
         "Required argument triggeringPrincipal missing within _loadSearch"
       );
     }
 
-    let engine = Services.search.defaultEngine;
+    let engine =
+      Services.search[usePrivate ? "defaultPrivateEngine" : "defaultEngine"];
 
     let submission = engine.getSubmission(searchText, null, purpose); // HTML response
 
@@ -4821,10 +4869,11 @@ const BrowserSearch = {
    * This should only be called from the context menu. See
    * BrowserSearch.loadSearch for the preferred API.
    */
-  loadSearchFromContext(terms, triggeringPrincipal, csp) {
+  loadSearchFromContext(terms, usePrivate, triggeringPrincipal, csp) {
     let engine = BrowserSearch._loadSearch(
       terms,
       true,
+      usePrivate,
       "contextmenu",
       triggeringPrincipal,
       csp
@@ -6527,16 +6576,12 @@ nsBrowserAccess.prototype = {
 
     let referrerInfo;
     if (aFlags & Ci.nsIBrowserDOMWindow.OPEN_NO_REFERRER) {
-      referrerInfo = new ReferrerInfo(
-        Ci.nsIHttpChannel.REFERRER_POLICY_UNSET,
-        false,
-        null
-      );
+      referrerInfo = new ReferrerInfo(Ci.nsIReferrerInfo.EMPTY, false, null);
     } else {
       referrerInfo = new ReferrerInfo(
         aOpener && aOpener.document
-          ? aOpener.document.referrerPolicy
-          : Ci.nsIHttpChannel.REFERRER_POLICY_UNSET,
+          ? aOpener.document.referrerInfo.referrerPolicy
+          : Ci.nsIReferrerInfo.EMPTY,
         true,
         aOpener ? makeURI(aOpener.location.href) : null
       );
@@ -7973,38 +8018,13 @@ var OfflineApps = {
     );
   },
 
-  // XXX: duplicated in preferences/advanced.js
-  _getOfflineAppUsage(host, groups) {
-    let cacheService = Cc[
-      "@mozilla.org/network/application-cache-service;1"
-    ].getService(Ci.nsIApplicationCacheService);
-    if (!groups) {
-      try {
-        groups = cacheService.getGroups();
-      } catch (ex) {
-        return 0;
-      }
-    }
-
-    let usage = 0;
-    for (let group of groups) {
-      let uri = Services.io.newURI(group);
-      if (uri.asciiHost == host) {
-        let cache = cacheService.getActiveCache(group);
-        usage += cache.usage;
-      }
-    }
-
-    return usage;
-  },
-
   _usedMoreThanWarnQuota(uri) {
     // if the user has already allowed excessive usage, don't bother checking
     if (
       Services.perms.testExactPermission(uri, "offline-app") !=
       Ci.nsIOfflineCacheUpdateService.ALLOW_NO_WARN
     ) {
-      let usageBytes = this._getOfflineAppUsage(uri.asciiHost);
+      let usageBytes = SiteDataManager.getAppCacheUsageByHost(uri.asciiHost);
       let warnQuotaKB = Services.prefs.getIntPref("offline-apps.quota.warn");
       // The pref is in kb, the usage we get is in bytes, so multiply the quota
       // to compare correctly:

@@ -8,60 +8,44 @@ exports.bootstrapWorkers = bootstrapWorkers;
 exports.teardownWorkers = teardownWorkers;
 exports.bootstrapApp = bootstrapApp;
 
-var _react = require("devtools/client/shared/vendor/react");
-
-var _react2 = _interopRequireDefault(_react);
+var _react = _interopRequireDefault(require("devtools/client/shared/vendor/react"));
 
 var _redux = require("devtools/client/shared/vendor/redux");
 
-var _reactDom = require("devtools/client/shared/vendor/react-dom");
+var _reactDom = _interopRequireDefault(require("devtools/client/shared/vendor/react-dom"));
 
-var _reactDom2 = _interopRequireDefault(_reactDom);
-
-var _storeProvider = require("devtools/client/framework/store-provider");
-
-var _storeProvider2 = _interopRequireDefault(_storeProvider);
+var _storeProvider = _interopRequireDefault(require("devtools/client/framework/store-provider"));
 
 var _devtoolsEnvironment = require("devtools/client/debugger/dist/vendors").vendored["devtools-environment"];
 
-var _devtoolsSourceMap = require("devtools/client/shared/source-map/index.js");
+var _devtoolsSourceMap = _interopRequireWildcard(require("devtools/client/shared/source-map/index.js"));
 
-var _devtoolsSourceMap2 = _interopRequireDefault(_devtoolsSourceMap);
+var search = _interopRequireWildcard(require("../workers/search/index"));
 
-loader.lazyRequireGetter(this, "_search", "devtools/client/debugger/src/workers/search/index");
-
-var search = _interopRequireWildcard(_search);
-
-loader.lazyRequireGetter(this, "_prettyPrint", "devtools/client/debugger/src/workers/pretty-print/index");
-
-var prettyPrint = _interopRequireWildcard(_prettyPrint);
+var prettyPrint = _interopRequireWildcard(require("../workers/pretty-print/index"));
 
 loader.lazyRequireGetter(this, "_parser", "devtools/client/debugger/src/workers/parser/index");
-loader.lazyRequireGetter(this, "_createStore", "devtools/client/debugger/src/actions/utils/create-store");
 
-var _createStore2 = _interopRequireDefault(_createStore);
+var _createStore = _interopRequireDefault(require("../actions/utils/create-store"));
 
-loader.lazyRequireGetter(this, "_reducers", "devtools/client/debugger/src/reducers/index");
+var _reducers = _interopRequireDefault(require("../reducers/index"));
 
-var _reducers2 = _interopRequireDefault(_reducers);
+var selectors = _interopRequireWildcard(require("../selectors/index"));
 
-loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
-
-var selectors = _interopRequireWildcard(_selectors);
-
-loader.lazyRequireGetter(this, "_App", "devtools/client/debugger/src/components/App");
-
-var _App2 = _interopRequireDefault(_App);
+var _App = _interopRequireDefault(require("../components/App"));
 
 loader.lazyRequireGetter(this, "_prefs", "devtools/client/debugger/src/utils/prefs");
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-const { Provider } = require("devtools/client/shared/vendor/react-redux"); /* This Source Code Form is subject to the terms of the Mozilla Public
-                                                                            * License, v. 2.0. If a copy of the MPL was not distributed with this
-                                                                            * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+const {
+  Provider
+} = require("devtools/client/shared/vendor/react-redux");
 
 let parser;
 
@@ -70,29 +54,40 @@ function renderPanel(component, store, panel) {
   root.className = "launchpad-root theme-body";
   root.style.setProperty("flex", "1");
   const mount = document.querySelector("#mount");
+
   if (!mount) {
     return;
   }
+
   mount.appendChild(root);
 
-  _reactDom2.default.render(_react2.default.createElement(Provider, { store }, _react2.default.createElement(_storeProvider2.default, { store: panel.getToolboxStore() }, _react2.default.createElement(component))), root);
+  _reactDom.default.render(_react.default.createElement(Provider, {
+    store
+  }, _react.default.createElement(_storeProvider.default, {
+    store: panel.getToolboxStore()
+  }, _react.default.createElement(component))), root);
 }
 
 function bootstrapStore(client, workers, panel, initialState) {
-  const createStore = (0, _createStore2.default)({
+  const createStore = (0, _createStore.default)({
     log: _prefs.prefs.logging || (0, _devtoolsEnvironment.isTesting)(),
     timing: (0, _devtoolsEnvironment.isDevelopment)(),
     makeThunkArgs: (args, state) => {
-      return { ...args, client, ...workers, panel };
+      return { ...args,
+        client,
+        ...workers,
+        panel
+      };
     }
   });
-
-  const store = createStore((0, _redux.combineReducers)(_reducers2.default), initialState);
+  const store = createStore((0, _redux.combineReducers)(_reducers.default), initialState);
   store.subscribe(() => updatePrefs(store.getState()));
-
   const actions = (0, _redux.bindActionCreators)(require("../actions/index").default, store.dispatch);
-
-  return { store, actions, selectors };
+  return {
+    store,
+    actions,
+    selectors
+  };
 }
 
 function bootstrapWorkers(panelWorkers) {
@@ -100,17 +95,19 @@ function bootstrapWorkers(panelWorkers) {
 
   if ((0, _devtoolsEnvironment.isDevelopment)()) {
     // When used in Firefox, the toolbox manages the source map worker.
-    (0, _devtoolsSourceMap.startSourceMapWorker)(`${workerPath}/source-map-worker.js`,
-    // This is relative to the worker itself.
+    (0, _devtoolsSourceMap.startSourceMapWorker)(`${workerPath}/source-map-worker.js`, // This is relative to the worker itself.
     "./source-map-worker-assets/");
   }
 
   prettyPrint.start(`${workerPath}/pretty-print-worker.js`);
   parser = new _parser.ParserDispatcher();
-
   parser.start(`${workerPath}/parser-worker.js`);
   search.start(`${workerPath}/search-worker.js`);
-  return { ...panelWorkers, prettyPrint, parser, search };
+  return { ...panelWorkers,
+    prettyPrint,
+    parser,
+    search
+  };
 }
 
 function teardownWorkers() {
@@ -118,6 +115,7 @@ function teardownWorkers() {
     // When used in Firefox, the toolbox manages the source map worker.
     (0, _devtoolsSourceMap.stopSourceMapWorker)();
   }
+
   prettyPrint.stop();
   parser.stop();
   search.stop();
@@ -125,16 +123,20 @@ function teardownWorkers() {
 
 function bootstrapApp(store, panel) {
   if ((0, _devtoolsEnvironment.isFirefoxPanel)()) {
-    renderPanel(_App2.default, store, panel);
+    renderPanel(_App.default, store, panel);
   } else {
-    const { renderRoot } = require("devtools/shared/flags");
-    renderRoot(_react2.default, _reactDom2.default, _App2.default, store);
+    const {
+      renderRoot
+    } = require("devtools/shared/flags");
+
+    renderRoot(_react.default, _reactDom.default, _App.default, store);
   }
 }
 
 let currentPendingBreakpoints;
 let currentXHRBreakpoints;
 let currentEventBreakpoints;
+
 function updatePrefs(state) {
   const previousPendingBreakpoints = currentPendingBreakpoints;
   const previousXHRBreakpoints = currentXHRBreakpoints;

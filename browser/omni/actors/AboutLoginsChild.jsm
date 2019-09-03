@@ -90,24 +90,34 @@ class AboutLoginsChild extends ActorChild {
         });
         break;
       }
+      case "AboutLoginsDismissBreachAlert": {
+        this.mm.sendAsyncMessage("AboutLogins:DismissBreachAlert", {
+          login: event.detail,
+        });
+        break;
+      }
+      case "AboutLoginsHideFooter": {
+        this.mm.sendAsyncMessage("AboutLogins:HideFooter");
+        break;
+      }
       case "AboutLoginsImport": {
         this.mm.sendAsyncMessage("AboutLogins:Import");
         break;
       }
-      case "AboutLoginsOpenFAQ": {
-        this.mm.sendAsyncMessage("AboutLogins:OpenFAQ");
-        break;
-      }
       case "AboutLoginsOpenMobileAndroid": {
-        this.mm.sendAsyncMessage("AboutLogins:OpenMobileAndroid");
+        this.mm.sendAsyncMessage("AboutLogins:OpenMobileAndroid", {
+          source: event.detail,
+        });
         break;
       }
       case "AboutLoginsOpenMobileIos": {
-        this.mm.sendAsyncMessage("AboutLogins:OpenMobileIos");
+        this.mm.sendAsyncMessage("AboutLogins:OpenMobileIos", {
+          source: event.detail,
+        });
         break;
       }
-      case "AboutLoginsOpenFeedback": {
-        this.mm.sendAsyncMessage("AboutLogins:OpenFeedback");
+      case "AboutLoginsGetHelp": {
+        this.mm.sendAsyncMessage("AboutLogins:GetHelp");
         break;
       }
       case "AboutLoginsOpenPreferences": {
@@ -157,6 +167,9 @@ class AboutLoginsChild extends ActorChild {
       case "AboutLogins:AllLogins":
         this.sendToContent("AllLogins", message.data);
         break;
+      case "AboutLogins:LocalizeBadges":
+        this.sendToContent("LocalizeBadges", message.data);
+        break;
       case "AboutLogins:LoginAdded":
         this.sendToContent("LoginAdded", message.data);
         break;
@@ -173,6 +186,9 @@ class AboutLoginsChild extends ActorChild {
         break;
       case "AboutLogins:SendFavicons":
         this.sendToContent("SendFavicons", message.data);
+        break;
+      case "AboutLogins:ShowLoginItemError":
+        this.sendToContent("ShowLoginItemError", message.data);
         break;
       case "AboutLogins:SyncState":
         this.sendToContent("SyncState", message.data);

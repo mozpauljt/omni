@@ -3,51 +3,50 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = void 0;
 
-var _react = require("devtools/client/shared/vendor/react");
-
-var _react2 = _interopRequireDefault(_react);
+var _react = _interopRequireWildcard(require("devtools/client/shared/vendor/react"));
 
 loader.lazyRequireGetter(this, "_connect", "devtools/client/debugger/src/utils/connect");
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
 loader.lazyRequireGetter(this, "_ui", "devtools/client/debugger/src/utils/ui");
 loader.lazyRequireGetter(this, "_tabs", "devtools/client/debugger/src/utils/tabs");
 loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
-loader.lazyRequireGetter(this, "_actions", "devtools/client/debugger/src/actions/index");
 
-var _actions2 = _interopRequireDefault(_actions);
+var _actions = _interopRequireDefault(require("../../actions/index"));
 
 var _lodash = require("devtools/client/shared/vendor/lodash");
 
-loader.lazyRequireGetter(this, "_Tab", "devtools/client/debugger/src/components/Editor/Tab");
-
-var _Tab2 = _interopRequireDefault(_Tab);
+var _Tab = _interopRequireDefault(require("./Tab"));
 
 loader.lazyRequireGetter(this, "_Button", "devtools/client/debugger/src/components/shared/Button/index");
-loader.lazyRequireGetter(this, "_Dropdown", "devtools/client/debugger/src/components/shared/Dropdown");
 
-var _Dropdown2 = _interopRequireDefault(_Dropdown);
+var _Dropdown = _interopRequireDefault(require("../shared/Dropdown"));
 
-loader.lazyRequireGetter(this, "_AccessibleImage", "devtools/client/debugger/src/components/shared/AccessibleImage");
+var _AccessibleImage = _interopRequireDefault(require("../shared/AccessibleImage"));
 
-var _AccessibleImage2 = _interopRequireDefault(_AccessibleImage);
-
-loader.lazyRequireGetter(this, "_CommandBar", "devtools/client/debugger/src/components/SecondaryPanes/CommandBar");
-
-var _CommandBar2 = _interopRequireDefault(_CommandBar);
+var _CommandBar = _interopRequireDefault(require("../SecondaryPanes/CommandBar"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-class Tabs extends _react.PureComponent {
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+class Tabs extends _react.PureComponent {
   constructor(props) {
     super(props);
 
-    this.updateHiddenTabs = () => {
+    _defineProperty(this, "updateHiddenTabs", () => {
       if (!this.refs.sourceTabs) {
         return;
       }
-      const { selectedSource, tabSources, moveTab } = this.props;
+
+      const {
+        selectedSource,
+        tabSources,
+        moveTab
+      } = this.props;
       const sourceTabEls = this.refs.sourceTabs.children;
       const hiddenTabs = (0, _tabs.getHiddenTabs)(tabSources, sourceTabEls);
 
@@ -55,33 +54,35 @@ class Tabs extends _react.PureComponent {
         return moveTab(selectedSource.url, 0);
       }
 
-      this.setState({ hiddenTabs });
-    };
+      this.setState({
+        hiddenTabs
+      });
+    });
 
-    this.renderDropdownSource = source => {
-      const { cx, selectSource } = this.props;
+    _defineProperty(this, "renderDropdownSource", source => {
+      const {
+        cx,
+        selectSource
+      } = this.props;
       const filename = (0, _source.getFilename)(source);
 
       const onClick = () => selectSource(cx, source.id);
-      return _react2.default.createElement(
-        "li",
-        { key: source.id, onClick: onClick, title: (0, _source.getFileURL)(source, false) },
-        _react2.default.createElement(_AccessibleImage2.default, {
-          className: `dropdown-icon ${this.getIconClass(source)}`
-        }),
-        _react2.default.createElement(
-          "span",
-          { className: "dropdown-label" },
-          filename
-        )
-      );
-    };
+
+      return _react.default.createElement("li", {
+        key: source.id,
+        onClick: onClick,
+        title: (0, _source.getFileURL)(source, false)
+      }, _react.default.createElement(_AccessibleImage.default, {
+        className: `dropdown-icon ${this.getIconClass(source)}`
+      }), _react.default.createElement("span", {
+        className: "dropdown-label"
+      }, filename));
+    });
 
     this.state = {
       dropdownShown: false,
       hiddenTabs: []
     };
-
     this.onResize = (0, _lodash.debounce)(() => {
       this.updateHiddenTabs();
     });
@@ -103,7 +104,6 @@ class Tabs extends _react.PureComponent {
     window.removeEventListener("resize", this.onResize);
     window.document.querySelector(".editor-pane").removeEventListener("resizeend", this.onResize);
   }
-
   /*
    * Updates the hiddenSourceTabs state, by
    * finding the source tabs which are wrapped and are not on the top row.
@@ -120,52 +120,69 @@ class Tabs extends _react.PureComponent {
     if ((0, _source.isPretty)(source)) {
       return "prettyPrint";
     }
+
     if (source.isBlackBoxed) {
       return "blackBox";
     }
+
     return "file";
   }
 
   renderTabs() {
-    const { tabSources } = this.props;
+    const {
+      tabSources
+    } = this.props;
+
     if (!tabSources) {
       return;
     }
 
-    return _react2.default.createElement(
-      "div",
-      { className: "source-tabs", ref: "sourceTabs" },
-      tabSources.map((source, index) => _react2.default.createElement(_Tab2.default, { key: index, source: source }))
-    );
+    return _react.default.createElement("div", {
+      className: "source-tabs",
+      ref: "sourceTabs"
+    }, tabSources.map((source, index) => _react.default.createElement(_Tab.default, {
+      key: index,
+      source: source
+    })));
   }
 
   renderDropdown() {
     const hiddenTabs = this.state.hiddenTabs;
+
     if (!hiddenTabs || hiddenTabs.length == 0) {
       return null;
     }
 
-    const Panel = _react2.default.createElement(
-      "ul",
-      null,
-      hiddenTabs.map(this.renderDropdownSource)
-    );
-    const icon = _react2.default.createElement(_AccessibleImage2.default, { className: "more-tabs" });
+    const Panel = _react.default.createElement("ul", null, hiddenTabs.map(this.renderDropdownSource));
 
-    return _react2.default.createElement(_Dropdown2.default, { panel: Panel, icon: icon });
+    const icon = _react.default.createElement(_AccessibleImage.default, {
+      className: "more-tabs"
+    });
+
+    return _react.default.createElement(_Dropdown.default, {
+      panel: Panel,
+      icon: icon
+    });
   }
 
   renderCommandBar() {
-    const { horizontal, endPanelCollapsed, isPaused } = this.props;
+    const {
+      horizontal,
+      endPanelCollapsed,
+      isPaused
+    } = this.props;
+
     if (!endPanelCollapsed || !isPaused) {
       return;
     }
 
-    return _react2.default.createElement(_CommandBar2.default, { horizontal: horizontal });
+    return _react.default.createElement(_CommandBar.default, {
+      horizontal: horizontal
+    });
   }
 
   renderStartPanelToggleButton() {
-    return _react2.default.createElement(_Button.PaneToggleButton, {
+    return _react.default.createElement(_Button.PaneToggleButton, {
       position: "start",
       collapsed: this.props.startPanelCollapsed,
       handleClick: this.props.togglePaneCollapse
@@ -173,12 +190,17 @@ class Tabs extends _react.PureComponent {
   }
 
   renderEndPanelToggleButton() {
-    const { horizontal, endPanelCollapsed, togglePaneCollapse } = this.props;
+    const {
+      horizontal,
+      endPanelCollapsed,
+      togglePaneCollapse
+    } = this.props;
+
     if (!horizontal) {
       return;
     }
 
-    return _react2.default.createElement(_Button.PaneToggleButton, {
+    return _react.default.createElement(_Button.PaneToggleButton, {
       position: "end",
       collapsed: endPanelCollapsed,
       handleClick: togglePaneCollapse,
@@ -187,19 +209,12 @@ class Tabs extends _react.PureComponent {
   }
 
   render() {
-    return _react2.default.createElement(
-      "div",
-      { className: "source-header" },
-      this.renderStartPanelToggleButton(),
-      this.renderTabs(),
-      this.renderDropdown(),
-      this.renderEndPanelToggleButton(),
-      this.renderCommandBar()
-    );
+    return _react.default.createElement("div", {
+      className: "source-header"
+    }, this.renderStartPanelToggleButton(), this.renderTabs(), this.renderDropdown(), this.renderEndPanelToggleButton(), this.renderCommandBar());
   }
-} /* This Source Code Form is subject to the terms of the Mozilla Public
-   * License, v. 2.0. If a copy of the MPL was not distributed with this
-   * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+
+}
 
 const mapStateToProps = state => ({
   cx: (0, _selectors.getContext)(state),
@@ -208,10 +223,12 @@ const mapStateToProps = state => ({
   isPaused: (0, _selectors.getIsPaused)(state, (0, _selectors.getCurrentThread)(state))
 });
 
-exports.default = (0, _connect.connect)(mapStateToProps, {
-  selectSource: _actions2.default.selectSource,
-  moveTab: _actions2.default.moveTab,
-  closeTab: _actions2.default.closeTab,
-  togglePaneCollapse: _actions2.default.togglePaneCollapse,
-  showSource: _actions2.default.showSource
+var _default = (0, _connect.connect)(mapStateToProps, {
+  selectSource: _actions.default.selectSource,
+  moveTab: _actions.default.moveTab,
+  closeTab: _actions.default.closeTab,
+  togglePaneCollapse: _actions.default.togglePaneCollapse,
+  showSource: _actions.default.showSource
 })(Tabs);
+
+exports.default = _default;

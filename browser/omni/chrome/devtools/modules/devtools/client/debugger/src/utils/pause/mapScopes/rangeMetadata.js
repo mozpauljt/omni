@@ -9,19 +9,13 @@ loader.lazyRequireGetter(this, "_locColumn", "devtools/client/debugger/src/utils
 loader.lazyRequireGetter(this, "_positionCmp", "devtools/client/debugger/src/utils/pause/mapScopes/positionCmp");
 loader.lazyRequireGetter(this, "_filtering", "devtools/client/debugger/src/utils/pause/mapScopes/filtering");
 
-
-// * match - Range contains a single identifier with matching start location
-// * contains - Range contains a single identifier with non-matching start
-// * multiple - Range contains multiple identifiers
-// * empty - Range contains no identifiers
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-
-async function loadRangeMetadata(source, frame, originalAstScopes, sourceMaps) {
-  const originalRanges = await sourceMaps.getOriginalRanges(frame.location.sourceId, source.url);
-
+async function loadRangeMetadata(frame, originalAstScopes, sourceMaps) {
+  const originalRanges = await sourceMaps.getOriginalRanges(frame.location.sourceId);
   const sortedOriginalAstBindings = [];
+
   for (const item of originalAstScopes) {
     for (const name of Object.keys(item.bindings)) {
       for (const ref of item.bindings[name].refs) {
@@ -29,10 +23,9 @@ async function loadRangeMetadata(source, frame, originalAstScopes, sourceMaps) {
       }
     }
   }
+
   sortedOriginalAstBindings.sort((a, b) => (0, _positionCmp.positionCmp)(a.start, b.start));
-
   let i = 0;
-
   return originalRanges.map(range => {
     const bindings = [];
 
@@ -41,18 +34,21 @@ async function loadRangeMetadata(source, frame, originalAstScopes, sourceMaps) {
     }
 
     while (i < sortedOriginalAstBindings.length && sortedOriginalAstBindings[i].start.line === range.line && (0, _locColumn.locColumn)(sortedOriginalAstBindings[i].start) >= range.columnStart && (0, _locColumn.locColumn)(sortedOriginalAstBindings[i].start) < range.columnEnd) {
-      const lastBinding = bindings[bindings.length - 1];
-      // Only add bindings when they're in new positions
+      const lastBinding = bindings[bindings.length - 1]; // Only add bindings when they're in new positions
+
       if (!lastBinding || (0, _positionCmp.positionCmp)(lastBinding.start, sortedOriginalAstBindings[i].start) !== 0) {
         bindings.push(sortedOriginalAstBindings[i]);
       }
+
       i++;
     }
 
     let type = "empty";
     let singleDeclaration = true;
+
     if (bindings.length === 1) {
       const binding = bindings[0];
+
       if (binding.start.line === range.line && binding.start.column === range.columnStart) {
         type = "match";
       } else {
@@ -62,7 +58,6 @@ async function loadRangeMetadata(source, frame, originalAstScopes, sourceMaps) {
       type = "multiple";
       const binding = bindings[0];
       const declStart = binding.type !== "ref" ? binding.declaration.start : null;
-
       singleDeclaration = bindings.every(b => {
         return declStart && b.type !== "ref" && (0, _positionCmp.positionCmp)(declStart, b.declaration.start) === 0;
       });
@@ -81,6 +76,7 @@ function findMatchingRange(sortedOriginalRanges, bindingRange) {
     if (range.line < bindingRange.start.line) {
       return -1;
     }
+
     if (range.line > bindingRange.start.line) {
       return 1;
     }
@@ -88,6 +84,7 @@ function findMatchingRange(sortedOriginalRanges, bindingRange) {
     if (range.columnEnd <= (0, _locColumn.locColumn)(bindingRange.start)) {
       return -1;
     }
+
     if (range.columnStart > (0, _locColumn.locColumn)(bindingRange.start)) {
       return 1;
     }

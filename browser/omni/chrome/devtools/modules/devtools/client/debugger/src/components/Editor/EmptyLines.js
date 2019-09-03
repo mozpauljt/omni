@@ -3,16 +3,17 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = void 0;
 loader.lazyRequireGetter(this, "_connect", "devtools/client/debugger/src/utils/connect");
 
 var _react = require("devtools/client/shared/vendor/react");
 
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
 loader.lazyRequireGetter(this, "_editor", "devtools/client/debugger/src/utils/editor/index");
+
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-
 class EmptyLines extends _react.Component {
   componentDidMount() {
     this.disableEmptyLines();
@@ -23,8 +24,9 @@ class EmptyLines extends _react.Component {
   }
 
   componentWillUnmount() {
-    const { editor } = this.props;
-
+    const {
+      editor
+    } = this.props;
     editor.codeMirror.operation(() => {
       editor.codeMirror.eachLine(lineHandle => {
         editor.codeMirror.removeLineClass(lineHandle, "line", "empty-line");
@@ -33,8 +35,11 @@ class EmptyLines extends _react.Component {
   }
 
   disableEmptyLines() {
-    const { breakableLines, selectedSource, editor } = this.props;
-
+    const {
+      breakableLines,
+      selectedSource,
+      editor
+    } = this.props;
     editor.codeMirror.operation(() => {
       editor.codeMirror.eachLine(lineHandle => {
         const line = (0, _editor.fromEditorLine)(selectedSource.id, editor.codeMirror.getLineNumber(lineHandle));
@@ -51,19 +56,23 @@ class EmptyLines extends _react.Component {
   render() {
     return null;
   }
+
 }
 
 const mapStateToProps = state => {
   const selectedSource = (0, _selectors.getSelectedSource)(state);
+
   if (!selectedSource) {
     throw new Error("no selectedSource");
   }
-  const breakableLines = (0, _selectors.getSelectedBreakableLines)(state);
 
+  const breakableLines = (0, _selectors.getSelectedBreakableLines)(state);
   return {
     selectedSource,
     breakableLines
   };
 };
 
-exports.default = (0, _connect.connect)(mapStateToProps)(EmptyLines);
+var _default = (0, _connect.connect)(mapStateToProps)(EmptyLines);
+
+exports.default = _default;

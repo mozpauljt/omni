@@ -3,8 +3,8 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getCallStackFrames = undefined;
 exports.formatCallStackFrames = formatCallStackFrames;
+exports.getCallStackFrames = void 0;
 loader.lazyRequireGetter(this, "_sources", "devtools/client/debugger/src/reducers/sources");
 loader.lazyRequireGetter(this, "_pause", "devtools/client/debugger/src/reducers/pause");
 loader.lazyRequireGetter(this, "_frames", "devtools/client/debugger/src/utils/pause/frames/index");
@@ -17,7 +17,6 @@ var _reselect = require("devtools/client/shared/vendor/reselect");
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-
 function getLocation(frame, isGeneratedSource) {
   return isGeneratedSource ? frame.generatedLocation || frame.location : frame.location;
 }
@@ -29,8 +28,7 @@ function getSourceForFrame(sources, frame, isGeneratedSource) {
 
 function appendSource(sources, frame, selectedSource) {
   const isGeneratedSource = selectedSource && !(0, _source.isOriginal)(selectedSource);
-  return {
-    ...frame,
+  return { ...frame,
     location: getLocation(frame, isGeneratedSource),
     source: getSourceForFrame(sources, frame, isGeneratedSource)
   };
@@ -42,9 +40,9 @@ function formatCallStackFrames(frames, sources, selectedSource) {
   }
 
   const formattedFrames = frames.filter(frame => getSourceForFrame(sources, frame)).map(frame => appendSource(sources, frame, selectedSource)).filter(frame => !(0, _lodash.get)(frame, "source.isBlackBoxed"));
-
   return (0, _frames.annotateFrames)(formattedFrames);
-}
+} // eslint-disable-next-line
 
-// eslint-disable-next-line
-const getCallStackFrames = exports.getCallStackFrames = (0, _reselect.createSelector)(_pause.getCurrentThreadFrames, _sources.getSources, _sources.getSelectedSource, formatCallStackFrames);
+
+const getCallStackFrames = (0, _reselect.createSelector)(_pause.getCurrentThreadFrames, _sources.getSources, _sources.getSelectedSource, formatCallStackFrames);
+exports.getCallStackFrames = getCallStackFrames;

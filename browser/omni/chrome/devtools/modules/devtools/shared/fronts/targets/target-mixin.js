@@ -4,22 +4,6 @@
 
 "use strict";
 
-// We are requiring a module from client whereas this module is from shared.
-// This shouldn't happen, but Fronts should rather be part of client anyway.
-// Otherwise gDevTools is only used for local tabs and should propably only
-// used by a subclass, specific to local tabs.
-loader.lazyRequireGetter(
-  this,
-  "gDevTools",
-  "devtools/client/framework/devtools",
-  true
-);
-loader.lazyRequireGetter(
-  this,
-  "TargetFactory",
-  "devtools/client/framework/target",
-  true
-);
 loader.lazyRequireGetter(
   this,
   "ThreadClient",
@@ -69,15 +53,6 @@ function TargetMixin(parentClass) {
       this.fronts = new Map();
 
       this._setupRemoteListeners();
-    }
-
-    attachTab(tab) {
-      // When debugging local tabs, we also have a reference to the Firefox tab
-      // This is used to:
-      // * distinguish local tabs from remote (see target.isLocalTab)
-      // * being able to hookup into Firefox UI (see Hosts)
-      this._tab = tab;
-      this._setupListeners();
     }
 
     /**
@@ -178,23 +153,41 @@ function TargetMixin(parentClass) {
       return this.client.traits[traitName];
     }
 
+    /**
+     * The following getters: isLocalTab, tab, ... will be overriden for local
+     * tabs by some code in devtools/shared/fronts/targets/local-tab.js. They
+     * are all specific to local tabs, i.e. when you are debugging a tab of the
+     * current Firefox instance.
+     */
+    get isLocalTab() {
+      return false;
+    }
+
     get tab() {
-      return this._tab;
+      return null;
+    }
+
+    /**
+     * For local tabs, returns the tab's contentPrincipal, which can be used as a
+     * `triggeringPrincipal` when opening links.  However, this is a hack as it is not
+     * correct for subdocuments and it won't work for remote debugging.  Bug 1467945 hopes
+     * to devise a better approach.
+     */
+    get contentPrincipal() {
+      return null;
+    }
+
+    /**
+     * Similar to the above get contentPrincipal(), the get csp()
+     * returns the CSP which should be used for opening links.
+     */
+    get csp() {
+      return null;
     }
 
     // Get a promise of the RootActor's form
     get root() {
       return this.client.mainRoot.rootForm;
-    }
-
-    // Run callback on every front of this type that currently exists, and on every
-    // instantiation of front type in the future.
-    onFront(typeName, callback) {
-      const front = this.fronts.get(typeName);
-      if (front) {
-        return callback(front);
-      }
-      return this.on(typeName, callback);
     }
 
     // Get a Front for a target-scoped actor.
@@ -212,7 +205,6 @@ function TargetMixin(parentClass) {
       this.fronts.set(typeName, front);
       // replace the placeholder with the instance of the front once it has loaded
       front = await front;
-      this.emit(typeName, front);
       this.fronts.set(typeName, front);
       return front;
     }
@@ -257,7 +249,7 @@ function TargetMixin(parentClass) {
     }
 
     get name() {
-      if (this.isAddon) {
+      if (this.isAddon || this.isContentProcess) {
         return this.targetForm.name;
       }
       return this.title;
@@ -326,10 +318,6 @@ function TargetMixin(parentClass) {
       );
     }
 
-    get isLocalTab() {
-      return !!this._tab;
-    }
-
     get isMultiProcess() {
       return !this.window;
     }
@@ -359,30 +347,6 @@ function TargetMixin(parentClass) {
         // Return the url if unable to resolve the pathname.
         return url;
       }
-    }
-
-    /**
-     * For local tabs, returns the tab's contentPrincipal, which can be used as a
-     * `triggeringPrincipal` when opening links.  However, this is a hack as it is not
-     * correct for subdocuments and it won't work for remote debugging.  Bug 1467945 hopes
-     * to devise a better approach.
-     */
-    get contentPrincipal() {
-      if (!this.isLocalTab) {
-        return null;
-      }
-      return this.tab.linkedBrowser.contentPrincipal;
-    }
-
-    /**
-     * Similar to the above get contentPrincipal(), the get csp()
-     * returns the CSP which should be used for opening links.
-     */
-    get csp() {
-      if (!this.isLocalTab) {
-        return null;
-      }
-      return this.tab.linkedBrowser.csp;
     }
 
     // Attach the console actor
@@ -417,6 +381,7 @@ function TargetMixin(parentClass) {
         this.threadFront = new ThreadClient(this._client, this._threadActor);
         this.fronts.set("thread", this.threadFront);
         this.threadFront.actorID = this._threadActor;
+        this.threadFront.targetFront = this;
         this.manage(this.threadFront);
       }
       const result = await this.threadFront.attach(options);
@@ -429,26 +394,6 @@ function TargetMixin(parentClass) {
     // Listener for "newSource" event fired by the thread actor
     _onNewSource(packet) {
       this.emit("source-updated", packet);
-    }
-
-    /**
-     * Listen to the different events.
-     */
-    _setupListeners() {
-      this.tab.addEventListener("TabClose", this);
-      this.tab.ownerDocument.defaultView.addEventListener("unload", this);
-      this.tab.addEventListener("TabRemotenessChange", this);
-    }
-
-    /**
-     * Teardown event listeners.
-     */
-    _teardownListeners() {
-      if (this._tab.ownerDocument.defaultView) {
-        this._tab.ownerDocument.defaultView.removeEventListener("unload", this);
-      }
-      this._tab.removeEventListener("TabClose", this);
-      this._tab.removeEventListener("TabRemotenessChange", this);
     }
 
     /**
@@ -482,49 +427,6 @@ function TargetMixin(parentClass) {
     }
 
     /**
-     * Handle tabs events.
-     */
-    handleEvent(event) {
-      switch (event.type) {
-        case "TabClose":
-        case "unload":
-          this.destroy();
-          break;
-        case "TabRemotenessChange":
-          this.onRemotenessChange();
-          break;
-      }
-    }
-
-    /**
-     * Automatically respawn the toolbox when the tab changes between being
-     * loaded within the parent process and loaded from a content process.
-     * Process change can go in both ways.
-     */
-    onRemotenessChange() {
-      // Responsive design do a crazy dance around tabs and triggers
-      // remotenesschange events. But we should ignore them as at the end
-      // the content doesn't change its remoteness.
-      if (this._tab.isResponsiveDesignMode) {
-        return;
-      }
-
-      // Save a reference to the tab as it will be nullified on destroy
-      const tab = this._tab;
-      const onToolboxDestroyed = async target => {
-        if (target != this) {
-          return;
-        }
-        gDevTools.off("toolbox-destroyed", target);
-
-        // Recreate a fresh target instance as the current one is now destroyed
-        const newTarget = await TargetFactory.forTab(tab);
-        gDevTools.showToolbox(newTarget);
-      };
-      gDevTools.on("toolbox-destroyed", onToolboxDestroyed);
-    }
-
-    /**
      * Target is not alive anymore.
      */
     destroy() {
@@ -541,10 +443,6 @@ function TargetMixin(parentClass) {
         for (let [, front] of this.fronts) {
           front = await front;
           await front.destroy();
-        }
-
-        if (this._tab) {
-          this._teardownListeners();
         }
 
         this._teardownRemoteListeners();
@@ -591,7 +489,6 @@ function TargetMixin(parentClass) {
       this.activeConsole = null;
       this.threadFront = null;
       this._client = null;
-      this._tab = null;
 
       // All target front subclasses set this variable in their `attach` method.
       // None of them overload destroy, so clean this up from here.
@@ -602,9 +499,7 @@ function TargetMixin(parentClass) {
     }
 
     toString() {
-      const id = this._tab
-        ? this._tab
-        : this.targetForm && this.targetForm.actor;
+      const id = this.targetForm ? this.targetForm.actor : null;
       return `Target:${id}`;
     }
 

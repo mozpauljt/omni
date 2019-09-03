@@ -5,6 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.thunk = thunk;
 
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 /**
  * A middleware that allows thunks (functions) to be dispatched. If
@@ -14,15 +17,16 @@ exports.thunk = thunk;
  * actions (most likely asynchronously).
  */
 function thunk(makeArgs) {
-  return ({ dispatch, getState }) => {
-    const args = { dispatch, getState };
-
+  return ({
+    dispatch,
+    getState
+  }) => {
+    const args = {
+      dispatch,
+      getState
+    };
     return next => action => {
       return typeof action === "function" ? action(makeArgs ? makeArgs(args, getState()) : args) : next(action);
     };
   };
-} /* This Source Code Form is subject to the terms of the Mozilla Public
-   * License, v. 2.0. If a copy of the MPL was not distributed with this
-   * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-
-/* global window */
+}

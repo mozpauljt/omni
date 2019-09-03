@@ -5,12 +5,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = SmartGap;
 
-var _react = require("devtools/client/shared/vendor/react");
-
-var _react2 = _interopRequireDefault(_react);
+var _react = _interopRequireDefault(require("devtools/client/shared/vendor/react"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 function shorten(coordinates) {
   // In cases where the token is wider than the preview, the smartGap
   // gets distorted. This shortens the coordinate array so that the smartGap
@@ -18,19 +19,19 @@ function shorten(coordinates) {
   coordinates.splice(0, 2);
   coordinates.splice(4, 2);
   return coordinates;
-} /* This Source Code Form is subject to the terms of the Mozilla Public
-   * License, v. 2.0. If a copy of the MPL was not distributed with this
-   * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+}
 
 function getSmartGapCoordinates(preview, token, offset, orientation, gapHeight, coords) {
   if (orientation === "up") {
     const coordinates = [token.left - coords.left + offset, token.top + token.height - (coords.top + preview.height) + gapHeight, 0, 0, preview.width + offset, 0, token.left + token.width - coords.left + offset, token.top + token.height - (coords.top + preview.height) + gapHeight, token.left + token.width - coords.left + offset, token.top - (coords.top + preview.height) + gapHeight, token.left - coords.left + offset, token.top - (coords.top + preview.height) + gapHeight];
     return preview.width > token.width ? coordinates : shorten(coordinates);
   }
+
   if (orientation === "down") {
     const coordinates = [token.left + token.width - (coords.left + preview.top) + offset, 0, preview.width + offset, coords.top - token.top + gapHeight, 0, coords.top - token.top + gapHeight, token.left - (coords.left + preview.top) + offset, 0, token.left - (coords.left + preview.top) + offset, token.height, token.left + token.width - (coords.left + preview.top) + offset, token.height];
     return preview.width > token.width ? coordinates : shorten(coordinates);
   }
+
   return [0, token.top - coords.top, gapHeight + token.width, 0, gapHeight + token.width, preview.height - gapHeight, 0, token.top + token.height - coords.top, token.width, token.top + token.height - coords.top, token.width, token.top - coords.top];
 }
 
@@ -41,12 +42,14 @@ function getSmartGapDimensions(previewRect, tokenRect, offset, orientation, gapH
       width: Math.max(previewRect.width, tokenRect.width) + offset
     };
   }
+
   if (orientation === "down") {
     return {
       height: coords.top - tokenRect.top + gapHeight,
       width: Math.max(previewRect.width, tokenRect.width) + offset
     };
   }
+
   return {
     height: previewRect.height - gapHeight,
     width: coords.left - tokenRect.left + gapHeight
@@ -61,8 +64,8 @@ function SmartGap({
   coords,
   offset
 }) {
-  const tokenRect = token.getBoundingClientRect();
-  // $FlowIgnore
+  const tokenRect = token.getBoundingClientRect(); // $FlowIgnore
+
   const previewRect = preview.getBoundingClientRect();
   const orientation = coords.orientation;
   let optionalMarginLeft, optionalMarginTop;
@@ -73,22 +76,23 @@ function SmartGap({
     optionalMarginLeft = -tokenRect.width;
   }
 
-  const { height, width } = getSmartGapDimensions(previewRect, tokenRect, -offset, orientation, gapHeight, coords);
+  const {
+    height,
+    width
+  } = getSmartGapDimensions(previewRect, tokenRect, -offset, orientation, gapHeight, coords);
   const coordinates = getSmartGapCoordinates(previewRect, tokenRect, -offset, orientation, gapHeight, coords);
-
-  return _react2.default.createElement(
-    "svg",
-    {
-      version: "1.1",
-      xmlns: "http://www.w3.org/2000/svg",
-      style: {
-        height: height,
-        width: width,
-        position: "absolute",
-        marginLeft: optionalMarginLeft,
-        marginTop: optionalMarginTop
-      }
-    },
-    _react2.default.createElement("polygon", { points: coordinates, fill: "transparent" })
-  );
+  return _react.default.createElement("svg", {
+    version: "1.1",
+    xmlns: "http://www.w3.org/2000/svg",
+    style: {
+      height: height,
+      width: width,
+      position: "absolute",
+      marginLeft: optionalMarginLeft,
+      marginTop: optionalMarginTop
+    }
+  }, _react.default.createElement("polygon", {
+    points: coordinates,
+    fill: "transparent"
+  }));
 }

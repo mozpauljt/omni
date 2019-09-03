@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = void 0;
 
 var _react = require("devtools/client/shared/vendor/react");
 
@@ -10,33 +11,37 @@ var _lodash = require("devtools/client/shared/vendor/lodash");
 
 loader.lazyRequireGetter(this, "_connect", "devtools/client/debugger/src/utils/connect");
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 class HighlightLines extends _react.Component {
   constructor(...args) {
-    var _temp;
+    super(...args);
 
-    return _temp = super(...args), this.highlightLineRange = () => {
-      const { highlightedLineRange, editor } = this.props;
-
-      const { codeMirror } = editor;
+    _defineProperty(this, "highlightLineRange", () => {
+      const {
+        highlightedLineRange,
+        editor
+      } = this.props;
+      const {
+        codeMirror
+      } = editor;
 
       if ((0, _lodash.isEmpty)(highlightedLineRange) || !codeMirror) {
         return;
       }
 
-      const { start, end } = highlightedLineRange;
-
+      const {
+        start,
+        end
+      } = highlightedLineRange;
       codeMirror.operation(() => {
         editor.alignLine(start);
-
         (0, _lodash.range)(start - 1, end).forEach(line => {
           codeMirror.addLineClass(line, "line", "highlight-lines");
         });
       });
-    }, _temp;
+    });
   }
 
   componentDidMount() {
@@ -56,15 +61,22 @@ class HighlightLines extends _react.Component {
   }
 
   clearHighlightRange() {
-    const { highlightedLineRange, editor } = this.props;
-
-    const { codeMirror } = editor;
+    const {
+      highlightedLineRange,
+      editor
+    } = this.props;
+    const {
+      codeMirror
+    } = editor;
 
     if ((0, _lodash.isEmpty)(highlightedLineRange) || !codeMirror) {
       return;
     }
 
-    const { start, end } = highlightedLineRange;
+    const {
+      start,
+      end
+    } = highlightedLineRange;
     codeMirror.operation(() => {
       (0, _lodash.range)(start - 1, end).forEach(line => {
         codeMirror.removeLineClass(line, "line", "highlight-lines");
@@ -75,8 +87,11 @@ class HighlightLines extends _react.Component {
   render() {
     return null;
   }
+
 }
 
-exports.default = (0, _connect.connect)(state => ({
+var _default = (0, _connect.connect)(state => ({
   highlightedLineRange: (0, _selectors.getHighlightedLineRange)(state)
 }))(HighlightLines);
+
+exports.default = _default;

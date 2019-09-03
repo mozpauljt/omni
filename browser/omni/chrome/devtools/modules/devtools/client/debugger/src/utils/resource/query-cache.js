@@ -8,6 +8,9 @@ exports.queryCacheShallow = queryCacheShallow;
 exports.queryCacheStrict = queryCacheStrict;
 loader.lazyRequireGetter(this, "_compare", "devtools/client/debugger/src/utils/resource/compare");
 
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 /**
  * A query 'cache' function that uses the identity of the arguments object to
@@ -26,14 +29,11 @@ function queryCacheWeak(handler) {
     }
   });
 }
-
 /**
  * A query 'cache' function that uses shallow comparison to cache the most
  * recent calculated result based on the value of the argument.
  */
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+
 
 function queryCacheShallow(handler) {
   let latestEntry = null;
@@ -46,11 +46,12 @@ function queryCacheShallow(handler) {
     }
   });
 }
-
 /**
  * A query 'cache' function that uses strict comparison to cache the most
  * recent calculated result based on the value of the argument.
  */
+
+
 function queryCacheStrict(handler) {
   let latestEntry = null;
   return makeCacheFunction({
@@ -64,11 +65,14 @@ function queryCacheStrict(handler) {
 }
 
 function makeCacheFunction(info) {
-  const { handler, compareArgs, getEntry, setEntry } = info;
-
+  const {
+    handler,
+    compareArgs,
+    getEntry,
+    setEntry
+  } = info;
   return (state, args) => {
     let entry = getEntry(args);
-
     const sameArgs = !!entry && compareArgs(entry.context.args, args);
     const sameState = !!entry && entry.state === state;
 
@@ -77,7 +81,6 @@ function makeCacheFunction(info) {
         args,
         identMap: new WeakMap()
       } : entry.context;
-
       const result = handler(state, context, entry ? entry.result : null);
 
       if (entry) {

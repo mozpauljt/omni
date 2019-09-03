@@ -3,30 +3,37 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = void 0;
 
-var _react = require("devtools/client/shared/vendor/react");
+var _react = _interopRequireWildcard(require("devtools/client/shared/vendor/react"));
 
-var _react2 = _interopRequireDefault(_react);
-
-var _classnames = require("devtools/client/debugger/dist/vendors").vendored["classnames"];
-
-var _classnames2 = _interopRequireDefault(_classnames);
+var _classnames = _interopRequireDefault(require("devtools/client/debugger/dist/vendors").vendored["classnames"]);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 class OutlineFilter extends _react.Component {
   constructor(...args) {
-    var _temp;
+    super(...args);
 
-    return _temp = super(...args), this.state = { focused: false }, this.setFocus = shouldFocus => {
-      this.setState({ focused: shouldFocus });
-    }, this.onChange = e => {
+    _defineProperty(this, "state", {
+      focused: false
+    });
+
+    _defineProperty(this, "setFocus", shouldFocus => {
+      this.setState({
+        focused: shouldFocus
+      });
+    });
+
+    _defineProperty(this, "onChange", e => {
       this.props.updateFilter(e.target.value);
-    }, this.onKeyDown = e => {
+    });
+
+    _defineProperty(this, "onKeyDown", e => {
       if (e.key === "Escape" && this.props.filter !== "") {
         // use preventDefault to override toggling the split-console which is
         // also bound to the ESC key
@@ -37,29 +44,29 @@ class OutlineFilter extends _react.Component {
         // https://github.com/firefox-devtools/debugger/pull/7308
         e.preventDefault();
       }
-    }, _temp;
+    });
   }
 
   render() {
-    const { focused } = this.state;
-    return _react2.default.createElement(
-      "div",
-      { className: "outline-filter" },
-      _react2.default.createElement(
-        "form",
-        null,
-        _react2.default.createElement("input", {
-          className: (0, _classnames2.default)("outline-filter-input", { focused }),
-          onFocus: () => this.setFocus(true),
-          onBlur: () => this.setFocus(false),
-          placeholder: L10N.getStr("outline.placeholder"),
-          value: this.props.filter,
-          type: "text",
-          onChange: this.onChange,
-          onKeyDown: this.onKeyDown
-        })
-      )
-    );
+    const {
+      focused
+    } = this.state;
+    return _react.default.createElement("div", {
+      className: "outline-filter"
+    }, _react.default.createElement("form", null, _react.default.createElement("input", {
+      className: (0, _classnames.default)("outline-filter-input", {
+        focused
+      }),
+      onFocus: () => this.setFocus(true),
+      onBlur: () => this.setFocus(false),
+      placeholder: L10N.getStr("outline.placeholder"),
+      value: this.props.filter,
+      type: "text",
+      onChange: this.onChange,
+      onKeyDown: this.onKeyDown
+    })));
   }
+
 }
+
 exports.default = OutlineFilter;

@@ -1,5 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set ft=javascript ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -41,7 +39,7 @@ const HELP_URL = "https://developer.mozilla.org/docs/Tools/Web_Console/Helpers";
 function evaluateExpression(expression) {
   return async ({ dispatch, services }) => {
     if (!expression) {
-      expression = services.getInputValue();
+      expression = services.getInputSelection() || services.getInputValue();
     }
     if (!expression) {
       return null;

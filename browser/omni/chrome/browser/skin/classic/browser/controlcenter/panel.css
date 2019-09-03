@@ -17,10 +17,15 @@
   fill: currentColor;
   --horizontal-padding: 2.1rem;
   --vertical-section-padding: 0.9em;
+  --height-offset: 0px;
 }
 
 #protections-popup[toast] {
   --popup-width: 32rem;
+}
+
+#protections-popup[infoMessageShowing] {
+  --height-offset: 260px;
 }
 
 /* This is used by screenshots tests to hide intermittently different
@@ -116,6 +121,7 @@
   margin-bottom: 0;
 }
 
+#identity-popup-permissions-header,
 .identity-popup-security-connection,
 #identity-popup-security-description {
   /* icon indent + 16px icon width + 6px description margin
@@ -137,6 +143,23 @@
 #identity-popup-permissions-content {
   padding-top: 1em;
   padding-bottom: 1em;
+}
+
+#identity-popup-permissions-header {
+  background-image: url(chrome://browser/skin/permissions.svg);
+  background-repeat: no-repeat;
+  -moz-context-properties: fill;
+  fill: currentColor;
+}
+
+#identity-popup-permissions-header:-moz-locale-dir(rtl) {
+  background-position-x: right;
+}
+
+#identity-popup-permissions-header,
+#identity-popup-permission-list {
+  /* 16px icon width + 12px margin */
+  padding-inline-start: 28px;
 }
 
 #protections-popup-content {
@@ -255,7 +278,9 @@
 #identity-popup-mainView-panel-header-span,
 #protections-popup-mainView-panel-header-span,
 #protections-popup-toast-panel-tp-on-desc,
-#protections-popup-toast-panel-tp-off-desc {
+#protections-popup-toast-panel-tp-off-desc,
+#protections-popup .panel-header > label > span,
+#identity-popup .panel-header > label > span {
   display: inline-block;
   text-align: center;
   overflow-wrap: break-word;
@@ -276,12 +301,18 @@
   -moz-outline-radius: var(--toolbarbutton-border-radius);
 }
 
+#protections-popup-info-button > image {
+  fill-opacity: 1;
+}
+
 #protections-popup-info-button:hover {
-  outline-color: var(--toolbarbutton-hover-background);
+  outline-color: rgba(12, 12, 13, 0.2);
+  background-color: rgba(12, 12, 13, 0.2);
 }
 
 #protections-popup-info-button:not(:hover)[checked] {
-  outline-color: var(--toolbarbutton-active-background);
+  outline-color: rgba(12, 12, 13, 0.3);
+  background-color: rgba(12, 12, 13, 0.3);
 }
 
 #identity-popup-permissions-content > description,
@@ -480,7 +511,7 @@ description#identity-popup-content-verifier,
 #protections-popup-socialblockView,
 #protections-popup-cookiesView,
 #protections-popup-trackersView {
-  max-height: 600px;
+  max-height: calc(600px + var(--height-offset));
 }
 
 #protections-popup-trackersView-list.empty {
@@ -509,6 +540,10 @@ description#identity-popup-content-verifier,
 .protections-popup-cookiesView-list-header {
   color: #737373;
   margin: 5px 0;
+}
+
+#protections-popup-cookiesView-list > .protections-popup-cookiesView-list-section:only-of-type > .protections-popup-cookiesView-list-header {
+  display: none;
 }
 
 :root[lwt-popup-brighttext] .protections-popup-cookiesView-list-header {
@@ -636,11 +671,11 @@ description#identity-popup-content-verifier,
 }
 
 #protections-popup-blocking-section-header,
-#protections-popup-not-blocking-section-header {
+#protections-popup-not-blocking-section-header,
+#protections-popup-not-found-section-header {
   margin: 0;
   padding: var(--vertical-section-padding) var(--horizontal-padding);
   color: #737373;
-  display: none;
 }
 
 :root[lwt-popup-brighttext] #protections-popup-no-trackers-found-description,
@@ -662,42 +697,12 @@ description#identity-popup-content-verifier,
  */
 
 #protections-popup-category-list {
-  display: grid;
   padding: 0;
   margin: 0;
 }
 
-#protections-popup-blocking-section-header {
-  grid-row: 1;
-}
-
-#protections-popup:not([hasException]) .protections-popup-category.blocked:not([hidden]) ~ #protections-popup-blocking-section-header,
-.protections-popup-category:not(.blocked):not([hidden]) ~ #protections-popup-not-blocking-section-header {
-  display: flex;
-}
-
-#protections-popup:not([hasException]) #protections-popup-category-tracking-protection.blocked {
-  grid-row: 2;
-}
-
-#protections-popup:not([hasException]) #protections-popup-category-socialblock.blocked {
-  grid-row: 3;
-}
-
-#protections-popup:not([hasException]) #protections-popup-category-cookies.blocked {
-  grid-row: 4;
-}
-
-#protections-popup:not([hasException]) #protections-popup-category-cryptominers.blocked {
-  grid-row: 5;
-}
-
-#protections-popup:not([hasException]) #protections-popup-category-fingerprinters.blocked {
-  grid-row: 6;
-}
-
-#protections-popup-not-blocking-section-header {
-  grid-row: 7;
+#protections-popup-no-trackers-found-description:not([hidden]) ~ #protections-popup-content {
+  display: none;
 }
 
 #protections-popup-not-blocking-section-description {
@@ -715,29 +720,18 @@ description#identity-popup-content-verifier,
   text-decoration: none;
 }
 
-#protections-popup:not([hasException]) #protections-popup-blocking-section-header:not([hidden]) + #protections-popup-not-blocking-section-header {
-  border-top: 1px solid var(--panel-separator-color);
-  margin-top: 10px;
+.protections-popup-category.notFound {
+  color: var(--panel-disabled-color);
+  fill: var(--panel-disabled-color);
 }
 
-#protections-popup-category-tracking-protection {
-  grid-row: 8;
+.protections-popup-category.notFound:hover {
+  background: none;
 }
 
-#protections-popup-category-socialblock {
-  grid-row: 9;
-}
-
-#protections-popup-category-cookies {
-  grid-row: 10;
-}
-
-#protections-popup-category-cryptominers {
-  grid-row: 11;
-}
-
-#protections-popup-category-fingerprinters {
-  grid-row: 12;
+/* Hide the arrow for not found items */
+.protections-popup-category.notFound::after {
+  display: none;
 }
 
 .tracking-protection-icon {
@@ -789,26 +783,12 @@ description#identity-popup-content-verifier,
 
 /* PERMISSIONS */
 
-#identity-popup-permissions-content {
-  padding-bottom: 1.5em;
-}
-
 @supports -moz-bool-pref("layout.css.emulate-moz-box-with-flex") {
   /* The extra padding-bottom is there to work around XUL flex (Bug 1368281).
      This rule and the 1.5em above can both be removed once we are only using CSS flex. */
   #identity-popup-permissions-content {
     padding-bottom: 1em;
   }
-}
-
-#identity-popup-permissions-headline {
-  color: #737373;
-  font-weight: 500;
-  margin-inline-start: 0;
-}
-
-:root[lwt-popup-brighttext] #identity-popup-permissions-headline {
-  color: #f9f9fa;
 }
 
 .protections-popup-category,
@@ -828,7 +808,7 @@ description#identity-popup-content-verifier,
 #identity-popup-permission-reload-hint,
 #identity-popup-permission-empty-hint,
 #identity-popup-permission-list:not(:empty) {
-  margin-top: 5px;
+  margin-top: 8px;
 }
 
 .identity-popup-permission-icon {
@@ -992,14 +972,18 @@ description#identity-popup-content-verifier,
   box-sizing: border-box;
   min-width: 26px;
   border-radius: 10px;
-  background-color: var(--arrowpanel-dimmed-even-further);
-  border: 1px solid transparent;
+  background-color: #f9f9fa;
+  border: 1px solid var(--panel-separator-color);
   margin-top: 4px;
   margin-bottom: 4px;
   margin-inline-start: 1px;
   padding: 2px;
   padding-inline-end: 0;
   transition: padding .2s ease;
+}
+
+:root[lwt-popup-brighttext] .protections-popup-tp-switch:not([enabled]) {
+  background-color: #737373;
 }
 
 .protections-popup-tp-switch::before {
@@ -1010,6 +994,8 @@ description#identity-popup-content-verifier,
   height: 10px;
   border-radius: 10px;
   background: white;
+  outline: 1px solid var(--panel-separator-color);
+  -moz-outline-radius: 11px;
 }
 
 .protections-popup-tp-switch[enabled] {
@@ -1036,6 +1022,8 @@ description#identity-popup-content-verifier,
 /* Protection popup footer categories */
 
 .protections-popup-footer-button {
+  /* Overwrite toolbarbutton styles */
+  -moz-appearance: none;
   min-height: 24px;
   padding-inline-start: var(--horizontal-padding);
   margin: 0;
@@ -1122,6 +1110,9 @@ description#identity-popup-content-verifier,
 }
 
 /* This overrides color: -moz-buttonhovertext from toolbarbutton.css */
-.protections-popup-category:hover {
+.protections-popup-category:hover,
+.protections-popup-category:hover:active,
+.protections-popup-footer-button:hover,
+.protections-popup-footer-button:hover:active {
   color: inherit;
 }

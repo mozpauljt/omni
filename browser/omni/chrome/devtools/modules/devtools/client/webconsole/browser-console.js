@@ -35,14 +35,18 @@ class BrowserConsole extends WebConsole {
    *        The window where the browser console UI is already loaded.
    * @param nsIDOMWindow chromeWindow
    *        The window of the browser console owner.
-   * @param Boolean fissionSupport
    */
-  constructor(target, iframeWindow, chromeWindow, fissionSupport = false) {
-    super(target, iframeWindow, chromeWindow, true, fissionSupport);
+  constructor(target, iframeWindow, chromeWindow) {
+    super(null, iframeWindow, chromeWindow, true);
 
+    this._browserConsoleTarget = target;
     this._telemetry = new Telemetry();
     this._bcInitializer = null;
     this._bcDestroyer = null;
+  }
+
+  get currentTarget() {
+    return this._browserConsoleTarget;
   }
 
   /**
@@ -58,18 +62,6 @@ class BrowserConsole extends WebConsole {
 
     // Only add the shutdown observer if we've opened a Browser Console window.
     ShutdownObserver.init();
-
-    const window = this.iframeWindow;
-
-    // Make sure that the closing of the Browser Console window destroys this
-    // instance.
-    window.addEventListener(
-      "unload",
-      () => {
-        this.destroy();
-      },
-      { once: true }
-    );
 
     // browserconsole is not connected with a toolbox so we pass -1 as the
     // toolbox session id.
@@ -96,7 +88,7 @@ class BrowserConsole extends WebConsole {
       this._telemetry.toolClosed("browserconsole", -1, this);
 
       await super.destroy();
-      await this.target.destroy();
+      await this.currentTarget.destroy();
       this.chromeWindow.close();
     })();
 

@@ -301,9 +301,14 @@ this.schema =
         },
         "Locked": {
           "type": "boolean"
+        },
+        "Cryptomining": {
+          "type": "boolean"
+        },
+        "Fingerprinting": {
+          "type": "boolean"
         }
-      },
-      "required": ["Value"]
+      }
     },
 
     "Extensions": {
@@ -501,12 +506,20 @@ this.schema =
       "type": "boolean"
     },
 
+    "OfferToSaveLoginsDefault": {
+      "type": "boolean"
+    },
+
     "OverrideFirstRunPage": {
       "type": "URLorEmpty"
     },
 
     "OverridePostUpdatePage": {
       "type": "URLorEmpty"
+    },
+
+    "PasswordManagerEnabled": {
+      "type": "boolean"
     },
 
     "Permissions": {

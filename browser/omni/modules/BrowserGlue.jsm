@@ -36,13 +36,6 @@ let ACTORS = {
         "MozDOMPointerLock:Entered": {},
         "MozDOMPointerLock:Exited": {},
       },
-      messages: [
-        "Browser:Reload",
-        "Browser:AppTab",
-        "Browser:HasSiblings",
-        "MixedContent:ReenableProtection",
-        "UpdateCharacterSet",
-      ],
     },
   },
 
@@ -61,17 +54,24 @@ let ACTORS = {
     allFrames: true,
   },
 
+  FormValidation: {
+    parent: {
+      moduleURI: "resource:///actors/FormValidationParent.jsm",
+    },
+
+    child: {
+      moduleURI: "resource:///actors/FormValidationChild.jsm",
+      events: {
+        MozInvalidForm: {},
+      },
+    },
+
+    allFrames: true,
+  },
+
   Plugin: {
     parent: {
       moduleURI: "resource:///actors/PluginParent.jsm",
-      messages: [
-        "PluginContent:ShowClickToPlayNotification",
-        "PluginContent:RemoveNotification",
-        "PluginContent:ShowPluginCrashedNotification",
-        "PluginContent:SubmitReport",
-        "PluginContent:LinkClickCallback",
-        "PluginContent:GetCrashData",
-      ],
     },
     child: {
       moduleURI: "resource:///actors/PluginChild.jsm",
@@ -83,11 +83,6 @@ let ACTORS = {
         PluginRemoved: { capture: true },
         HiddenPlugin: { capture: true },
       },
-
-      messages: [
-        "PluginParent:ActivatePlugins",
-        "PluginParent:Test:ClearCrashData",
-      ],
 
       observers: ["decoder-doctor-notification"],
     },
@@ -106,20 +101,6 @@ let ACTORS = {
   SwitchDocumentDirection: {
     child: {
       moduleURI: "resource:///actors/SwitchDocumentDirectionChild.jsm",
-
-      messages: ["SwitchDocumentDirection"],
-    },
-
-    allFrames: true,
-  },
-
-  SubframeCrash: {
-    parent: {
-      moduleURI: "resource:///actors/SubframeCrashParent.jsm",
-    },
-
-    child: {
-      moduleURI: "resource:///actors/SubframeCrashChild.jsm",
     },
 
     allFrames: true,
@@ -135,10 +116,11 @@ let LEGACY_ACTORS = {
         AboutLoginsCopyLoginDetail: { wantUntrusted: true },
         AboutLoginsCreateLogin: { wantUntrusted: true },
         AboutLoginsDeleteLogin: { wantUntrusted: true },
+        AboutLoginsDismissBreachAlert: { wantUntrusted: true },
+        AboutLoginsHideFooter: { wantUntrusted: true },
         AboutLoginsImport: { wantUntrusted: true },
         AboutLoginsInit: { wantUntrusted: true },
-        AboutLoginsOpenFAQ: { wantUntrusted: true },
-        AboutLoginsOpenFeedback: { wantUntrusted: true },
+        AboutLoginsGetHelp: { wantUntrusted: true },
         AboutLoginsOpenMobileAndroid: { wantUntrusted: true },
         AboutLoginsOpenMobileIos: { wantUntrusted: true },
         AboutLoginsOpenPreferences: { wantUntrusted: true },
@@ -150,11 +132,13 @@ let LEGACY_ACTORS = {
       },
       messages: [
         "AboutLogins:AllLogins",
+        "AboutLogins:LocalizeBadges",
         "AboutLogins:LoginAdded",
         "AboutLogins:LoginModified",
         "AboutLogins:LoginRemoved",
         "AboutLogins:MasterPasswordResponse",
         "AboutLogins:SendFavicons",
+        "AboutLogins:ShowLoginItemError",
         "AboutLogins:SyncState",
         "AboutLogins:UpdateBreaches",
       ],
@@ -238,15 +222,6 @@ let LEGACY_ACTORS = {
         "MozDOMFullscreen:Exited": {},
       },
       messages: ["DOMFullscreen:Entered", "DOMFullscreen:CleanUp"],
-    },
-  },
-
-  FormValidation: {
-    child: {
-      module: "resource:///actors/FormValidationChild.jsm",
-      events: {
-        MozInvalidForm: {},
-      },
     },
   },
 
@@ -504,10 +479,12 @@ XPCOMUtils.defineLazyModuleGetters(this, {
   Corroborate: "resource://gre/modules/Corroborate.jsm",
   Discovery: "resource:///modules/Discovery.jsm",
   ExtensionsUI: "resource:///modules/ExtensionsUI.jsm",
+  FirefoxMonitor: "resource:///modules/FirefoxMonitor.jsm",
   FxAccounts: "resource://gre/modules/FxAccounts.jsm",
   HomePage: "resource:///modules/HomePage.jsm",
   HybridContentTelemetry: "resource://gre/modules/HybridContentTelemetry.jsm",
   Integration: "resource://gre/modules/Integration.jsm",
+  LoginBreaches: "resource:///modules/LoginBreaches.jsm",
   LiveBookmarkMigrator: "resource:///modules/LiveBookmarkMigrator.jsm",
   NewTabUtils: "resource://gre/modules/NewTabUtils.jsm",
   Normandy: "resource://normandy/Normandy.jsm",
@@ -523,6 +500,7 @@ XPCOMUtils.defineLazyModuleGetters(this, {
   PluralForm: "resource://gre/modules/PluralForm.jsm",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.jsm",
   ProcessHangMonitor: "resource:///modules/ProcessHangMonitor.jsm",
+  PublicSuffixList: "resource://gre/modules/netwerk-dns/PublicSuffixList.jsm",
   RemoteSettings: "resource://services-settings/remote-settings.js",
   RemoteSecuritySettings:
     "resource://gre/modules/psm/RemoteSecuritySettings.jsm",
@@ -547,15 +525,11 @@ XPCOMUtils.defineLazyModuleGetters(this, {
   AboutLoginsParent: "resource:///modules/AboutLoginsParent.jsm",
   AsyncPrefs: "resource://gre/modules/AsyncPrefs.jsm",
   ContentClick: "resource:///modules/ContentClick.jsm",
-  FormValidationHandler: "resource:///modules/FormValidationHandler.jsm",
   LoginManagerParent: "resource://gre/modules/LoginManagerParent.jsm",
   PluginManager: "resource:///actors/PluginParent.jsm",
   PictureInPicture: "resource://gre/modules/PictureInPicture.jsm",
   ReaderParent: "resource:///modules/ReaderParent.jsm",
 });
-
-/* global ContentPrefServiceParent:false, ContentSearch:false,
-          UpdateListener:false, webrtcUI:false */
 
 /**
  * IF YOU ADD OR REMOVE FROM THIS LIST, PLEASE UPDATE THE LIST ABOVE AS WELL.
@@ -615,6 +589,8 @@ const listeners = {
     "update-error": ["UpdateListener"],
     "gmp-plugin-crash": ["PluginManager"],
     "plugin-crashed": ["PluginManager"],
+    "passwordmgr-storage-changed": ["LoginManagerParent"],
+    "passwordmgr-autosaved-login-merged": ["LoginManagerParent"],
   },
 
   ppmm: {
@@ -636,10 +612,12 @@ const listeners = {
   mm: {
     "AboutLogins:CreateLogin": ["AboutLoginsParent"],
     "AboutLogins:DeleteLogin": ["AboutLoginsParent"],
+    "AboutLogins:DismissBreachAlert": ["AboutLoginsParent"],
+    "AboutLogins:HideFooter": ["AboutLoginsParent"],
     "AboutLogins:Import": ["AboutLoginsParent"],
     "AboutLogins:MasterPasswordRequest": ["AboutLoginsParent"],
     "AboutLogins:OpenFAQ": ["AboutLoginsParent"],
-    "AboutLogins:OpenFeedback": ["AboutLoginsParent"],
+    "AboutLogins:GetHelp": ["AboutLoginsParent"],
     "AboutLogins:OpenPreferences": ["AboutLoginsParent"],
     "AboutLogins:OpenMobileAndroid": ["AboutLoginsParent"],
     "AboutLogins:OpenMobileIos": ["AboutLoginsParent"],
@@ -650,8 +628,6 @@ const listeners = {
     "AboutLogins:UpdateLogin": ["AboutLoginsParent"],
     "Content:Click": ["ContentClick"],
     ContentSearch: ["ContentSearch"],
-    "FormValidation:ShowPopup": ["FormValidationHandler"],
-    "FormValidation:HidePopup": ["FormValidationHandler"],
     "PictureInPicture:Request": ["PictureInPicture"],
     "PictureInPicture:Close": ["PictureInPicture"],
     "PictureInPicture:Playing": ["PictureInPicture"],
@@ -981,6 +957,8 @@ BrowserGlue.prototype = {
               "migrateMatchBucketsPrefForUI66-done"
             );
           });
+        } else if (data == "add-breaches-sync-handler") {
+          this._addBreachesSyncHandler();
         }
         break;
       case "initial-migration-will-import-default-bookmarks":
@@ -1754,6 +1732,13 @@ BrowserGlue.prototype = {
       recordIdentityPopupEvents
     );
 
+    Services.telemetry.setEventRecordingEnabled(
+      "security.ui.protectionspopup",
+      Services.prefs.getBoolPref(
+        "security.protectionspopup.recordEventTelemetry"
+      )
+    );
+
     let tpEnabled = Services.prefs.getBoolPref(
       "privacy.trackingprotection.enabled"
     );
@@ -1979,16 +1964,14 @@ BrowserGlue.prototype = {
     this._monitorScreenshotsPref();
     this._monitorWebcompatReporterPref();
 
-    if (Services.prefs.getBoolPref("corroborator.enabled", true)) {
-      Corroborate.init().catch(Cu.reportError);
-    }
-
     let pService = Cc["@mozilla.org/toolkit/profile-service;1"].getService(
       Ci.nsIToolkitProfileService
     );
     if (pService.createdAlternateProfile) {
       this._showNewInstallModal();
     }
+
+    FirefoxMonitor.init();
   },
 
   /**
@@ -2051,6 +2034,11 @@ BrowserGlue.prototype = {
         Cu.reportError(ex);
       }
     }, 3000);
+
+    // Add breach alerts pref observer reasonably early so the pref flip works
+    Services.tm.idleDispatchToMainThread(() => {
+      this._addBreachAlertsPrefObserver();
+    });
 
     // It's important that SafeBrowsing is initialized reasonably
     // early, so we use a maximum timeout for it.
@@ -2135,6 +2123,12 @@ BrowserGlue.prototype = {
       TabUnloader.init();
     });
 
+    Services.tm.idleDispatchToMainThread(() => {
+      if (Services.prefs.getBoolPref("corroborator.enabled", false)) {
+        Corroborate.init().catch(Cu.reportError);
+      }
+    });
+
     // Marionette needs to be initialized as very last step
     Services.tm.idleDispatchToMainThread(() => {
       Services.obs.notifyObservers(null, "marionette-startup-requested");
@@ -2183,11 +2177,46 @@ BrowserGlue.prototype = {
 
     Services.tm.idleDispatchToMainThread(() => {
       RemoteSettings.init();
+      this._addBreachesSyncHandler();
+    });
+
+    Services.tm.idleDispatchToMainThread(() => {
+      PublicSuffixList.init();
     });
 
     Services.tm.idleDispatchToMainThread(() => {
       RemoteSecuritySettings.init();
     });
+  },
+
+  _addBreachesSyncHandler() {
+    if (
+      Services.prefs.getBoolPref(
+        "signon.management.page.breach-alerts.enabled",
+        false
+      )
+    ) {
+      RemoteSettings(LoginBreaches.REMOTE_SETTINGS_COLLECTION).on(
+        "sync",
+        async event => {
+          await LoginBreaches.update(event.data.current);
+        }
+      );
+    }
+  },
+
+  _addBreachAlertsPrefObserver() {
+    const BREACH_ALERTS_PREF = "signon.management.page.breach-alerts.enabled";
+    const clearVulnerablePasswordsIfBreachAlertsDisabled = async function() {
+      if (!Services.prefs.getBoolPref(BREACH_ALERTS_PREF)) {
+        await LoginBreaches.clearAllPotentiallyVulnerablePasswords();
+      }
+    };
+    clearVulnerablePasswordsIfBreachAlertsDisabled();
+    Services.prefs.addObserver(
+      BREACH_ALERTS_PREF,
+      clearVulnerablePasswordsIfBreachAlertsDisabled
+    );
   },
 
   _onQuitRequest: function BG__onQuitRequest(aCancelQuit, aQuitType) {
@@ -2699,7 +2728,7 @@ BrowserGlue.prototype = {
   _migrateUI: function BG__migrateUI() {
     // Use an increasing number to keep track of the current migration state.
     // Completely unrelated to the current Firefox release number.
-    const UI_VERSION = 86;
+    const UI_VERSION = 87;
     const BROWSER_DOCURL = AppConstants.BROWSER_CHROME_URL;
 
     let currentUIVersion;
@@ -3080,16 +3109,11 @@ BrowserGlue.prototype = {
       flashPermissions.forEach(p => Services.perms.removePermission(p));
     }
 
-    if (currentUIVersion < 85) {
-      const TRACKING_TABLE_PREF = "urlclassifier.trackingTable";
-      const CUSTOM_BLOCKING_PREF =
-        "browser.contentblocking.customBlockList.preferences.ui.enabled";
-      // Check if user has set custom tables pref, and show custom block list UI
-      // in the about:preferences#privacy custom panel.
-      if (Services.prefs.prefHasUserValue(TRACKING_TABLE_PREF)) {
-        Services.prefs.setBoolPref(CUSTOM_BLOCKING_PREF, true);
-      }
-    }
+    // currentUIVersion < 85 is missing due to the following:
+    // Origianlly, Bug #1568900 added currentUIVersion 85 but was targeting FF70 release.
+    // In between it landing in FF70, Bug #1562601 (currentUIVersion 86) landed and
+    // was uplifted to Beta. To make sure the migration doesn't get skipped, the
+    // code block that was at 85 has been moved/bumped to currentUIVersion 87.
 
     if (currentUIVersion < 86) {
       // If the user has set "media.autoplay.allow-muted" to false
@@ -3107,6 +3131,17 @@ BrowserGlue.prototype = {
         );
       }
       Services.prefs.clearUserPref("media.autoplay.allow-muted");
+    }
+
+    if (currentUIVersion < 87) {
+      const TRACKING_TABLE_PREF = "urlclassifier.trackingTable";
+      const CUSTOM_BLOCKING_PREF =
+        "browser.contentblocking.customBlockList.preferences.ui.enabled";
+      // Check if user has set custom tables pref, and show custom block list UI
+      // in the about:preferences#privacy custom panel.
+      if (Services.prefs.prefHasUserValue(TRACKING_TABLE_PREF)) {
+        Services.prefs.setBoolPref(CUSTOM_BLOCKING_PREF, true);
+      }
     }
 
     // Update the migration version.

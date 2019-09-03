@@ -9,6 +9,11 @@ exports.endTruncateStr = endTruncateStr;
 exports.waitForMs = waitForMs;
 exports.downloadFile = downloadFile;
 
+var _devtoolsSharedUtils = require("devtools/shared/DevToolsUtils");
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 /**
  * Utils for utils, by utils
@@ -22,14 +27,11 @@ exports.downloadFile = downloadFile;
 function handleError(err) {
   console.log("ERROR: ", err);
 }
-
 /**
  * @memberof utils/utils
  * @static
  */
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+
 
 function promisify(context, method, ...args) {
   return new Promise((resolve, reject) => {
@@ -43,15 +45,17 @@ function promisify(context, method, ...args) {
     method.apply(context, args);
   });
 }
-
 /**
  * @memberof utils/utils
  * @static
  */
+
+
 function endTruncateStr(str, size) {
   if (str.length > size) {
     return `…${str.slice(str.length - size)}`;
   }
+
   return str;
 }
 
@@ -64,21 +68,6 @@ function downloadFile(content, fileName) {
     return;
   }
 
-  const { body } = document;
-  if (!body) {
-    return;
-  }
-
-  const data = content.value;
-  const a = document.createElement("a");
-  const href = window.URL.createObjectURL(new Blob([data], { type: "text/javascript" }));
-
-  body.appendChild(a);
-  a.className = "download-anchor";
-  a.href = href;
-  a.setAttribute("download", fileName);
-  a.click();
-  body.removeChild(a);
-
-  window.URL.revokeObjectURL(href);
+  const data = new TextEncoder().encode(content.value);
+  (0, _devtoolsSharedUtils.saveAs)(window, data, fileName);
 }

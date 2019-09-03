@@ -3,7 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.MODIFIERS = undefined;
 exports.parseQuickOpenQuery = parseQuickOpenQuery;
 exports.parseLineColumn = parseLineColumn;
 exports.formatSourcesForList = formatSourcesForList;
@@ -11,24 +10,25 @@ exports.formatSymbol = formatSymbol;
 exports.formatSymbols = formatSymbols;
 exports.formatShortcutResults = formatShortcutResults;
 exports.formatSources = formatSources;
+exports.MODIFIERS = void 0;
 
-var _classnames = require("devtools/client/debugger/dist/vendors").vendored["classnames"];
-
-var _classnames2 = _interopRequireDefault(_classnames);
+var _classnames = _interopRequireDefault(require("devtools/client/debugger/dist/vendors").vendored["classnames"]);
 
 loader.lazyRequireGetter(this, "_utils", "devtools/client/debugger/src/utils/utils");
 loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-const MODIFIERS = exports.MODIFIERS = {
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+const MODIFIERS = {
   "@": "functions",
   "#": "variables",
   ":": "goto",
   "?": "shortcuts"
-}; /* This Source Code Form is subject to the terms of the Mozilla Public
-    * License, v. 2.0. If a copy of the MPL was not distributed with this
-    * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+};
+exports.MODIFIERS = MODIFIERS;
 
 function parseQuickOpenQuery(query) {
   const modifierPattern = /^@|#|:|\?$/;
@@ -52,10 +52,13 @@ function parseLineColumn(query) {
   const [, line, column] = query.split(":");
   const lineNumber = parseInt(line, 10);
   const columnNumber = parseInt(column, 10);
+
   if (!isNaN(lineNumber)) {
     return {
       line: lineNumber,
-      ...(!isNaN(columnNumber) ? { column: columnNumber } : null)
+      ...(!isNaN(columnNumber) ? {
+        column: columnNumber
+      } : null)
     };
   }
 }
@@ -69,7 +72,7 @@ function formatSourcesForList(source, tabUrls) {
     value,
     title,
     subtitle,
-    icon: tabUrls.has(source.url) ? "tab result-item-icon" : (0, _classnames2.default)((0, _source.getSourceClassnames)(source), "result-item-icon"),
+    icon: tabUrls.has(source.url) ? "tab result-item-icon" : (0, _classnames.default)((0, _source.getSourceClassnames)(source), "result-item-icon"),
     id: source.id,
     url: source.url
   };
@@ -87,11 +90,14 @@ function formatSymbol(symbol) {
 
 function formatSymbols(symbols) {
   if (!symbols || symbols.loading) {
-    return { functions: [] };
+    return {
+      functions: []
+    };
   }
 
-  const { functions } = symbols;
-
+  const {
+    functions
+  } = symbols;
   return {
     functions: functions.map(formatSymbol)
   };

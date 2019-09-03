@@ -8,10 +8,10 @@ exports.isSelectedFrameVisible = isSelectedFrameVisible;
 var _devtoolsSourceMap = require("devtools/client/shared/source-map/index.js");
 
 loader.lazyRequireGetter(this, "_", "devtools/client/debugger/src/selectors/index");
+
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-
 function getGeneratedId(sourceId) {
   if ((0, _devtoolsSourceMap.isOriginalId)(sourceId)) {
     return (0, _devtoolsSourceMap.originalToGeneratedId)(sourceId);
@@ -19,11 +19,12 @@ function getGeneratedId(sourceId) {
 
   return sourceId;
 }
-
 /*
  * Checks to if the selected frame's source is currently
  * selected.
  */
+
+
 function isSelectedFrameVisible(state) {
   const thread = (0, _.getCurrentThread)(state);
   const selectedLocation = (0, _.getSelectedLocation)(state);

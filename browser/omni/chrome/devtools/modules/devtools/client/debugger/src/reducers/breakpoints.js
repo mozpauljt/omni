@@ -13,6 +13,7 @@ exports.getBreakpointsForSource = getBreakpointsForSource;
 exports.getBreakpointForLocation = getBreakpointForLocation;
 exports.getHiddenBreakpoint = getHiddenBreakpoint;
 exports.hasLogpoint = hasLogpoint;
+exports.default = void 0;
 
 var _devtoolsSourceMap = require("devtools/client/shared/source-map/index.js");
 
@@ -20,6 +21,7 @@ var _lodash = require("devtools/client/shared/vendor/lodash");
 
 loader.lazyRequireGetter(this, "_breakpoint", "devtools/client/debugger/src/utils/breakpoint/index");
 loader.lazyRequireGetter(this, "_breakpoints", "devtools/client/debugger/src/selectors/breakpoints");
+
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
@@ -28,7 +30,7 @@ loader.lazyRequireGetter(this, "_breakpoints", "devtools/client/debugger/src/sel
  * Breakpoints reducer
  * @module reducers/breakpoints
  */
-
+// eslint-disable-next-line max-len
 function initialBreakpointsState(xhrBreakpoints = []) {
   return {
     breakpoints: {},
@@ -37,9 +39,6 @@ function initialBreakpointsState(xhrBreakpoints = []) {
   };
 }
 
-// eslint-disable-next-line max-len
-
-
 function update(state = initialBreakpointsState(), action) {
   switch (action.type) {
     case "SET_BREAKPOINT":
@@ -47,6 +46,7 @@ function update(state = initialBreakpointsState(), action) {
         if (action.status === "start") {
           return setBreakpoint(state, action);
         }
+
         return state;
       }
 
@@ -55,6 +55,7 @@ function update(state = initialBreakpointsState(), action) {
         if (action.status === "start") {
           return removeBreakpoint(state, action);
         }
+
         return state;
       }
 
@@ -93,22 +94,26 @@ function update(state = initialBreakpointsState(), action) {
 }
 
 function addXHRBreakpoint(state, action) {
-  const { xhrBreakpoints } = state;
-  const { breakpoint } = action;
-  const { path, method } = breakpoint;
-
+  const {
+    xhrBreakpoints
+  } = state;
+  const {
+    breakpoint
+  } = action;
+  const {
+    path,
+    method
+  } = breakpoint;
   const existingBreakpointIndex = state.xhrBreakpoints.findIndex(bp => bp.path === path && bp.method === method);
 
   if (existingBreakpointIndex === -1) {
-    return {
-      ...state,
+    return { ...state,
       xhrBreakpoints: [...xhrBreakpoints, breakpoint]
     };
   } else if (xhrBreakpoints[existingBreakpointIndex] !== breakpoint) {
     const newXhrBreakpoints = [...xhrBreakpoints];
     newXhrBreakpoints[existingBreakpointIndex] = breakpoint;
-    return {
-      ...state,
+    return { ...state,
       xhrBreakpoints: newXhrBreakpoints
     };
   }
@@ -117,49 +122,66 @@ function addXHRBreakpoint(state, action) {
 }
 
 function removeXHRBreakpoint(state, action) {
-  const { breakpoint } = action;
-  const { xhrBreakpoints } = state;
+  const {
+    breakpoint
+  } = action;
+  const {
+    xhrBreakpoints
+  } = state;
 
   if (action.status === "start") {
     return state;
   }
 
-  return {
-    ...state,
+  return { ...state,
     xhrBreakpoints: xhrBreakpoints.filter(bp => !(0, _lodash.isEqual)(bp, breakpoint))
   };
 }
 
 function updateXHRBreakpoint(state, action) {
-  const { breakpoint, index } = action;
-  const { xhrBreakpoints } = state;
+  const {
+    breakpoint,
+    index
+  } = action;
+  const {
+    xhrBreakpoints
+  } = state;
   const newXhrBreakpoints = [...xhrBreakpoints];
   newXhrBreakpoints[index] = breakpoint;
-  return {
-    ...state,
+  return { ...state,
     xhrBreakpoints: newXhrBreakpoints
   };
 }
 
-function setBreakpoint(state, { breakpoint }) {
+function setBreakpoint(state, {
+  breakpoint
+}) {
   const id = (0, _breakpoint.makeBreakpointId)(breakpoint.location);
-  const breakpoints = { ...state.breakpoints, [id]: breakpoint };
-  return { ...state, breakpoints };
+  const breakpoints = { ...state.breakpoints,
+    [id]: breakpoint
+  };
+  return { ...state,
+    breakpoints
+  };
 }
 
-function removeBreakpoint(state, { location }) {
+function removeBreakpoint(state, {
+  location
+}) {
   const id = (0, _breakpoint.makeBreakpointId)(location);
-  const breakpoints = { ...state.breakpoints };
+  const breakpoints = { ...state.breakpoints
+  };
   delete breakpoints[id];
-  return { ...state, breakpoints };
+  return { ...state,
+    breakpoints
+  };
 }
 
 function isMatchingLocation(location1, location2) {
   return (0, _lodash.isEqual)(location1, location2);
-}
-
-// Selectors
+} // Selectors
 // TODO: these functions should be moved out of the reducer
+
 
 function getBreakpointsMap(state) {
   return state.breakpoints.breakpoints;
@@ -222,4 +244,5 @@ function hasLogpoint(state, location) {
   return breakpoint && breakpoint.options.logValue;
 }
 
-exports.default = update;
+var _default = update;
+exports.default = _default;

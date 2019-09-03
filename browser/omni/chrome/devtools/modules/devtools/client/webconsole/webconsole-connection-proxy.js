@@ -20,22 +20,20 @@ class WebConsoleConnectionProxy {
    * @constructor
    * @param {WebConsoleUI} webConsoleUI
    *        A WebConsoleUI instance that owns this connection proxy.
-   * @param RemoteTarget target
+   * @param {RemoteTarget} target
    *        The target that the console will connect to.
+   * @param {Boolean} needContentProcessMessagesListener
+   *        Set to true to specifically add a ContentProcessMessages listener. This is
+   *        needed for non-fission Browser Console for example.
    */
-  constructor(webConsoleUI, target, isBrowserConsole, fissionSupport) {
+  constructor(
+    webConsoleUI,
+    target,
+    needContentProcessMessagesListener = false
+  ) {
     this.webConsoleUI = webConsoleUI;
     this.target = target;
-    this.isBrowserConsole = isBrowserConsole;
-    this.fissionSupport = fissionSupport;
-
-    /**
-     * The DebuggerClient object.
-     *
-     * @see DebuggerClient
-     * @type object
-     */
-    this.client = target.client;
+    this.needContentProcessMessagesListener = needContentProcessMessagesListener;
 
     this._connecter = null;
 
@@ -68,6 +66,7 @@ class WebConsoleConnectionProxy {
     this.target.on("navigate", this._onTabNavigated);
 
     const connection = (async () => {
+      this.client = this.target.client;
       this.webConsoleClient = await this.target.getFront("console");
       this._addWebConsoleClientEventListeners();
       await this._attachConsole();
@@ -124,7 +123,7 @@ class WebConsoleConnectionProxy {
     // when we open the Browser Console or Toolbox without fission support. If Fission
     // is enabled, we don't use the ContentProcessMessages listener, but attach to the
     // content processes directly.
-    if (this.target.chrome && !this.target.isAddon && !this.fissionSupport) {
+    if (this.needContentProcessMessagesListener) {
       listeners.push("ContentProcessMessages");
     }
     return this.webConsoleClient.startListeners(listeners);
@@ -355,15 +354,6 @@ class WebConsoleConnectionProxy {
     this.webConsoleUI.wrapper.dispatchMessageUpdate(networkInfo, response);
   }
 
-  dispatchRequestUpdate(id, data) {
-    // Some request might try to update while we are closing the toolbox.
-    if (!this.webConsoleUI) {
-      return Promise.resolve();
-    }
-
-    return this.webConsoleUI.wrapper.dispatchRequestUpdate(id, data);
-  }
-
   /**
    * Release an object actor.
    *
@@ -393,7 +383,6 @@ class WebConsoleConnectionProxy {
 
     this.client = null;
     this.webConsoleClient = null;
-    this.target = null;
     this.webConsoleUI = null;
   }
 }

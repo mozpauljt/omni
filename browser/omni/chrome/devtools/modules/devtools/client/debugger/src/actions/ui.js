@@ -8,6 +8,7 @@ exports.closeActiveSearch = closeActiveSearch;
 exports.setActiveSearch = setActiveSearch;
 exports.updateActiveFileSearch = updateActiveFileSearch;
 exports.toggleFrameworkGrouping = toggleFrameworkGrouping;
+exports.toggleInlinePreview = toggleInlinePreview;
 exports.showSource = showSource;
 exports.togglePaneCollapse = togglePaneCollapse;
 exports.highlightLineRange = highlightLineRange;
@@ -26,12 +27,15 @@ loader.lazyRequireGetter(this, "_editor", "devtools/client/debugger/src/utils/ed
 loader.lazyRequireGetter(this, "_fileSearch", "devtools/client/debugger/src/actions/file-search");
 loader.lazyRequireGetter(this, "_clipboard", "devtools/client/debugger/src/utils/clipboard");
 loader.lazyRequireGetter(this, "_asyncValue", "devtools/client/debugger/src/utils/async-value");
+
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-
 function setPrimaryPaneTab(tabName) {
-  return { type: "SET_PRIMARY_PANE_TAB", tabName };
+  return {
+    type: "SET_PRIMARY_PANE_TAB",
+    tabName
+  };
 }
 
 function closeActiveSearch() {
@@ -42,14 +46,20 @@ function closeActiveSearch() {
 }
 
 function setActiveSearch(activeSearch) {
-  return ({ dispatch, getState }) => {
+  return ({
+    dispatch,
+    getState
+  }) => {
     const activeSearchState = (0, _selectors.getActiveSearch)(getState());
+
     if (activeSearchState === activeSearch) {
       return;
     }
 
     if ((0, _selectors.getQuickOpenEnabled)(getState())) {
-      dispatch({ type: "CLOSE_QUICK_OPEN" });
+      dispatch({
+        type: "CLOSE_QUICK_OPEN"
+      });
     }
 
     dispatch({
@@ -60,9 +70,13 @@ function setActiveSearch(activeSearch) {
 }
 
 function updateActiveFileSearch(cx) {
-  return ({ dispatch, getState }) => {
+  return ({
+    dispatch,
+    getState
+  }) => {
     const isFileSearchOpen = (0, _selectors.getActiveSearch)(getState()) === "file";
     const fileSearchQuery = (0, _selectors.getFileSearchQuery)(getState());
+
     if (isFileSearchOpen && fileSearchQuery) {
       const editor = (0, _editor.getEditor)();
       dispatch((0, _fileSearch.searchContents)(cx, fileSearchQuery, editor, false));
@@ -71,7 +85,10 @@ function updateActiveFileSearch(cx) {
 }
 
 function toggleFrameworkGrouping(toggleValue) {
-  return ({ dispatch, getState }) => {
+  return ({
+    dispatch,
+    getState
+  }) => {
     dispatch({
       type: "TOGGLE_FRAMEWORK_GROUPING",
       value: toggleValue
@@ -79,9 +96,25 @@ function toggleFrameworkGrouping(toggleValue) {
   };
 }
 
+function toggleInlinePreview(toggleValue) {
+  return ({
+    dispatch,
+    getState
+  }) => {
+    dispatch({
+      type: "TOGGLE_INLINE_PREVIEW",
+      value: toggleValue
+    });
+  };
+}
+
 function showSource(cx, sourceId) {
-  return ({ dispatch, getState }) => {
+  return ({
+    dispatch,
+    getState
+  }) => {
     const source = (0, _selectors.getSource)(getState(), sourceId);
+
     if (!source) {
       return;
     }
@@ -95,16 +128,25 @@ function showSource(cx, sourceId) {
     }
 
     dispatch(setPrimaryPaneTab("sources"));
-
-    dispatch({ type: "SHOW_SOURCE", source: null });
+    dispatch({
+      type: "SHOW_SOURCE",
+      source: null
+    });
     dispatch((0, _select.selectSource)(cx, source.id));
-    dispatch({ type: "SHOW_SOURCE", source });
+    dispatch({
+      type: "SHOW_SOURCE",
+      source
+    });
   };
 }
 
 function togglePaneCollapse(position, paneCollapsed) {
-  return ({ dispatch, getState }) => {
+  return ({
+    dispatch,
+    getState
+  }) => {
     const prevPaneCollapse = (0, _selectors.getPaneCollapse)(getState(), position);
+
     if (prevPaneCollapse === paneCollapsed) {
       return;
     }
@@ -116,11 +158,12 @@ function togglePaneCollapse(position, paneCollapsed) {
     });
   };
 }
-
 /**
  * @memberof actions/sources
  * @static
  */
+
+
 function highlightLineRange(location) {
   return {
     type: "HIGHLIGHT_LINES",
@@ -129,16 +172,19 @@ function highlightLineRange(location) {
 }
 
 function flashLineRange(location) {
-  return ({ dispatch }) => {
+  return ({
+    dispatch
+  }) => {
     dispatch(highlightLineRange(location));
     setTimeout(() => dispatch(clearHighlightLineRange()), 200);
   };
 }
-
 /**
  * @memberof actions/sources
  * @static
  */
+
+
 function clearHighlightLineRange() {
   return {
     type: "CLEAR_HIGHLIGHT_LINES"
@@ -172,17 +218,23 @@ function clearProjectDirectoryRoot(cx) {
 }
 
 function setProjectDirectoryRoot(cx, newRoot) {
-  return ({ dispatch, getState }) => {
+  return ({
+    dispatch,
+    getState
+  }) => {
     // Remove the thread actor ID from the root path
     const threadActor = (0, _selectors.startsWithThreadActor)(getState(), newRoot);
+
     if (threadActor) {
       newRoot = newRoot.slice(threadActor.length + 1);
     }
 
     const curRoot = (0, _selectors.getProjectDirectoryRoot)(getState());
+
     if (newRoot && curRoot) {
       const newRootArr = newRoot.replace(/\/+/g, "/").split("/");
       const curRootArr = curRoot.replace(/^\//, "").replace(/\/+/g, "/").split("/");
+
       if (newRootArr[0] !== curRootArr[0]) {
         newRootArr.splice(0, 2);
         newRoot = `${curRoot}/${newRootArr.join("/")}`;
@@ -205,12 +257,19 @@ function updateViewport() {
 }
 
 function setOrientation(orientation) {
-  return { type: "SET_ORIENTATION", orientation };
+  return {
+    type: "SET_ORIENTATION",
+    orientation
+  };
 }
 
 function copyToClipboard(source) {
-  return ({ dispatch, getState }) => {
+  return ({
+    dispatch,
+    getState
+  }) => {
     const content = (0, _selectors.getSourceContent)(getState(), source.id);
+
     if (content && (0, _asyncValue.isFulfilled)(content) && content.value.type === "text") {
       (0, _clipboard.copyToTheClipboard)(content.value.value);
     }

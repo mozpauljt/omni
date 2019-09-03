@@ -29,6 +29,12 @@ loader.lazyRequireGetter(
   "devtools/shared/fronts/targets/content-process",
   true
 );
+loader.lazyRequireGetter(
+  this,
+  "LocalTabTargetFront",
+  "devtools/shared/fronts/targets/local-tab",
+  true
+);
 
 class RootFront extends FrontClassWithSpec(rootSpec) {
   constructor(client, form) {
@@ -107,6 +113,9 @@ class RootFront extends FrontClassWithSpec(rootSpec) {
     };
 
     registrations.forEach(front => {
+      const { activeWorker, waitingWorker, installingWorker } = front;
+      const newestWorker = activeWorker || waitingWorker || installingWorker;
+
       // All the information is simply mirrored from the registration front.
       // However since registering workers will fetch similar information from the worker
       // target front and will not have a service worker registration front, consumers
@@ -120,6 +129,7 @@ class RootFront extends FrontClassWithSpec(rootSpec) {
         registrationFront: front,
         scope: front.scope,
         url: front.url,
+        newestWorkerId: newestWorker && newestWorker.id,
       });
     });
 
@@ -132,9 +142,25 @@ class RootFront extends FrontClassWithSpec(rootSpec) {
       };
       switch (front.type) {
         case Ci.nsIWorkerDebugger.TYPE_SERVICE:
-          const registration = result.service.find(
-            r => r.scope === front.scope
-          );
+          const registration = result.service.find(r => {
+            /**
+             * Older servers will not define `ServiceWorkerFront.id` (the value
+             * of `r.newestWorkerId`), and a `ServiceWorkerFront`'s ID will only
+             * match its corresponding WorkerTargetFront's ID if their
+             * underlying actors are "connected" - this is only guaranteed with
+             * parent-intercept mode. The `if` statement is for backward
+             * compatibility and can be removed when the release channel is
+             * >= FF69 _and_ parent-intercept is stable (which definitely won't
+             * happen when the release channel is < FF69).
+             */
+            const { isParentInterceptEnabled } = r.registrationFront.traits;
+            if (!r.newestWorkerId || !isParentInterceptEnabled) {
+              return r.scope === front.scope;
+            }
+
+            return r.newestWorkerId === front.id;
+          });
+
           if (registration) {
             // XXX: Race, sometimes a ServiceWorkerRegistrationInfo doesn't
             // have a scriptSpec, but its associated WorkerDebugger does.
@@ -300,7 +326,29 @@ class RootFront extends FrontClassWithSpec(rootSpec) {
       }
     }
 
-    return super.getTab(packet);
+    const form = await super.getTab(packet);
+    let front = this.actor(form.actor);
+    if (front) {
+      front.form(form);
+      return front;
+    }
+    // Instanciate a specialized class for a local tab as it needs some more
+    // client side integration with the Firefox frontend.
+    // But ignore the fake `tab` object we receive, where there is only a
+    // `linkedBrowser` attribute, but this isn't a real <tab> element.
+    // devtools/client/framework/test/browser_toolbox_target.js is passing such
+    // a fake tab.
+    if (filter && filter.tab && filter.tab.tagName == "tab") {
+      front = new LocalTabTargetFront(this._client, filter.tab);
+    } else {
+      front = new BrowsingContextTargetFront(this._client);
+    }
+    // As these fronts aren't instantiated by protocol.js, we have to set their actor ID
+    // manually like that:
+    front.actorID = form.actor;
+    front.form(form);
+    this.manage(front);
+    return front;
   }
 
   /**
@@ -313,8 +361,8 @@ class RootFront extends FrontClassWithSpec(rootSpec) {
    */
   async getAddon({ id }) {
     const addons = await this.listAddons();
-    const addonTargetFront = addons.find(addon => addon.id === id);
-    return addonTargetFront;
+    const webextensionDescriptorFront = addons.find(addon => addon.id === id);
+    return webextensionDescriptorFront;
   }
 
   /**

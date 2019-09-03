@@ -1,5 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2; js-indent-level: 2 -*- */
-/* vim: set ft=javascript ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -267,8 +265,11 @@ ChildProcess.prototype = {
   // Get an estimate of the amount of time required for this child to reach an
   // execution point.
   timeToReachPoint(point) {
-    let startDelay = 0,
-      startPoint = this.lastPausePoint;
+    let startDelay = 0;
+    let startPoint = this.lastPausePoint;
+    if (!startPoint) {
+      startPoint = checkpointExecutionPoint(FirstCheckpointId);
+    }
     if (!this.paused) {
       if (this.manifest.expectedDuration) {
         const elapsed = Date.now() - this.manifestSendTime;
@@ -495,6 +496,9 @@ function CheckpointInfo() {
 
   // If the checkpoint is saved and scanned, the duration of the scan.
   this.scanDuration = null;
+
+  // If the checkpoint is saved, any debugger statement hits in its region.
+  this.debuggerStatements = [];
 }
 
 function getCheckpointInfo(id) {
@@ -945,6 +949,7 @@ async function queuePauseData(point, trackCached, shouldSkipCallback) {
       // When the logpoint's text is resolved at this point then the pause data
       // will be fetched as well.
       if (
+        point.position &&
         gLogpoints.some(({ position }) =>
           positionSubsumes(position, point.position)
         )
@@ -1028,6 +1033,13 @@ let gPausePoint = null;
 // In ARRIVING mode, the requests must be sent once the child arrives.
 const gDebuggerRequests = [];
 
+function addDebuggerRequest(request) {
+  gDebuggerRequests.push({
+    request,
+    stack: Error().stack,
+  });
+}
+
 function setPauseState(mode, point, child) {
   assert(mode);
   const idString = child ? ` #${child.id}` : "";
@@ -1072,7 +1084,7 @@ function sendActiveChildToPausePoint() {
           gActiveChild.sendManifest({
             contents: {
               kind: "batchDebuggerRequest",
-              requests: gDebuggerRequests,
+              requests: gDebuggerRequests.map(r => r.request),
             },
             onFinished(finishData) {
               assert(!finishData || !finishData.restoredCheckpoint);
@@ -1097,13 +1109,12 @@ function waitUntilPauseFinishes() {
     return;
   }
 
-  while (true) {
+  while (gPauseMode != PauseModes.PAUSED) {
     gActiveChild.waitUntilPaused();
-    if (pointEquals(gActiveChild.pausePoint(), gPausePoint)) {
-      return;
-    }
     pokeChild(gActiveChild);
   }
+
+  gActiveChild.waitUntilPaused();
 }
 
 // Synchronously send a child to the specific point and pause.
@@ -1171,6 +1182,9 @@ async function finishResume() {
         })
       );
     }
+
+    // Always pause at debugger statements, as if they are breakpoint hits.
+    hits = hits.concat(getCheckpointInfo(checkpoint).debuggerStatements);
 
     const hit = findClosestPoint(
       hits,
@@ -1445,6 +1459,7 @@ function handleResumeManifestResponse({
   duration,
   consoleMessages,
   scripts,
+  debuggerStatements,
 }) {
   if (!point.position) {
     addCheckpoint(point.checkpoint - 1, duration);
@@ -1464,6 +1479,19 @@ function handleResumeManifestResponse({
       queuePauseData(msg.executionPoint, /* trackCached */ true);
     }
   });
+
+  for (const point of debuggerStatements) {
+    const checkpoint = getSavedCheckpoint(point.checkpoint);
+    getCheckpointInfo(checkpoint).debuggerStatements.push(point);
+  }
+
+  // In repaint stress mode, the child process creates a checkpoint before every
+  // paint. By gathering the pause data at these checkpoints, we will perform a
+  // repaint at all of these checkpoints, ensuring that all the normal paints
+  // can be repainted.
+  if (RecordReplayControl.inRepaintStressMode()) {
+    queuePauseData(point);
+  }
 }
 
 // If necessary, continue executing in the main child.
@@ -1489,7 +1517,11 @@ function maybeResumeRecording() {
     return;
   }
   gMainChild.sendManifest({
-    contents: { kind: "resume", breakpoints: gBreakpoints },
+    contents: {
+      kind: "resume",
+      breakpoints: gBreakpoints,
+      pauseOnDebuggerStatement: true,
+    },
     onFinished(response) {
       handleResumeManifestResponse(response);
 
@@ -1753,7 +1785,11 @@ const gControl = {
         // We can only flush the recording at checkpoints, so we need to send the
         // main child forward and pause/flush ASAP.
         gMainChild.sendManifest({
-          contents: { kind: "resume", breakpoints: [] },
+          contents: {
+            kind: "resume",
+            breakpoints: [],
+            pauseOnDebuggerStatement: false,
+          },
           onFinished(response) {
             handleResumeManifestResponse(response);
           },
@@ -1794,7 +1830,7 @@ const gControl = {
       gActiveChild.divergedFromRecording = true;
     }
 
-    gDebuggerRequests.push(request);
+    addDebuggerRequest(request);
     return data.response;
   },
 
@@ -1831,6 +1867,10 @@ const gControl = {
   unscannedRegions,
   cachedPoints,
 
+  debuggerRequests() {
+    return gDebuggerRequests;
+  },
+
   getPauseData() {
     // If the child has not arrived at the pause point yet, see if there is
     // cached pause data for this point already which we can immediately return.
@@ -1839,7 +1879,7 @@ const gControl = {
       if (data) {
         // After the child pauses, it will need to generate the pause data so
         // that any referenced objects will be instantiated.
-        gDebuggerRequests.push({ type: "pauseData" });
+        addDebuggerRequest({ type: "pauseData" });
         return data;
       }
     }
@@ -1874,6 +1914,16 @@ const gControl = {
         RecordReplayControl.clearGraphics();
       }
     }
+  },
+
+  isPausedAtDebuggerStatement() {
+    const point = gControl.pausePoint();
+    if (point) {
+      const checkpoint = getSavedCheckpoint(point.checkpoint);
+      const { debuggerStatements } = getCheckpointInfo(checkpoint);
+      return pointArrayIncludes(debuggerStatements, point);
+    }
+    return false;
   },
 };
 
@@ -1950,6 +2000,13 @@ function maybeDumpStatistics() {
 // Utilities
 ///////////////////////////////////////////////////////////////////////////////
 
+function getPreference(name) {
+  return Services.prefs.getBoolPref(`devtools.recordreplay.${name}`);
+}
+
+const loggingFullEnabled = getPreference("loggingFull");
+const loggingEnabled = loggingFullEnabled || getPreference("logging");
+
 // eslint-disable-next-line no-unused-vars
 function ConnectDebugger(dbg) {
   gDebugger = dbg;
@@ -1964,7 +2021,9 @@ function currentTime() {
 }
 
 function dumpv(str) {
-  //dump(`[ReplayControl ${currentTime()}] ${str}\n`);
+  if (loggingEnabled) {
+    dump(`[ReplayControl ${currentTime()}] ${str}\n`);
+  }
 }
 
 function assert(v) {
@@ -1981,7 +2040,7 @@ function ThrowError(msg) {
 
 function stringify(object) {
   const str = JSON.stringify(object);
-  if (str && str.length >= 4096) {
+  if (str && str.length >= 4096 && !loggingFullEnabled) {
     return `${str.substr(0, 4096)} TRIMMED ${str.length}`;
   }
   return str;

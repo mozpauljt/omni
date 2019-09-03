@@ -6,6 +6,9 @@ Object.defineProperty(exports, "__esModule", {
 exports.memoizeResourceShallow = memoizeResourceShallow;
 loader.lazyRequireGetter(this, "_compare", "devtools/client/debugger/src/utils/resource/compare");
 
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 /**
  * Wraps a 'mapper' function to create a shallow-equality memoized version
@@ -27,7 +30,6 @@ function memoizeResourceShallow(map) {
         // If the new output is shallow-equal to the old output, we reuse
         // the previous object instead to preserve object equality.
         const newOutput = (0, _compare.shallowEqual)(output, existingEntry.output) ? existingEntry.output : output;
-
         existingEntry.output = newOutput;
         existingEntry.input = input;
       } else {
@@ -41,8 +43,7 @@ function memoizeResourceShallow(map) {
 
     return existingEntry.output;
   };
+
   fn.needsArgs = map.needsArgs;
   return fn;
-} /* This Source Code Form is subject to the terms of the Mozilla Public
-   * License, v. 2.0. If a copy of the MPL was not distributed with this
-   * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+}

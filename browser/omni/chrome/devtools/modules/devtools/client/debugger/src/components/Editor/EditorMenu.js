@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = void 0;
 
 var _react = require("devtools/client/shared/vendor/react");
 
@@ -10,17 +11,20 @@ loader.lazyRequireGetter(this, "_connect", "devtools/client/debugger/src/utils/c
 
 var _devtoolsContextmenu = require("devtools/client/debugger/dist/vendors").vendored["devtools-contextmenu"];
 
+var _devtoolsSourceMap = require("devtools/client/shared/source-map/index.js");
+
 loader.lazyRequireGetter(this, "_editor", "devtools/client/debugger/src/utils/editor/index");
+loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
 loader.lazyRequireGetter(this, "_editor2", "devtools/client/debugger/src/components/Editor/menus/editor");
+
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-
 class EditorMenu extends _react.Component {
-
   componentWillUpdate(nextProps) {
     this.props.clearContextMenu();
+
     if (nextProps.contextMenu) {
       this.showMenu(nextProps);
     }
@@ -30,22 +34,19 @@ class EditorMenu extends _react.Component {
     const {
       cx,
       editor,
-      selectedSourceWithContent,
+      selectedSource,
       editorActions,
-      hasPrettySource,
+      hasMappedLocation,
       isPaused,
       contextMenu: event
     } = props;
-
-    const location = (0, _editor.getSourceLocationFromMouseEvent)(editor, selectedSourceWithContent.source,
-    // Use a coercion, as contextMenu is optional
+    const location = (0, _editor.getSourceLocationFromMouseEvent)(editor, selectedSource, // Use a coercion, as contextMenu is optional
     event);
-
     (0, _devtoolsContextmenu.showMenu)(event, (0, _editor2.editorMenuItems)({
       cx,
       editorActions,
-      selectedSourceWithContent,
-      hasPrettySource,
+      selectedSource,
+      hasMappedLocation,
       location,
       isPaused,
       selectionText: editor.codeMirror.getSelection().trim(),
@@ -56,16 +57,19 @@ class EditorMenu extends _react.Component {
   render() {
     return null;
   }
+
 }
 
 const mapStateToProps = (state, props) => ({
   cx: (0, _selectors.getThreadContext)(state),
   isPaused: (0, _selectors.getIsPaused)(state, (0, _selectors.getCurrentThread)(state)),
-  hasPrettySource: !!(0, _selectors.getPrettySource)(state, props.selectedSourceWithContent.source.id)
+  hasMappedLocation: ((0, _devtoolsSourceMap.isOriginalId)(props.selectedSource.id) || (0, _selectors.isSourceWithMap)(state, props.selectedSource.id) || (0, _source.isPretty)(props.selectedSource)) && !(0, _selectors.getPrettySource)(state, props.selectedSource.id)
 });
 
 const mapDispatchToProps = dispatch => ({
   editorActions: (0, _editor2.editorItemActions)(dispatch)
 });
 
-exports.default = (0, _connect.connect)(mapStateToProps, mapDispatchToProps)(EditorMenu);
+var _default = (0, _connect.connect)(mapStateToProps, mapDispatchToProps)(EditorMenu);
+
+exports.default = _default;

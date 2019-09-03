@@ -1,5 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,7 +6,10 @@
 
 const Services = require("Services");
 
-const PREF_UNUSED_CSS_ENABLED = "devtools.inspector.inactive.css.enabled";
+const INACTIVE_CSS_ENABLED = Services.prefs.getBoolPref(
+  "devtools.inspector.inactive.css.enabled",
+  false
+);
 
 class InactivePropertyHelper {
   /**
@@ -44,6 +45,9 @@ class InactivePropertyHelper {
    * }
    *
    * NOTE: validProperties and invalidProperties are mutually exclusive.
+   *
+   * If you add a new rule, also add a test for it in:
+   * server/tests/mochitest/test_inspector-inactive-property-helper.html
    *
    * The main export is `isPropertyUsed()`, which can be used to check if a
    * property is used or not, and why.
@@ -175,14 +179,20 @@ class InactivePropertyHelper {
     ];
   }
 
-  get unusedCssEnabled() {
-    if (!this._unusedCssEnabled) {
-      this._unusedCssEnabled = Services.prefs.getBoolPref(
-        PREF_UNUSED_CSS_ENABLED,
-        false
-      );
+  /**
+   * Get a list of unique CSS property names for which there are checks
+   * for used/unused state.
+   *
+   * @return {Set}
+   *         List of CSS properties
+   */
+  get invalidProperties() {
+    if (!this._invalidProperties) {
+      const allProps = this.VALIDATORS.map(v => v.invalidProperties).flat();
+      this._invalidProperties = new Set(allProps);
     }
-    return this._unusedCssEnabled;
+
+    return this._invalidProperties;
   }
 
   /**
@@ -214,7 +224,10 @@ class InactivePropertyHelper {
    *         true if the property is used.
    */
   isPropertyUsed(el, elStyle, cssRule, property) {
-    if (!this.unusedCssEnabled) {
+    // Assume the property is used when:
+    // - the Inactive CSS pref is not enabled
+    // - the property is not in the list of properties to check
+    if (!INACTIVE_CSS_ENABLED || !this.invalidProperties.has(property)) {
       return { used: true };
     }
 
@@ -562,6 +575,11 @@ class InactivePropertyHelper {
   }
 
   getParentGridElement(node) {
+    // The documentElement can't be a grid item, only a container, so bail out.
+    if (node.flattenedTreeParentNode === node.ownerDocument) {
+      return null;
+    }
+
     if (node.nodeType === node.ELEMENT_NODE) {
       const display = this.style ? this.style.display : null;
 

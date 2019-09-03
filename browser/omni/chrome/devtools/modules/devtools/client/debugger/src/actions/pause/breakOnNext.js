@@ -5,6 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.breakOnNext = breakOnNext;
 
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 /**
  * Debugger breakOnNext command.
@@ -14,13 +17,16 @@ exports.breakOnNext = breakOnNext;
  * @memberof actions/pause
  * @static
  */
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-
 function breakOnNext(cx) {
-  return async ({ dispatch, getState, client }) => {
+  return async ({
+    dispatch,
+    getState,
+    client
+  }) => {
     await client.breakOnNext(cx.thread);
-    return dispatch({ type: "BREAK_ON_NEXT", thread: cx.thread });
+    return dispatch({
+      type: "BREAK_ON_NEXT",
+      thread: cx.thread
+    });
   };
 }

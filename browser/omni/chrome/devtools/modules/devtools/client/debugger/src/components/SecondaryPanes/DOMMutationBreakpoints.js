@@ -3,38 +3,34 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = void 0;
 
-var _react = require("devtools/client/shared/vendor/react");
+var _react = _interopRequireWildcard(require("devtools/client/shared/vendor/react"));
 
-var _react2 = _interopRequireDefault(_react);
-
-var _devtoolsReps = require("devtools/client/shared/components/reps/reps.js");
-
-var _devtoolsReps2 = _interopRequireDefault(_devtoolsReps);
+var _devtoolsReps = _interopRequireDefault(require("devtools/client/shared/components/reps/reps.js"));
 
 var _inspectorSharedUtils = require("devtools/client/inspector/shared/utils");
 
 var _frameworkActions = require("devtools/client/framework/actions/index");
 
-loader.lazyRequireGetter(this, "_actions", "devtools/client/debugger/src/actions/index");
-
-var _actions2 = _interopRequireDefault(_actions);
+var _actions = _interopRequireDefault(require("../../actions/index"));
 
 loader.lazyRequireGetter(this, "_connect", "devtools/client/debugger/src/utils/connect");
 loader.lazyRequireGetter(this, "_Button", "devtools/client/debugger/src/components/shared/Button/index");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-
 const {
-  REPS: { Rep },
+  REPS: {
+    Rep
+  },
   MODE
-} = _devtoolsReps2.default;
-
-
+} = _devtoolsReps.default;
 const localizationTerms = {
   subtree: L10N.getStr("domMutationTypes.subtree"),
   attribute: L10N.getStr("domMutationTypes.attribute"),
@@ -42,70 +38,77 @@ const localizationTerms = {
 };
 
 class DOMMutationBreakpointsContents extends _react.Component {
+  handleBreakpoint(breakpointId, shouldEnable) {
+    const {
+      toggleBreakpoint,
+      setSkipPausing
+    } = this.props; // The user has enabled a mutation breakpoint so we should no
+    // longer skip pausing
+
+    if (shouldEnable) {
+      setSkipPausing(false);
+    }
+
+    toggleBreakpoint(breakpointId, shouldEnable);
+  }
+
   renderItem(breakpoint) {
     const {
       openElementInInspector,
       highlightDomElement,
       unHighlightDomElement,
-      toggleBreakpoint,
       deleteBreakpoint
     } = this.props;
-    return _react2.default.createElement(
-      "li",
-      null,
-      _react2.default.createElement("input", {
-        type: "checkbox",
-        checked: breakpoint.enabled,
-        onChange: () => toggleBreakpoint(breakpoint.id, !breakpoint.enabled)
-      }),
-      _react2.default.createElement(
-        "div",
-        { className: "dom-mutation-info" },
-        _react2.default.createElement(
-          "div",
-          { className: "dom-mutation-label" },
-          Rep({
-            object: (0, _inspectorSharedUtils.translateNodeFrontToGrip)(breakpoint.nodeFront),
-            mode: MODE.LONG,
-            onDOMNodeClick: grip => openElementInInspector(grip),
-            onInspectIconClick: grip => openElementInInspector(grip),
-            onDOMNodeMouseOver: grip => highlightDomElement(grip),
-            onDOMNodeMouseOut: grip => unHighlightDomElement(grip)
-          })
-        ),
-        _react2.default.createElement(
-          "div",
-          { className: "dom-mutation-type" },
-          localizationTerms[breakpoint.mutationType] || breakpoint.mutationType
-        )
-      ),
-      _react2.default.createElement(_Button.CloseButton, {
-        handleClick: () => deleteBreakpoint(breakpoint.nodeFront, breakpoint.mutationType)
-      })
-    );
+    const {
+      enabled,
+      id: breakpointId,
+      nodeFront,
+      mutationType
+    } = breakpoint;
+    return _react.default.createElement("li", {
+      key: breakpoint.id
+    }, _react.default.createElement("input", {
+      type: "checkbox",
+      checked: enabled,
+      onChange: () => this.handleBreakpoint(breakpointId, !enabled)
+    }), _react.default.createElement("div", {
+      className: "dom-mutation-info"
+    }, _react.default.createElement("div", {
+      className: "dom-mutation-label"
+    }, Rep({
+      object: (0, _inspectorSharedUtils.translateNodeFrontToGrip)(nodeFront),
+      mode: MODE.TINY,
+      onDOMNodeClick: () => openElementInInspector(nodeFront),
+      onInspectIconClick: () => openElementInInspector(nodeFront),
+      onDOMNodeMouseOver: () => highlightDomElement(nodeFront),
+      onDOMNodeMouseOut: () => unHighlightDomElement()
+    })), _react.default.createElement("div", {
+      className: "dom-mutation-type"
+    }, localizationTerms[mutationType] || mutationType)), _react.default.createElement(_Button.CloseButton, {
+      handleClick: () => deleteBreakpoint(nodeFront, mutationType)
+    }));
   }
 
   renderEmpty() {
-    return _react2.default.createElement(
-      "div",
-      { className: "dom-mutation-empty" },
-      L10N.getStr("noDomMutationBreakpointsText")
-    );
+    return _react.default.createElement("div", {
+      className: "dom-mutation-empty"
+    }, L10N.getStr("noDomMutationBreakpointsText"));
   }
 
   render() {
-    const { breakpoints } = this.props;
+    const {
+      breakpoints
+    } = this.props;
 
     if (breakpoints.length === 0) {
       return this.renderEmpty();
     }
 
-    return _react2.default.createElement(
-      "ul",
-      { className: "dom-mutation-list" },
-      breakpoints.map(breakpoint => this.renderItem(breakpoint))
-    );
+    return _react.default.createElement("ul", {
+      className: "dom-mutation-list"
+    }, breakpoints.map(breakpoint => this.renderItem(breakpoint)));
   }
+
 }
 
 const mapStateToProps = state => ({
@@ -115,22 +118,29 @@ const mapStateToProps = state => ({
 const DOMMutationBreakpointsPanel = (0, _connect.connect)(mapStateToProps, {
   deleteBreakpoint: _frameworkActions.deleteDOMMutationBreakpoint,
   toggleBreakpoint: _frameworkActions.toggleDOMMutationBreakpointState
-}, undefined, { storeKey: "toolbox-store" })(DOMMutationBreakpointsContents);
+}, undefined, {
+  storeKey: "toolbox-store"
+})(DOMMutationBreakpointsContents);
 
 class DomMutationBreakpoints extends _react.Component {
   render() {
-    return _react2.default.createElement(DOMMutationBreakpointsPanel, {
+    return _react.default.createElement(DOMMutationBreakpointsPanel, {
       openElementInInspector: this.props.openElementInInspector,
       highlightDomElement: this.props.highlightDomElement,
-      unHighlightDomElement: this.props.unHighlightDomElement
+      unHighlightDomElement: this.props.unHighlightDomElement,
+      setSkipPausing: this.props.setSkipPausing
     });
   }
+
 }
 
-exports.default = (0, _connect.connect)(undefined, {
+var _default = (0, _connect.connect)(undefined, {
   // the debugger-specific action bound to the debugger store
   // since there is no `storeKey`
-  openElementInInspector: _actions2.default.openElementInInspectorCommand,
-  highlightDomElement: _actions2.default.highlightDomElement,
-  unHighlightDomElement: _actions2.default.unHighlightDomElement
+  openElementInInspector: _actions.default.openElementInInspectorCommand,
+  highlightDomElement: _actions.default.highlightDomElement,
+  unHighlightDomElement: _actions.default.unHighlightDomElement,
+  setSkipPausing: _actions.default.setSkipPausing
 })(DomMutationBreakpoints);
+
+exports.default = _default;

@@ -41,8 +41,8 @@ export default class LoginItem extends HTMLElement {
     );
     this._deleteButton = this.shadowRoot.querySelector(".delete-button");
     this._editButton = this.shadowRoot.querySelector(".edit-button");
+    this._errorMessage = this.shadowRoot.querySelector(".error-message");
     this._form = this.shadowRoot.querySelector("form");
-    this._openSiteButton = this.shadowRoot.querySelector(".open-site-button");
     this._originInput = this.shadowRoot.querySelector("input[name='origin']");
     this._usernameInput = this.shadowRoot.querySelector(
       "input[name='username']"
@@ -65,6 +65,9 @@ export default class LoginItem extends HTMLElement {
     this._timeChanged = this.shadowRoot.querySelector(".time-changed");
     this._timeUsed = this.shadowRoot.querySelector(".time-used");
     this._breachAlert = this.shadowRoot.querySelector(".breach-alert");
+    this._dismissBreachAlert = this.shadowRoot.querySelector(
+      ".dismiss-breach-alert"
+    );
 
     this.render();
 
@@ -73,11 +76,12 @@ export default class LoginItem extends HTMLElement {
     this._copyPasswordButton.addEventListener("click", this);
     this._copyUsernameButton.addEventListener("click", this);
     this._deleteButton.addEventListener("click", this);
+    this._dismissBreachAlert.addEventListener("click", this);
     this._editButton.addEventListener("click", this);
     this._form.addEventListener("submit", this);
-    this._openSiteButton.addEventListener("click", this);
     this._originInput.addEventListener("click", this);
     this._revealCheckbox.addEventListener("click", this);
+    this._originInput.addEventListener("auxclick", this);
     window.addEventListener("AboutLoginsInitialLoginSelected", this);
     window.addEventListener("AboutLoginsLoadInitialFavicon", this);
     window.addEventListener("AboutLoginsLoginSelected", this);
@@ -85,13 +89,19 @@ export default class LoginItem extends HTMLElement {
   }
 
   async render() {
-    this._breachAlert.hidden = true;
+    [this._errorMessage, this._breachAlert].forEach(el => {
+      el.hidden = true;
+    });
     if (this._breachesMap && this._breachesMap.has(this._login.guid)) {
       const breachDetails = this._breachesMap.get(this._login.guid);
       const breachAlertLink = this._breachAlert.querySelector(
         ".breach-alert-link"
       );
       breachAlertLink.href = breachDetails.breachAlertURL;
+      document.l10n.setAttributes(
+        this._dismissBreachAlert,
+        "breach-alert-dismiss"
+      );
       this._breachAlert.hidden = false;
     }
     document.l10n.setAttributes(this._timeCreated, "login-item-time-created", {
@@ -121,18 +131,60 @@ export default class LoginItem extends HTMLElement {
     this._originInput.defaultValue = this._login.origin || "";
     this._usernameInput.defaultValue = this._login.username || "";
     this._passwordInput.defaultValue = this._login.password || "";
+    if (this.dataset.editing) {
+      this._usernameInput.removeAttribute("data-l10n-id");
+    } else {
+      document.l10n.setAttributes(
+        this._usernameInput,
+        "about-logins-login-item-username"
+      );
+    }
+    this._copyUsernameButton.disabled = !this._login.username;
     document.l10n.setAttributes(
       this._saveChangesButton,
       this.dataset.isNewLogin
         ? "login-item-save-new-button"
         : "login-item-save-changes-button"
     );
-    await this._updatePasswordRevealState();
+    this._updatePasswordRevealState();
   }
 
   updateBreaches(breachesByLoginGUID) {
     this._breachesMap = breachesByLoginGUID;
     this.render();
+  }
+
+  dismissBreachAlert() {
+    document.dispatchEvent(
+      new CustomEvent("AboutLoginsDismissBreachAlert", {
+        bubbles: true,
+        detail: this._login,
+      })
+    );
+  }
+
+  showLoginItemError(error) {
+    const errorMessageText = this._errorMessage.querySelector(
+      ".error-message-text"
+    );
+    if (!error.errorMessage) {
+      return;
+    }
+    if (error.errorMessage.includes("This login already exists")) {
+      document.l10n.setAttributes(
+        errorMessageText,
+        "about-logins-error-message-duplicate-login",
+        {
+          loginTitle: error.login.title,
+        }
+      );
+    } else {
+      document.l10n.setAttributes(
+        errorMessageText,
+        "about-logins-error-message-default"
+      );
+    }
+    this._errorMessage.hidden = false;
   }
 
   async handleEvent(event) {
@@ -153,6 +205,12 @@ export default class LoginItem extends HTMLElement {
         this.confirmPendingChangesOnEvent(event, {});
         break;
       }
+      case "auxclick": {
+        if (event.button == 1) {
+          this._handleOriginClick();
+        }
+        break;
+      }
       case "blur": {
         // Add https:// prefix if one was not provided.
         let originValue = this._originInput.value.trim();
@@ -167,7 +225,16 @@ export default class LoginItem extends HTMLElement {
       case "click": {
         let classList = event.currentTarget.classList;
         if (classList.contains("reveal-password-checkbox")) {
-          await this._updatePasswordRevealState();
+          if (this._revealCheckbox.checked) {
+            let masterPasswordAuth = await new Promise(resolve => {
+              window.AboutLoginsUtils.promptForMasterPassword(resolve);
+            });
+            if (!masterPasswordAuth) {
+              this._revealCheckbox.checked = false;
+              return;
+            }
+          }
+          this._updatePasswordRevealState();
 
           let method = this._revealCheckbox.checked ? "show" : "hide";
           recordTelemetryEvent({ object: "password", method });
@@ -251,27 +318,19 @@ export default class LoginItem extends HTMLElement {
           });
           return;
         }
+        if (classList.contains("dismiss-breach-alert")) {
+          this.dismissBreachAlert();
+          return;
+        }
         if (classList.contains("edit-button")) {
           this._toggleEditing();
+          this.render();
 
           recordTelemetryEvent({ object: "existing_login", method: "edit" });
           return;
         }
-        if (
-          classList.contains("open-site-button") ||
-          (classList.contains("origin-input") && !this.readOnly)
-        ) {
-          document.dispatchEvent(
-            new CustomEvent("AboutLoginsOpenSite", {
-              bubbles: true,
-              detail: this._login,
-            })
-          );
-
-          recordTelemetryEvent({
-            object: "existing_login",
-            method: "open_site",
-          });
+        if (classList.contains("origin-input")) {
+          this._handleOriginClick();
         }
         break;
       }
@@ -438,7 +497,7 @@ export default class LoginItem extends HTMLElement {
       return;
     }
 
-    this._login = login;
+    this.setLogin(login);
     this.dispatchEvent(
       new CustomEvent("AboutLoginsLoginSelected", {
         bubbles: true,
@@ -460,9 +519,8 @@ export default class LoginItem extends HTMLElement {
       return;
     }
 
+    this.setLogin(login);
     this._toggleEditing(false);
-    this._login = login;
-    this.render();
   }
 
   /**
@@ -477,9 +535,20 @@ export default class LoginItem extends HTMLElement {
       return;
     }
 
-    this._toggleEditing(false);
     this._login = {};
+    this._toggleEditing(false);
     this.render();
+  }
+
+  _handleOriginClick() {
+    document.dispatchEvent(
+      new CustomEvent("AboutLoginsOpenSite", {
+        bubbles: true,
+        detail: this._login,
+      })
+    );
+
+    recordTelemetryEvent({ object: "existing_login", method: "open_site" });
   }
 
   /**
@@ -510,7 +579,7 @@ export default class LoginItem extends HTMLElement {
   _loginFromForm() {
     return {
       username: this._usernameInput.value.trim(),
-      password: this._passwordInput.value.trim(),
+      password: this._passwordInput.value,
       origin:
         window.AboutLoginsUtils.getLoginOrigin(this._originInput.value) || "",
     };
@@ -552,20 +621,12 @@ export default class LoginItem extends HTMLElement {
       this._originInput.focus();
     } else {
       delete this.dataset.editing;
+      // Only reset the reveal checkbox when exiting 'edit' mode
+      this._revealCheckbox.checked = false;
     }
   }
 
-  async _updatePasswordRevealState() {
-    if (this._revealCheckbox.checked) {
-      let masterPasswordAuth = await new Promise(resolve => {
-        window.AboutLoginsUtils.promptForMasterPassword(resolve);
-      });
-      if (!masterPasswordAuth) {
-        this._revealCheckbox.checked = false;
-        return;
-      }
-    }
-
+  _updatePasswordRevealState() {
     let titleId = this._revealCheckbox.checked
       ? "login-item-password-reveal-checkbox-hide"
       : "login-item-password-reveal-checkbox-show";

@@ -10,6 +10,9 @@ loader.lazyRequireGetter(this, "_locColumn", "devtools/client/debugger/src/utils
 loader.lazyRequireGetter(this, "_mappingContains", "devtools/client/debugger/src/utils/pause/mapScopes/mappingContains");
 loader.lazyRequireGetter(this, "_firefox", "devtools/client/debugger/src/client/firefox");
 
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 /**
  * Given a mapped range over the generated source, attempt to resolve a real
@@ -27,16 +30,14 @@ async function findGeneratedReference(applicableBindings) {
 
   for (const applicable of applicableBindings) {
     const result = await mapBindingReferenceToDescriptor(applicable);
+
     if (result) {
       return result;
     }
   }
+
   return null;
 }
-// eslint-disable-next-line max-len
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 async function findGeneratedImportReference(applicableBindings) {
   // When wrapped, for instance as `Object(ns.default)`, the `Object` binding
@@ -48,13 +49,11 @@ async function findGeneratedImportReference(applicableBindings) {
     }
 
     const next = i + 1 < applicableBindings.length ? applicableBindings[i + 1] : null;
-
     return !next || next.binding.loc.type !== "ref" || !next.binding.loc.meta;
-  });
-
-  // We can adjust this number as we go, but these are a decent start as a
+  }); // We can adjust this number as we go, but these are a decent start as a
   // general heuristic to assume the bindings were bad or just map a chunk of
   // whole line or something.
+
   if (applicableBindings.length > 2) {
     // Babel's for..of generates at least 3 bindings inside one range for
     // block-scoped loop variables, so we shouldn't go below that.
@@ -63,6 +62,7 @@ async function findGeneratedImportReference(applicableBindings) {
 
   for (const applicable of applicableBindings) {
     const result = await mapImportReferenceToDescriptor(applicable);
+
     if (result) {
       return result;
     }
@@ -70,12 +70,13 @@ async function findGeneratedImportReference(applicableBindings) {
 
   return null;
 }
-
 /**
  * Given a mapped range over the generated source and the name of the imported
  * value that is referenced, attempt to resolve a binding descriptor for
  * the import's value.
  */
+
+
 async function findGeneratedImportDeclaration(applicableBindings, importName) {
   // We can adjust this number as we go, but these are a decent start as a
   // general heuristic to assume the bindings were bad or just map a chunk of
@@ -89,15 +90,19 @@ async function findGeneratedImportDeclaration(applicableBindings, importName) {
 
   let result = null;
 
-  for (const { binding } of applicableBindings) {
+  for (const {
+    binding
+  } of applicableBindings) {
     if (binding.loc.type === "ref") {
       continue;
     }
 
     const namespaceDesc = await binding.desc();
+
     if (isPrimitiveValue(namespaceDesc)) {
       continue;
     }
+
     if (!isObjectValue(namespaceDesc)) {
       // We want to handle cases like
       //
@@ -130,11 +135,12 @@ async function findGeneratedImportDeclaration(applicableBindings, importName) {
 
   return result;
 }
-
 /**
  * Given a generated binding, and a range over the generated code, statically
  * check if the given binding matches the range.
  */
+
+
 async function mapBindingReferenceToDescriptor({
   binding,
   range,
@@ -146,8 +152,7 @@ async function mapBindingReferenceToDescriptor({
   // need at least one character between identifiers, we also give one
   // characters of space at the front the generated binding in order
   // to increase the probability of finding the right mapping.
-  if (range.start.line === binding.loc.start.line && (
-  // If a binding is the first on a line, Babel will extend the mapping to
+  if (range.start.line === binding.loc.start.line && ( // If a binding is the first on a line, Babel will extend the mapping to
   // include the whitespace between the newline and the binding. To handle
   // that, we skip the range requirement for starting location.
   firstInRange || firstOnLine || (0, _locColumn.locColumn)(range.start) >= (0, _locColumn.locColumn)(binding.loc.start)) && (0, _locColumn.locColumn)(range.start) <= (0, _locColumn.locColumn)(binding.loc.end)) {
@@ -160,21 +165,20 @@ async function mapBindingReferenceToDescriptor({
 
   return null;
 }
-
 /**
  * Given an generated binding, and a range over the generated code, statically
  * evaluate accessed properties within the mapped range to resolve the actual
  * imported value.
  */
+
+
 async function mapImportReferenceToDescriptor({
   binding,
   range
 }) {
   if (binding.loc.type !== "ref") {
     return null;
-  }
-
-  // Expression matches require broader searching because sourcemaps usage
+  } // Expression matches require broader searching because sourcemaps usage
   // varies in how they map certain things. For instance given
   //
   //   import { bar } from "mod";
@@ -206,13 +210,14 @@ async function mapImportReferenceToDescriptor({
   //   ^^^^^^^^^^^^^^^^^
   //   ^                 // wrapped to column 0 of next line
 
+
   if (!(0, _mappingContains.mappingContains)(range, binding.loc)) {
     return null;
-  }
-
-  // Webpack 2's import declarations wrap calls with an identity fn, so we
+  } // Webpack 2's import declarations wrap calls with an identity fn, so we
   // need to make sure to skip that binding because it is mapped to the
   // location of the original binding usage.
+
+
   if (binding.name === "__webpack_require__" && binding.loc.meta && binding.loc.meta.type === "member" && binding.loc.meta.property === "i") {
     return null;
   }
@@ -221,12 +226,13 @@ async function mapImportReferenceToDescriptor({
   let desc = await binding.desc();
 
   if (binding.loc.type === "ref") {
-    const { meta } = binding.loc;
-
-    // Limit to 2 simple property or inherits operartions, since it would
+    const {
+      meta
+    } = binding.loc; // Limit to 2 simple property or inherits operartions, since it would
     // just be more work to search more and it is very unlikely that
     // bindings would be mapped to more than a single member + inherits
     // wrapper.
+
     for (let op = meta, index = 0; op && (0, _mappingContains.mappingContains)(range, op) && desc && index < 2; index++, op = op && op.parent) {
       // Calling could potentially trigger side-effects, which would not
       // be ideal for this case.
@@ -253,9 +259,9 @@ async function mapImportReferenceToDescriptor({
 function isPrimitiveValue(desc) {
   return desc && (!desc.value || typeof desc.value !== "object");
 }
+
 function isObjectValue(desc) {
-  return desc && !isPrimitiveValue(desc) && desc.value.type === "object" &&
-  // Note: The check for `.type` might already cover the optimizedOut case
+  return desc && !isPrimitiveValue(desc) && desc.value.type === "object" && // Note: The check for `.type` might already cover the optimizedOut case
   // but not 100% sure, so just being cautious.
   !desc.value.optimizedOut;
 }

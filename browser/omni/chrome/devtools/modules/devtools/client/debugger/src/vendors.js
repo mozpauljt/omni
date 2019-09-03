@@ -3,64 +3,36 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.vendored = undefined;
+exports.vendored = void 0;
 
-var _devtoolsComponents = require("devtools/client/debugger/dist/vendors").vendored["devtools-components"];
+var devtoolsComponents = _interopRequireWildcard(require("devtools/client/debugger/dist/vendors").vendored["devtools-components"]);
 
-var devtoolsComponents = _interopRequireWildcard(_devtoolsComponents);
+var devtoolsConfig = _interopRequireWildcard(require("devtools/client/debugger/dist/vendors").vendored["devtools-config"]);
 
-var _devtoolsConfig = require("devtools/client/debugger/dist/vendors").vendored["devtools-config"];
+var devtoolsContextmenu = _interopRequireWildcard(require("devtools/client/debugger/dist/vendors").vendored["devtools-contextmenu"]);
 
-var devtoolsConfig = _interopRequireWildcard(_devtoolsConfig);
+var devtoolsEnvironment = _interopRequireWildcard(require("devtools/client/debugger/dist/vendors").vendored["devtools-environment"]);
 
-var _devtoolsContextmenu = require("devtools/client/debugger/dist/vendors").vendored["devtools-contextmenu"];
+var devtoolsModules = _interopRequireWildcard(require("devtools/client/debugger/dist/vendors").vendored["devtools-modules"]);
 
-var devtoolsContextmenu = _interopRequireWildcard(_devtoolsContextmenu);
+var devtoolsUtils = _interopRequireWildcard(require("devtools/client/debugger/dist/vendors").vendored["devtools-utils"]);
 
-var _devtoolsEnvironment = require("devtools/client/debugger/dist/vendors").vendored["devtools-environment"];
+var fuzzaldrinPlus = _interopRequireWildcard(require("devtools/client/debugger/dist/vendors").vendored["fuzzaldrin-plus"]);
 
-var devtoolsEnvironment = _interopRequireWildcard(_devtoolsEnvironment);
+var transition = _interopRequireWildcard(require("devtools/client/debugger/dist/vendors").vendored["react-transition-group/Transition"]);
 
-var _devtoolsModules = require("devtools/client/debugger/dist/vendors").vendored["devtools-modules"];
+var reactAriaComponentsTabs = _interopRequireWildcard(require("devtools/client/debugger/dist/vendors").vendored["react-aria-components/src/tabs"]);
 
-var devtoolsModules = _interopRequireWildcard(_devtoolsModules);
+var _classnames = _interopRequireDefault(require("devtools/client/debugger/dist/vendors").vendored["classnames"]);
 
-var _devtoolsUtils = require("devtools/client/debugger/dist/vendors").vendored["devtools-utils"];
+var _devtoolsSplitter = _interopRequireDefault(require("devtools/client/debugger/dist/vendors").vendored["devtools-splitter"]);
 
-var devtoolsUtils = _interopRequireWildcard(_devtoolsUtils);
-
-var _fuzzaldrinPlus = require("devtools/client/debugger/dist/vendors").vendored["fuzzaldrin-plus"];
-
-var fuzzaldrinPlus = _interopRequireWildcard(_fuzzaldrinPlus);
-
-var _Transition = require("devtools/client/debugger/dist/vendors").vendored["react-transition-group/Transition"];
-
-var transition = _interopRequireWildcard(_Transition);
-
-var _tabs = require("devtools/client/debugger/dist/vendors").vendored["react-aria-components/src/tabs"];
-
-var reactAriaComponentsTabs = _interopRequireWildcard(_tabs);
-
-var _classnames = require("devtools/client/debugger/dist/vendors").vendored["classnames"];
-
-var _classnames2 = _interopRequireDefault(_classnames);
-
-var _devtoolsSplitter = require("devtools/client/debugger/dist/vendors").vendored["devtools-splitter"];
-
-var _devtoolsSplitter2 = _interopRequireDefault(_devtoolsSplitter);
-
-var _lodashMove = require("devtools/client/debugger/dist/vendors").vendored["lodash-move"];
-
-var _lodashMove2 = _interopRequireDefault(_lodashMove);
+var _lodashMove = _interopRequireDefault(require("devtools/client/debugger/dist/vendors").vendored["lodash-move"]);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
-// We cannot directly export literals containing special characters
-// (eg. "my-module/Test") which is why they are nested in "vendored".
-// The keys of the vendored object should match the module names
-// !!! Should remain synchronized with .babel/transform-mc.js !!!
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
@@ -76,23 +48,25 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
  *
  * Both are fine, but cannot be mixed for the same module.
  */
-
 // Modules imported with destructuring
-const vendored = exports.vendored = {
-  classnames: _classnames2.default,
+// $FlowIgnore
+// Modules imported without destructuring
+// We cannot directly export literals containing special characters
+// (eg. "my-module/Test") which is why they are nested in "vendored".
+// The keys of the vendored object should match the module names
+// !!! Should remain synchronized with .babel/transform-mc.js !!!
+const vendored = {
+  classnames: _classnames.default,
   "devtools-components": devtoolsComponents,
   "devtools-config": devtoolsConfig,
   "devtools-contextmenu": devtoolsContextmenu,
   "devtools-environment": devtoolsEnvironment,
   "devtools-modules": devtoolsModules,
-  "devtools-splitter": _devtoolsSplitter2.default,
+  "devtools-splitter": _devtoolsSplitter.default,
   "devtools-utils": devtoolsUtils,
   "fuzzaldrin-plus": fuzzaldrinPlus,
-  "lodash-move": _lodashMove2.default,
+  "lodash-move": _lodashMove.default,
   "react-aria-components/src/tabs": reactAriaComponentsTabs,
   "react-transition-group/Transition": transition
 };
-
-// Modules imported without destructuring
-
-// $FlowIgnore
+exports.vendored = vendored;

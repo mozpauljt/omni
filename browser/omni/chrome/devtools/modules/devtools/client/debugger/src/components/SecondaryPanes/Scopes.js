@@ -3,15 +3,13 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = void 0;
 
-var _react = require("devtools/client/shared/vendor/react");
-
-var _react2 = _interopRequireDefault(_react);
+var _react = _interopRequireWildcard(require("devtools/client/shared/vendor/react"));
 
 loader.lazyRequireGetter(this, "_connect", "devtools/client/debugger/src/utils/connect");
-loader.lazyRequireGetter(this, "_actions", "devtools/client/debugger/src/actions/index");
 
-var _actions2 = _interopRequireDefault(_actions);
+var _actions = _interopRequireDefault(require("../../actions/index"));
 
 loader.lazyRequireGetter(this, "_firefox", "devtools/client/debugger/src/client/firefox");
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
@@ -22,14 +20,13 @@ var _devtoolsReps = require("devtools/client/shared/components/reps/reps.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
-const { ObjectInspector } = _devtoolsReps.objectInspector;
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-// eslint-disable-next-line import/named
-
+const {
+  ObjectInspector
+} = _devtoolsReps.objectInspector;
 
 class Scopes extends _react.PureComponent {
   constructor(props, ...args) {
@@ -39,12 +36,11 @@ class Scopes extends _react.PureComponent {
       originalFrameScopes,
       generatedFrameScopes
     } = props;
-
     super(props, ...args);
 
-    this.onToggleMapScopes = () => {
+    _defineProperty(this, "onToggleMapScopes", () => {
       this.props.toggleMapScopes();
-    };
+    });
 
     this.state = {
       originalScopes: (0, _scopes.getScopes)(why, selectedFrame, originalFrameScopes),
@@ -85,8 +81,11 @@ class Scopes extends _react.PureComponent {
       setExpandedScope,
       expandedScopes
     } = this.props;
-    const { originalScopes, generatedScopes, showOriginal } = this.state;
-
+    const {
+      originalScopes,
+      generatedScopes,
+      showOriginal
+    } = this.state;
     const scopes = showOriginal && mapScopesEnabled && originalScopes || generatedScopes;
 
     function initiallyExpanded(item) {
@@ -94,28 +93,27 @@ class Scopes extends _react.PureComponent {
     }
 
     if (scopes && scopes.length > 0 && !isLoading) {
-      return _react2.default.createElement(
-        "div",
-        { className: "pane scopes-list" },
-        _react2.default.createElement(ObjectInspector, {
-          roots: scopes,
-          autoExpandAll: false,
-          autoExpandDepth: 1,
-          disableWrap: true,
-          dimTopLevelWindow: true,
-          openLink: openLink,
-          createObjectClient: grip => (0, _firefox.createObjectClient)(grip),
-          onDOMNodeClick: grip => openElementInInspector(grip),
-          onInspectIconClick: grip => openElementInInspector(grip),
-          onDOMNodeMouseOver: grip => highlightDomElement(grip),
-          onDOMNodeMouseOut: grip => unHighlightDomElement(grip),
-          setExpanded: (path, expand) => setExpandedScope(cx, path, expand),
-          initiallyExpanded: initiallyExpanded
-        })
-      );
+      return _react.default.createElement("div", {
+        className: "pane scopes-list"
+      }, _react.default.createElement(ObjectInspector, {
+        roots: scopes,
+        autoExpandAll: false,
+        autoExpandDepth: 1,
+        disableWrap: true,
+        dimTopLevelWindow: true,
+        openLink: openLink,
+        createObjectClient: grip => (0, _firefox.createObjectClient)(grip),
+        onDOMNodeClick: grip => openElementInInspector(grip),
+        onInspectIconClick: grip => openElementInInspector(grip),
+        onDOMNodeMouseOver: grip => highlightDomElement(grip),
+        onDOMNodeMouseOut: grip => unHighlightDomElement(grip),
+        setExpanded: (path, expand) => setExpandedScope(cx, path, expand),
+        initiallyExpanded: initiallyExpanded
+      }));
     }
 
     let stateText = L10N.getStr("scopes.notPaused");
+
     if (cx.isPaused) {
       if (isLoading) {
         stateText = L10N.getStr("loadingText");
@@ -124,36 +122,32 @@ class Scopes extends _react.PureComponent {
       }
     }
 
-    return _react2.default.createElement(
-      "div",
-      { className: "pane scopes-list" },
-      _react2.default.createElement(
-        "div",
-        { className: "pane-info" },
-        stateText
-      )
-    );
+    return _react.default.createElement("div", {
+      className: "pane scopes-list"
+    }, _react.default.createElement("div", {
+      className: "pane-info"
+    }, stateText));
   }
 
   render() {
-    return _react2.default.createElement(
-      "div",
-      { className: "scopes-content" },
-      this.renderScopesList()
-    );
+    return _react.default.createElement("div", {
+      className: "scopes-content"
+    }, this.renderScopesList());
   }
+
 }
 
 const mapStateToProps = state => {
   const cx = (0, _selectors.getThreadContext)(state);
   const selectedFrame = (0, _selectors.getSelectedFrame)(state, cx.thread);
   const selectedSource = (0, _selectors.getSelectedSource)(state);
-
   const {
     scope: originalFrameScopes,
     pending: originalPending
-  } = (0, _selectors.getOriginalFrameScope)(state, cx.thread, selectedSource && selectedSource.id, selectedFrame && selectedFrame.id) || { scope: null, pending: false };
-
+  } = (0, _selectors.getOriginalFrameScope)(state, cx.thread, selectedSource && selectedSource.id, selectedFrame && selectedFrame.id) || {
+    scope: null,
+    pending: false
+  };
   const {
     scope: generatedFrameScopes,
     pending: generatedPending
@@ -161,7 +155,6 @@ const mapStateToProps = state => {
     scope: null,
     pending: false
   };
-
   return {
     cx,
     selectedFrame,
@@ -174,11 +167,13 @@ const mapStateToProps = state => {
   };
 };
 
-exports.default = (0, _connect.connect)(mapStateToProps, {
-  openLink: _actions2.default.openLink,
-  openElementInInspector: _actions2.default.openElementInInspectorCommand,
-  highlightDomElement: _actions2.default.highlightDomElement,
-  unHighlightDomElement: _actions2.default.unHighlightDomElement,
-  toggleMapScopes: _actions2.default.toggleMapScopes,
-  setExpandedScope: _actions2.default.setExpandedScope
+var _default = (0, _connect.connect)(mapStateToProps, {
+  openLink: _actions.default.openLink,
+  openElementInInspector: _actions.default.openElementInInspectorCommand,
+  highlightDomElement: _actions.default.highlightDomElement,
+  unHighlightDomElement: _actions.default.unHighlightDomElement,
+  toggleMapScopes: _actions.default.toggleMapScopes,
+  setExpandedScope: _actions.default.setExpandedScope
 })(Scopes);
+
+exports.default = _default;

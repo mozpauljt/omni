@@ -6,11 +6,19 @@ Object.defineProperty(exports, "__esModule", {
 exports.getPendingBreakpoints = getPendingBreakpoints;
 exports.getPendingBreakpointList = getPendingBreakpointList;
 exports.getPendingBreakpointsForSource = getPendingBreakpointsForSource;
+exports.default = void 0;
 loader.lazyRequireGetter(this, "_sources", "devtools/client/debugger/src/reducers/sources");
 loader.lazyRequireGetter(this, "_breakpoint", "devtools/client/debugger/src/utils/breakpoint/index");
 loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
 
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
+/**
+ * Pending breakpoints reducer
+ * @module reducers/pending-breakpoints
+ */
 function update(state = {}, action) {
   switch (action.type) {
     case "SET_BREAKPOINT":
@@ -20,6 +28,7 @@ function update(state = {}, action) {
       if (action.status === "start") {
         return removeBreakpoint(state, action);
       }
+
       return state;
 
     case "REMOVE_PENDING_BREAKPOINT":
@@ -27,36 +36,33 @@ function update(state = {}, action) {
   }
 
   return state;
-} /* This Source Code Form is subject to the terms of the Mozilla Public
-   * License, v. 2.0. If a copy of the MPL was not distributed with this
-   * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+}
 
-/**
- * Pending breakpoints reducer
- * @module reducers/pending-breakpoints
- */
-
-function setBreakpoint(state, { breakpoint }) {
+function setBreakpoint(state, {
+  breakpoint
+}) {
   if (breakpoint.options.hidden) {
     return state;
   }
 
   const locationId = (0, _breakpoint.makePendingLocationId)(breakpoint.location);
   const pendingBreakpoint = (0, _breakpoint.createPendingBreakpoint)(breakpoint);
-
-  return { ...state, [locationId]: pendingBreakpoint };
+  return { ...state,
+    [locationId]: pendingBreakpoint
+  };
 }
 
-function removeBreakpoint(state, { location }) {
+function removeBreakpoint(state, {
+  location
+}) {
   const locationId = (0, _breakpoint.makePendingLocationId)(location);
-
-  state = { ...state };
+  state = { ...state
+  };
   delete state[locationId];
   return state;
-}
-
-// Selectors
+} // Selectors
 // TODO: these functions should be moved out of the reducer
+
 
 function getPendingBreakpoints(state) {
   return state.pendingBreakpoints;
@@ -68,6 +74,7 @@ function getPendingBreakpointList(state) {
 
 function getPendingBreakpointsForSource(state, source) {
   const sources = (0, _sources.getSourcesByURL)(state, source.url);
+
   if (sources.length > 1 && (0, _source.isGenerated)(source)) {
     // Don't return pending breakpoints for duplicated generated sources
     return [];
@@ -78,4 +85,5 @@ function getPendingBreakpointsForSource(state, source) {
   });
 }
 
-exports.default = update;
+var _default = update;
+exports.default = _default;

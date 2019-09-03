@@ -20,39 +20,42 @@ loader.lazyRequireGetter(this, "_sources", "devtools/client/debugger/src/actions
 loader.lazyRequireGetter(this, "_fetchScopes", "devtools/client/debugger/src/actions/pause/fetchScopes");
 loader.lazyRequireGetter(this, "_prefs", "devtools/client/debugger/src/utils/prefs");
 loader.lazyRequireGetter(this, "_telemetry", "devtools/client/debugger/src/utils/telemetry");
-loader.lazyRequireGetter(this, "_assert", "devtools/client/debugger/src/utils/assert");
 
-var _assert2 = _interopRequireDefault(_assert);
+var _assert = _interopRequireDefault(require("../../utils/assert"));
 
 loader.lazyRequireGetter(this, "_asyncValue", "devtools/client/debugger/src/utils/async-value");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/* -*- indent-tabs-mode: nil; js-indent-level: 2; js-indent-level: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-
 function selectThread(cx, thread) {
-  return async ({ dispatch, getState, client }) => {
-    await dispatch({ cx, type: "SELECT_THREAD", thread });
+  return async ({
+    dispatch,
+    getState,
+    client
+  }) => {
+    await dispatch({
+      cx,
+      type: "SELECT_THREAD",
+      thread
+    }); // Get a new context now that the current thread has changed.
 
-    // Get a new context now that the current thread has changed.
     const threadcx = (0, _selectors.getThreadContext)(getState());
-    (0, _assert2.default)(threadcx.thread == thread, "Thread mismatch");
-
+    (0, _assert.default)(threadcx.thread == thread, "Thread mismatch");
     const serverRequests = [];
     serverRequests.push(dispatch((0, _expressions.evaluateExpressions)(threadcx)));
-
     const frame = (0, _selectors.getSelectedFrame)(getState(), thread);
+
     if (frame) {
       serverRequests.push(dispatch((0, _sources.selectLocation)(threadcx, frame.location)));
       serverRequests.push(dispatch((0, _fetchScopes.fetchScopes)(threadcx)));
     }
+
     await Promise.all(serverRequests);
   };
 }
-
 /**
  * Debugger commands like stepOver, stepIn, stepUp
  *
@@ -60,8 +63,14 @@ function selectThread(cx, thread) {
  * @memberof actions/pause
  * @static
  */
+
+
 function command(cx, type) {
-  return async ({ dispatch, getState, client }) => {
+  return async ({
+    dispatch,
+    getState,
+    client
+  }) => {
     if (type) {
       return dispatch({
         type: "COMMAND",
@@ -73,99 +82,128 @@ function command(cx, type) {
     }
   };
 }
-
 /**
  * StepIn
  * @memberof actions/pause
  * @static
  * @returns {Function} {@link command}
  */
+
+
 function stepIn(cx) {
-  return ({ dispatch, getState }) => {
+  return ({
+    dispatch,
+    getState
+  }) => {
     if (cx.isPaused) {
       return dispatch(command(cx, "stepIn"));
     }
   };
 }
-
 /**
  * stepOver
  * @memberof actions/pause
  * @static
  * @returns {Function} {@link command}
  */
+
+
 function stepOver(cx) {
-  return ({ dispatch, getState }) => {
+  return ({
+    dispatch,
+    getState
+  }) => {
     if (cx.isPaused) {
       return dispatch(astCommand(cx, "stepOver"));
     }
   };
 }
-
 /**
  * stepOut
  * @memberof actions/pause
  * @static
  * @returns {Function} {@link command}
  */
+
+
 function stepOut(cx) {
-  return ({ dispatch, getState }) => {
+  return ({
+    dispatch,
+    getState
+  }) => {
     if (cx.isPaused) {
       return dispatch(command(cx, "stepOut"));
     }
   };
 }
-
 /**
  * resume
  * @memberof actions/pause
  * @static
  * @returns {Function} {@link command}
  */
+
+
 function resume(cx) {
-  return ({ dispatch, getState }) => {
+  return ({
+    dispatch,
+    getState
+  }) => {
     if (cx.isPaused) {
       (0, _telemetry.recordEvent)("continue");
       return dispatch(command(cx, "resume"));
     }
   };
 }
-
 /**
  * rewind
  * @memberof actions/pause
  * @static
  * @returns {Function} {@link command}
  */
+
+
 function rewind(cx) {
-  return ({ dispatch, getState }) => {
+  return ({
+    dispatch,
+    getState
+  }) => {
     if (cx.isPaused) {
       return dispatch(command(cx, "rewind"));
     }
   };
 }
-
 /**
  * reverseStepOver
  * @memberof actions/pause
  * @static
  * @returns {Function} {@link command}
  */
+
+
 function reverseStepOver(cx) {
-  return ({ dispatch, getState }) => {
+  return ({
+    dispatch,
+    getState
+  }) => {
     if (cx.isPaused) {
       return dispatch(astCommand(cx, "reverseStepOver"));
     }
   };
 }
-
 /*
  * Checks for await or yield calls on the paused line
  * This avoids potentially expensive parser calls when we are likely
  * not at an async expression.
  */
+
+
 function hasAwait(content, pauseLocation) {
-  const { line, column } = pauseLocation;
+  const {
+    line,
+    column
+  } = pauseLocation;
+
   if (!content || !(0, _asyncValue.isFulfilled)(content) || content.value.type !== "text") {
     return false;
   }
@@ -177,18 +215,23 @@ function hasAwait(content, pauseLocation) {
   }
 
   const snippet = lineText.slice(column - 50, column + 50);
-
   return !!snippet.match(/(yield|await)/);
 }
-
 /**
  * @memberOf actions/pause
  * @static
  * @param stepType
  * @returns {function(ThunkArgs)}
  */
+
+
 function astCommand(cx, stepType) {
-  return async ({ dispatch, getState, sourceMaps, parser }) => {
+  return async ({
+    dispatch,
+    getState,
+    sourceMaps,
+    parser
+  }) => {
     if (!_prefs.features.asyncStepping) {
       return dispatch(command(cx, stepType));
     }
@@ -201,6 +244,7 @@ function astCommand(cx, stepType) {
 
       if (source && hasAwait(content, frame.location)) {
         const nextLocation = await parser.getNextStep(source.id, frame.location);
+
         if (nextLocation) {
           await dispatch((0, _breakpoints.addHiddenBreakpoint)(cx, nextLocation));
           return dispatch(command(cx, "resume"));

@@ -58,10 +58,9 @@ document.addEventListener("DOMContentLoaded", e => {
   legend.style.gridTemplateAreas =
     "'social cookie tracker fingerprinter cryptominer'";
 
-  document.sendTelemetryEvent = (action, object) => {
+  document.sendTelemetryEvent = (action, object, value = "") => {
     // eslint-disable-next-line no-undef
-    // eslint-disable-next-line no-undef
-    RPMRecordTelemetryEvent("security.ui.protections", action, object, "", {
+    RPMRecordTelemetryEvent("security.ui.protections", action, object, value, {
       category: cbCategory,
     });
   };
@@ -82,7 +81,7 @@ document.addEventListener("DOMContentLoaded", e => {
       "data-l10n-args",
       JSON.stringify({ count: data.sumEvents, earliestDate: dateInMS })
     );
-    summary.setAttribute("data-l10n-id", "graph-total-summary");
+    summary.setAttribute("data-l10n-id", "graph-total-tracker-summary");
 
     // Set a default top size for the height of the graph bars so that small
     // numbers don't fill the whole graph.
@@ -141,6 +140,7 @@ document.addEventListener("DOMContentLoaded", e => {
             cellSpan.setAttribute("role", "cell");
             let div = document.createElement("div");
             div.className = `${type}-bar inner-bar`;
+            div.setAttribute("role", "img");
             div.setAttribute("data-type", type);
             div.style.height = `${dataHeight}%`;
             div.setAttribute(
@@ -192,12 +192,15 @@ document.addEventListener("DOMContentLoaded", e => {
     // Set the total number of each type of tracker on the tabs as well as their
     // "Learn More" links
     for (let type of dataTypes) {
-      document.querySelector(`label[data-type=${type}]`).textContent =
+      document.querySelector(`label[data-type=${type}] span`).textContent =
         weekTypeCounts[type];
       const learnMoreLink = document.getElementById(`${type}-link`);
       learnMoreLink.href = RPMGetFormatURLPref(
         `browser.contentblocking.report.${type}.url`
       );
+      learnMoreLink.addEventListener("click", () => {
+        document.sendTelemetryEvent("click", "trackers_about_link", type);
+      });
     }
 
     // Hide the trackers tab if the user is in standard and

@@ -3,34 +3,30 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.asyncStore = exports.features = exports.prefs = undefined;
 exports.resetSchemaVersion = resetSchemaVersion;
 exports.verifyPrefSchema = verifyPrefSchema;
+exports.asyncStore = exports.features = exports.prefs = void 0;
 
 var _devtoolsModules = require("devtools/client/debugger/dist/vendors").vendored["devtools-modules"];
 
-var _asyncStoreHelper = require("devtools/client/shared/async-store-helper");
-
-var _asyncStoreHelper2 = _interopRequireDefault(_asyncStoreHelper);
+var _asyncStoreHelper = _interopRequireDefault(require("devtools/client/shared/async-store-helper"));
 
 var _devtoolsEnvironment = require("devtools/client/debugger/dist/vendors").vendored["devtools-environment"];
 
-loader.lazyRequireGetter(this, "_devtoolsServices", "Services");
-
-var _devtoolsServices2 = _interopRequireDefault(_devtoolsServices);
+var _devtoolsServices = _interopRequireDefault(require("Services"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// Schema version to bump when the async store format has changed incompatibly
-// and old stores should be cleared.
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-
+// Schema version to bump when the async store format has changed incompatibly
+// and old stores should be cleared.
 const prefsSchemaVersion = 11;
-const pref = _devtoolsServices2.default.pref;
+const pref = _devtoolsServices.default.pref;
 
 if ((0, _devtoolsEnvironment.isDevelopment)()) {
+  pref("devtools.browsertoolbox.fission", false);
   pref("devtools.debugger.logging", false);
   pref("devtools.debugger.alphabetize-outline", false);
   pref("devtools.debugger.auto-pretty-print", false);
@@ -41,13 +37,13 @@ if ((0, _devtoolsEnvironment.isDevelopment)()) {
   pref("devtools.debugger.ignore-caught-exceptions", true);
   pref("devtools.debugger.call-stack-visible", true);
   pref("devtools.debugger.scopes-visible", true);
-  pref("devtools.debugger.component-visible", true);
-  pref("devtools.debugger.workers-visible", true);
-  pref("devtools.debugger.expressions-visible", true);
-  pref("devtools.debugger.xhr-breakpoints-visible", true);
+  pref("devtools.debugger.component-visible", false);
+  pref("devtools.debugger.workers-visible", false);
+  pref("devtools.debugger.expressions-visible", false);
+  pref("devtools.debugger.xhr-breakpoints-visible", false);
   pref("devtools.debugger.breakpoints-visible", true);
-  pref("devtools.debugger.event-listeners-visible", true);
-  pref("devtools.debugger.dom-mutation-breakpoints-visible", true);
+  pref("devtools.debugger.event-listeners-visible", false);
+  pref("devtools.debugger.dom-mutation-breakpoints-visible", false);
   pref("devtools.debugger.start-panel-collapsed", false);
   pref("devtools.debugger.end-panel-collapsed", false);
   pref("devtools.debugger.start-panel-size", 300);
@@ -81,7 +77,6 @@ if ((0, _devtoolsEnvironment.isDevelopment)()) {
   pref("devtools.debugger.features.map-await-expression", true);
   pref("devtools.debugger.features.xhr-breakpoints", true);
   pref("devtools.debugger.features.original-blackbox", true);
-  pref("devtools.debugger.features.windowless-workers", true);
   pref("devtools.debugger.features.event-listeners-breakpoints", true);
   pref("devtools.debugger.features.dom-mutation-breakpoints", true);
   pref("devtools.debugger.features.log-points", true);
@@ -90,7 +85,8 @@ if ((0, _devtoolsEnvironment.isDevelopment)()) {
   pref("devtools.debugger.features.overlay-step-buttons", false);
 }
 
-const prefs = exports.prefs = new _devtoolsModules.PrefsHelper("devtools", {
+const prefs = new _devtoolsModules.PrefsHelper("devtools", {
+  fission: ["Bool", "browsertoolbox.fission"],
   logging: ["Bool", "debugger.logging"],
   editorWrapping: ["Bool", "debugger.ui.editor-wrapping"],
   alphabetizeOutline: ["Bool", "debugger.alphabetize-outline"],
@@ -126,8 +122,8 @@ const prefs = exports.prefs = new _devtoolsModules.PrefsHelper("devtools", {
   mapScopes: ["Bool", "debugger.map-scopes-enabled"],
   logActions: ["Bool", "debugger.log-actions"]
 });
-
-const features = exports.features = new _devtoolsModules.PrefsHelper("devtools.debugger.features", {
+exports.prefs = prefs;
+const features = new _devtoolsModules.PrefsHelper("devtools.debugger.features", {
   asyncStepping: ["Bool", "async-stepping"],
   wasm: ["Bool", "wasm"],
   shortcuts: ["Bool", "shortcuts"],
@@ -152,13 +148,14 @@ const features = exports.features = new _devtoolsModules.PrefsHelper("devtools.d
   showOverlayStepButtons: ["Bool", "debugger.features.overlay-step-buttons"],
   inlinePreview: ["Bool", "inline-preview"]
 });
-
-const asyncStore = exports.asyncStore = (0, _asyncStoreHelper2.default)("debugger", {
+exports.features = features;
+const asyncStore = (0, _asyncStoreHelper.default)("debugger", {
   pendingBreakpoints: ["pending-breakpoints", {}],
   tabs: ["tabs", []],
   xhrBreakpoints: ["xhr-breakpoints", []],
   eventListenerBreakpoints: ["event-listener-breakpoints", undefined]
 });
+exports.asyncStore = asyncStore;
 
 function resetSchemaVersion() {
   prefs.debuggerPrefsSchemaVersion = prefsSchemaVersion;

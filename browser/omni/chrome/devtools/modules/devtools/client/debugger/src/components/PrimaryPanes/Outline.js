@@ -3,11 +3,9 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Outline = undefined;
+exports.default = exports.Outline = void 0;
 
-var _react = require("devtools/client/shared/vendor/react");
-
-var _react2 = _interopRequireDefault(_react);
+var _react = _interopRequireWildcard(require("devtools/client/shared/vendor/react"));
 
 var _devtoolsContextmenu = require("devtools/client/debugger/dist/vendors").vendored["devtools-contextmenu"];
 
@@ -17,22 +15,24 @@ var _fuzzaldrinPlus = require("devtools/client/debugger/dist/vendors").vendored[
 
 loader.lazyRequireGetter(this, "_clipboard", "devtools/client/debugger/src/utils/clipboard");
 loader.lazyRequireGetter(this, "_function", "devtools/client/debugger/src/utils/function");
-loader.lazyRequireGetter(this, "_actions", "devtools/client/debugger/src/actions/index");
 
-var _actions2 = _interopRequireDefault(_actions);
+var _actions = _interopRequireDefault(require("../../actions/index"));
 
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
-loader.lazyRequireGetter(this, "_OutlineFilter", "devtools/client/debugger/src/components/PrimaryPanes/OutlineFilter");
 
-var _OutlineFilter2 = _interopRequireDefault(_OutlineFilter);
+var _OutlineFilter = _interopRequireDefault(require("./OutlineFilter"));
 
-loader.lazyRequireGetter(this, "_PreviewFunction", "devtools/client/debugger/src/components/shared/PreviewFunction");
-
-var _PreviewFunction2 = _interopRequireDefault(_PreviewFunction);
+var _PreviewFunction = _interopRequireDefault(require("../shared/PreviewFunction"));
 
 var _lodash = require("devtools/client/shared/vendor/lodash");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 /**
  * Check whether the name argument matches the fuzzy filter argument
@@ -40,6 +40,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 const filterOutlineItem = (name, filter) => {
   // Set higher to make the fuzzaldrin filter more specific
   const FUZZALDRIN_FILTER_THRESHOLD = 15000;
+
   if (!filter) {
     return true;
   }
@@ -48,20 +49,26 @@ const filterOutlineItem = (name, filter) => {
     // when filter is a single char just check if it starts with the char
     return filter.toLowerCase() === name.toLowerCase()[0];
   }
+
   return (0, _fuzzaldrinPlus.score)(name, filter) > FUZZALDRIN_FILTER_THRESHOLD;
-}; /* This Source Code Form is subject to the terms of the Mozilla Public
-    * License, v. 2.0. If a copy of the MPL was not distributed with this
-    * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+};
 
 class Outline extends _react.Component {
   constructor(props) {
     super(props);
     this.updateFilter = this.updateFilter.bind(this);
-    this.state = { filter: "" };
+    this.state = {
+      filter: ""
+    };
   }
 
   selectItem(location) {
-    const { cx, selectedSource, selectLocation } = this.props;
+    const {
+      cx,
+      selectedSource,
+      selectLocation
+    } = this.props;
+
     if (!selectedSource) {
       return;
     }
@@ -76,14 +83,12 @@ class Outline extends _react.Component {
   onContextMenu(event, func) {
     event.stopPropagation();
     event.preventDefault();
-
     const {
       selectedSource,
       getFunctionText,
       flashLineRange,
       selectedLocation
     } = this.props;
-
     const copyFunctionKey = L10N.getStr("copyFunction.accesskey");
     const copyFunctionLabel = L10N.getStr("copyFunction.label");
 
@@ -93,7 +98,6 @@ class Outline extends _react.Component {
 
     const sourceLine = func.location.start.line;
     const functionText = getFunctionText(sourceLine);
-
     const copyFunctionItem = {
       id: "node-menu-copy-function",
       label: copyFunctionLabel,
@@ -113,45 +117,43 @@ class Outline extends _react.Component {
   }
 
   updateFilter(filter) {
-    this.setState({ filter: filter.trim() });
+    this.setState({
+      filter: filter.trim()
+    });
   }
 
   renderPlaceholder() {
     const placeholderMessage = this.props.selectedSource ? L10N.getStr("outline.noFunctions") : L10N.getStr("outline.noFileSelected");
-
-    return _react2.default.createElement(
-      "div",
-      { className: "outline-pane-info" },
-      placeholderMessage
-    );
+    return _react.default.createElement("div", {
+      className: "outline-pane-info"
+    }, placeholderMessage);
   }
 
   renderLoading() {
-    return _react2.default.createElement(
-      "div",
-      { className: "outline-pane-info" },
-      L10N.getStr("loadingText")
-    );
+    return _react.default.createElement("div", {
+      className: "outline-pane-info"
+    }, L10N.getStr("loadingText"));
   }
 
   renderFunction(func) {
-    const { name, location, parameterNames } = func;
-
-    return _react2.default.createElement(
-      "li",
-      {
-        key: `${name}:${location.start.line}:${location.start.column}`,
-        className: "outline-list__element",
-        onClick: () => this.selectItem(location),
-        onContextMenu: e => this.onContextMenu(e, func)
-      },
-      _react2.default.createElement(
-        "span",
-        { className: "outline-list__element-icon" },
-        "\u03BB"
-      ),
-      _react2.default.createElement(_PreviewFunction2.default, { func: { name, parameterNames } })
-    );
+    const {
+      name,
+      location,
+      parameterNames
+    } = func;
+    return _react.default.createElement("li", {
+      key: `${name}:${location.start.line}:${location.start.column}`,
+      className: "outline-list__element",
+      onClick: () => this.selectItem(location),
+      onContextMenu: e => this.onContextMenu(e, func)
+    }, _react.default.createElement("span", {
+      className: "outline-list__element-icon"
+    }, "\u03BB"), _react.default.createElement(_PreviewFunction.default, {
+      func: {
+        name,
+        parameterNames
+      }
+    }));
   }
 
   renderClassFunctions(klass, functions) {
@@ -162,42 +164,25 @@ class Outline extends _react.Component {
     const classFunc = functions.find(func => func.name === klass);
     const classFunctions = functions.filter(func => func.klass === klass);
     const classInfo = this.props.symbols.classes.find(c => c.name === klass);
-
-    const heading = classFunc ? _react2.default.createElement(
-      "h2",
-      null,
-      this.renderFunction(classFunc)
-    ) : _react2.default.createElement(
-      "h2",
-      {
-        onClick: classInfo ? () => this.selectItem(classInfo.location) : null
-      },
-      _react2.default.createElement(
-        "span",
-        { className: "keyword" },
-        "class"
-      ),
-      " ",
-      klass
-    );
-
-    return _react2.default.createElement(
-      "li",
-      { className: "outline-list__class", key: klass },
-      heading,
-      _react2.default.createElement(
-        "ul",
-        { className: "outline-list__class-list" },
-        classFunctions.map(func => this.renderFunction(func))
-      )
-    );
+    const heading = classFunc ? _react.default.createElement("h2", null, this.renderFunction(classFunc)) : _react.default.createElement("h2", {
+      onClick: classInfo ? () => this.selectItem(classInfo.location) : null
+    }, _react.default.createElement("span", {
+      className: "keyword"
+    }, "class"), " ", klass);
+    return _react.default.createElement("li", {
+      className: "outline-list__class",
+      key: klass
+    }, heading, _react.default.createElement("ul", {
+      className: "outline-list__class-list"
+    }, classFunctions.map(func => this.renderFunction(func))));
   }
 
   renderFunctions(functions) {
-    const { filter } = this.state;
+    const {
+      filter
+    } = this.state;
     let classes = (0, _lodash.uniq)(functions.map(func => func.klass));
     let namedFunctions = functions.filter(func => filterOutlineItem(func.name, filter) && !func.klass && !classes.includes(func.name));
-
     let classFunctions = functions.filter(func => filterOutlineItem(func.name, filter) && !!func.klass);
 
     if (this.props.alphabetizeOutline) {
@@ -206,32 +191,28 @@ class Outline extends _react.Component {
       classFunctions = (0, _lodash.sortBy)(classFunctions, "name");
     }
 
-    return _react2.default.createElement(
-      "ul",
-      { className: "outline-list devtools-monospace" },
-      namedFunctions.map(func => this.renderFunction(func)),
-      classes.map(klass => this.renderClassFunctions(klass, classFunctions))
-    );
+    return _react.default.createElement("ul", {
+      className: "outline-list devtools-monospace"
+    }, namedFunctions.map(func => this.renderFunction(func)), classes.map(klass => this.renderClassFunctions(klass, classFunctions)));
   }
 
   renderFooter() {
-    return _react2.default.createElement(
-      "div",
-      { className: "outline-footer" },
-      _react2.default.createElement(
-        "button",
-        {
-          onClick: this.props.onAlphabetizeClick,
-          className: this.props.alphabetizeOutline ? "active" : ""
-        },
-        L10N.getStr("outline.sortLabel")
-      )
-    );
+    return _react.default.createElement("div", {
+      className: "outline-footer"
+    }, _react.default.createElement("button", {
+      onClick: this.props.onAlphabetizeClick,
+      className: this.props.alphabetizeOutline ? "active" : ""
+    }, L10N.getStr("outline.sortLabel")));
   }
 
   render() {
-    const { symbols, selectedSource } = this.props;
-    const { filter } = this.state;
+    const {
+      symbols,
+      selectedSource
+    } = this.props;
+    const {
+      filter
+    } = this.state;
 
     if (!selectedSource) {
       return this.renderPlaceholder();
@@ -247,29 +228,25 @@ class Outline extends _react.Component {
       return this.renderPlaceholder();
     }
 
-    return _react2.default.createElement(
-      "div",
-      { className: "outline" },
-      _react2.default.createElement(
-        "div",
-        null,
-        _react2.default.createElement(_OutlineFilter2.default, { filter: filter, updateFilter: this.updateFilter }),
-        this.renderFunctions(symbolsToDisplay),
-        this.renderFooter()
-      )
-    );
+    return _react.default.createElement("div", {
+      className: "outline"
+    }, _react.default.createElement("div", null, _react.default.createElement(_OutlineFilter.default, {
+      filter: filter,
+      updateFilter: this.updateFilter
+    }), this.renderFunctions(symbolsToDisplay), this.renderFooter()));
   }
+
 }
 
 exports.Outline = Outline;
+
 const mapStateToProps = state => {
   const selectedSource = (0, _selectors.getSelectedSourceWithContent)(state);
-  const symbols = selectedSource ? (0, _selectors.getSymbols)(state, selectedSource.source) : null;
-
+  const symbols = selectedSource ? (0, _selectors.getSymbols)(state, selectedSource) : null;
   return {
     cx: (0, _selectors.getContext)(state),
     symbols,
-    selectedSource: selectedSource && selectedSource.source,
+    selectedSource: selectedSource,
     selectedLocation: (0, _selectors.getSelectedLocation)(state),
     getFunctionText: line => {
       if (selectedSource) {
@@ -281,7 +258,9 @@ const mapStateToProps = state => {
   };
 };
 
-exports.default = (0, _connect.connect)(mapStateToProps, {
-  selectLocation: _actions2.default.selectLocation,
-  flashLineRange: _actions2.default.flashLineRange
+var _default = (0, _connect.connect)(mapStateToProps, {
+  selectLocation: _actions.default.selectLocation,
+  flashLineRange: _actions.default.flashLineRange
 })(Outline);
+
+exports.default = _default;

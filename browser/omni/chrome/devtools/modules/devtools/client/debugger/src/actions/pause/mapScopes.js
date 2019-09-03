@@ -9,9 +9,8 @@ exports.mapScopes = mapScopes;
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
 loader.lazyRequireGetter(this, "_loadSourceText", "devtools/client/debugger/src/actions/sources/loadSourceText");
 loader.lazyRequireGetter(this, "_promise", "devtools/client/debugger/src/actions/utils/middleware/promise");
-loader.lazyRequireGetter(this, "_assert", "devtools/client/debugger/src/utils/assert");
 
-var _assert2 = _interopRequireDefault(_assert);
+var _assert = _interopRequireDefault(require("../../utils/assert"));
 
 loader.lazyRequireGetter(this, "_log", "devtools/client/debugger/src/utils/log");
 loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
@@ -23,29 +22,34 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-
 async function buildOriginalScopes(frame, client, cx, frameId, generatedScopes) {
   if (!frame.originalVariables) {
     throw new TypeError("(frame.originalVariables: XScopeVariables)");
   }
+
   const originalVariables = frame.originalVariables;
   const frameBase = originalVariables.frameBase || "";
   const inputs = [];
+
   for (let i = 0; i < originalVariables.vars.length; i++) {
     const expr = originalVariables.vars[i].expr || "void 0";
     inputs[i] = expr.replace(/\bfp\(\)/g, frameBase);
   }
+
   const results = await client.evaluateExpressions(inputs, {
     frameId,
     thread: cx.thread
   });
-
   const variables = {};
+
   for (let i = 0; i < originalVariables.vars.length; i++) {
     const name = originalVariables.vars[i].name;
-    variables[name] = { value: results[i].result };
+    variables[name] = {
+      value: results[i].result
+    };
     console.log("!Variable", name, inputs[i]);
   }
+
   const bindings = {
     arguments: [],
     variables
@@ -67,13 +71,23 @@ async function buildOriginalScopes(frame, client, cx, frameId, generatedScopes) 
 }
 
 function toggleMapScopes() {
-  return async function ({ dispatch, getState, client, sourceMaps }) {
+  return async function ({
+    dispatch,
+    getState,
+    client,
+    sourceMaps
+  }) {
     if ((0, _selectors.isMapScopesEnabled)(getState())) {
-      return dispatch({ type: "TOGGLE_MAP_SCOPES", mapScopes: false });
+      return dispatch({
+        type: "TOGGLE_MAP_SCOPES",
+        mapScopes: false
+      });
     }
 
-    dispatch({ type: "TOGGLE_MAP_SCOPES", mapScopes: true });
-
+    dispatch({
+      type: "TOGGLE_MAP_SCOPES",
+      mapScopes: true
+    });
     const cx = (0, _selectors.getThreadContext)(getState());
 
     if ((0, _selectors.getSelectedOriginalScope)(getState(), cx.thread)) {
@@ -82,6 +96,7 @@ function toggleMapScopes() {
 
     const scopes = (0, _selectors.getSelectedGeneratedScope)(getState(), cx.thread);
     const frame = (0, _selectors.getSelectedFrame)(getState(), cx.thread);
+
     if (!scopes || !frame) {
       return;
     }
@@ -92,13 +107,14 @@ function toggleMapScopes() {
 
 function mapScopes(cx, scopes, frame) {
   return async function (thunkArgs) {
-    const { dispatch, client, getState } = thunkArgs;
-    (0, _assert2.default)(cx.thread == frame.thread, "Thread mismatch");
-
+    const {
+      dispatch,
+      client,
+      getState
+    } = thunkArgs;
+    (0, _assert.default)(cx.thread == frame.thread, "Thread mismatch");
     const generatedSource = (0, _selectors.getSource)(getState(), frame.generatedLocation.sourceId);
-
     const source = (0, _selectors.getSource)(getState(), frame.location.sourceId);
-
     await dispatch({
       type: "MAP_SCOPES",
       cx,
@@ -114,15 +130,25 @@ function mapScopes(cx, scopes, frame) {
           return null;
         }
 
-        await dispatch((0, _loadSourceText.loadSourceText)({ cx, source }));
+        await dispatch((0, _loadSourceText.loadSourceText)({
+          cx,
+          source
+        }));
+
         if ((0, _source.isOriginal)(source)) {
-          await dispatch((0, _loadSourceText.loadSourceText)({ cx, source: generatedSource }));
+          await dispatch((0, _loadSourceText.loadSourceText)({
+            cx,
+            source: generatedSource
+          }));
         }
 
         try {
           const content = (0, _selectors.getSource)(getState(), source.id) && (0, _selectors.getSourceContent)(getState(), source.id);
-
-          return await (0, _mapScopes.buildMappedScopes)(source, content && (0, _asyncValue.isFulfilled)(content) ? content.value : { type: "text", value: "", contentType: undefined }, frame, (await scopes), thunkArgs);
+          return await (0, _mapScopes.buildMappedScopes)(source, content && (0, _asyncValue.isFulfilled)(content) ? content.value : {
+            type: "text",
+            value: "",
+            contentType: undefined
+          }, frame, (await scopes), thunkArgs);
         } catch (e) {
           (0, _log.log)(e);
           return null;

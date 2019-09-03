@@ -3,8 +3,8 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80 filetype=javascript: */
+exports.Task = void 0;
+
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", {
 /**
  * This object provides the public module functions.
  */
-const Task = exports.Task = {
+const Task = {
   // XXX: Not sure if this works in all cases...
   async: function (task) {
     return function () {
@@ -47,3 +47,4 @@ const Task = exports.Task = {
     });
   }
 };
+exports.Task = Task;

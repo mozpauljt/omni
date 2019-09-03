@@ -10,10 +10,10 @@ exports.sortSelectedLocations = sortSelectedLocations;
 var _lodash = require("devtools/client/shared/vendor/lodash");
 
 loader.lazyRequireGetter(this, "_selectedLocation", "devtools/client/debugger/src/utils/selected-location");
+
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-
 function comparePosition(a, b) {
   return a && b && a.line == b.line && a.column == b.column;
 }
@@ -34,8 +34,7 @@ function createLocation({
 }
 
 function sortSelectedLocations(locations, selectedSource) {
-  return (0, _lodash.sortBy)(locations, [
-  // Priority: line number, undefined column, column number
+  return (0, _lodash.sortBy)(locations, [// Priority: line number, undefined column, column number
   location => (0, _selectedLocation.getSelectedLocation)(location, selectedSource).line, location => {
     const selectedLocation = (0, _selectedLocation.getSelectedLocation)(location, selectedSource);
     return selectedLocation.column === undefined || selectedLocation.column;

@@ -5,9 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.recordEvent = recordEvent;
 
-var _telemetry = require("devtools/client/shared/telemetry");
-
-var _telemetry2 = _interopRequireDefault(_telemetry);
+var _telemetry = _interopRequireDefault(require("devtools/client/shared/telemetry"));
 
 var _devtoolsEnvironment = require("devtools/client/debugger/dist/vendors").vendored["devtools-environment"];
 
@@ -56,13 +54,12 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *   this, "pause", "debugger", null, "collapsed_callstacks", 1
  * );
  */
-
-const telemetry = new _telemetry2.default();
-
+const telemetry = new _telemetry.default();
 /**
  * @memberof utils/telemetry
  * @static
  */
+
 function recordEvent(eventName, fields = {}) {
   let sessionId = -1;
 
@@ -73,8 +70,9 @@ function recordEvent(eventName, fields = {}) {
   if (window.parent.frameElement) {
     sessionId = window.parent.frameElement.getAttribute("session_id");
   }
-
   /* eslint-disable camelcase */
+
+
   telemetry.recordEvent(eventName, "debugger", null, {
     session_id: sessionId,
     ...fields
@@ -83,9 +81,11 @@ function recordEvent(eventName, fields = {}) {
 
   if (!(0, _devtoolsEnvironment.isFirefoxPanel)() && window.dbg) {
     const events = window.dbg._telemetry.events;
+
     if (!events[eventName]) {
       events[eventName] = [];
     }
+
     events[eventName].push(fields);
   }
 }

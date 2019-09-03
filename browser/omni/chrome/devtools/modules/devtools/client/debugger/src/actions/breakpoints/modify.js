@@ -17,7 +17,9 @@ loader.lazyRequireGetter(this, "_telemetry", "devtools/client/debugger/src/utils
 loader.lazyRequireGetter(this, "_location", "devtools/client/debugger/src/utils/location");
 loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
 
-
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 // This file has the primitive operations used to modify individual breakpoints
 // and keep them in sync with the breakpoints installed on server threads. These
 // are collected here to make it easier to preserve the following invariant:
@@ -41,13 +43,10 @@ loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/so
 // a matching source appears, either the server breakpoint will be removed or a
 // breakpoint will be added to the reducer, to restore the above invariant.
 // See syncBreakpoint.js for more.
-
 function clientSetBreakpoint(client, state, breakpoint) {
   const breakpointLocation = (0, _breakpoint.makeBreakpointLocation)(state, breakpoint.generatedLocation);
   return client.setBreakpoint(breakpointLocation, breakpoint.options);
-} /* This Source Code Form is subject to the terms of the Mozilla Public
-   * License, v. 2.0. If a copy of the MPL was not distributed with this
-   * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+}
 
 function clientRemoveBreakpoint(client, state, generatedLocation) {
   const breakpointLocation = (0, _breakpoint.makeBreakpointLocation)(state, generatedLocation);
@@ -55,8 +54,14 @@ function clientRemoveBreakpoint(client, state, generatedLocation) {
 }
 
 function enableBreakpoint(cx, initialBreakpoint) {
-  return async ({ dispatch, getState, client, sourceMaps }) => {
+  return async ({
+    dispatch,
+    getState,
+    client,
+    sourceMaps
+  }) => {
     const breakpoint = (0, _selectors.getBreakpoint)(getState(), initialBreakpoint.location);
+
     if (!breakpoint || !breakpoint.disabled) {
       return;
     }
@@ -64,28 +69,42 @@ function enableBreakpoint(cx, initialBreakpoint) {
     return dispatch({
       type: "SET_BREAKPOINT",
       cx,
-      breakpoint: { ...breakpoint, disabled: false },
+      breakpoint: { ...breakpoint,
+        disabled: false
+      },
       [_promise.PROMISE]: clientSetBreakpoint(client, getState(), breakpoint)
     });
   };
 }
 
 function addBreakpoint(cx, initialLocation, options = {}, disabled = false, shouldCancel = () => false) {
-  return async ({ dispatch, getState, sourceMaps, client }) => {
+  return async ({
+    dispatch,
+    getState,
+    sourceMaps,
+    client
+  }) => {
     (0, _telemetry.recordEvent)("add_breakpoint");
-
-    const { sourceId, column, line } = initialLocation;
-
-    await dispatch((0, _breakpointPositions.setBreakpointPositions)({ cx, sourceId, line }));
-
+    const {
+      sourceId,
+      column,
+      line
+    } = initialLocation;
+    await dispatch((0, _breakpointPositions.setBreakpointPositions)({
+      cx,
+      sourceId,
+      line
+    }));
     const position = column ? (0, _selectors.getBreakpointPositionsForLocation)(getState(), initialLocation) : (0, _selectors.getFirstBreakpointPosition)(getState(), initialLocation);
 
     if (!position) {
       return;
     }
 
-    const { location, generatedLocation } = position;
-
+    const {
+      location,
+      generatedLocation
+    } = position;
     const source = (0, _selectors.getSource)(getState(), location.sourceId);
     const generatedSource = (0, _selectors.getSource)(getState(), generatedLocation.sourceId);
 
@@ -95,13 +114,10 @@ function addBreakpoint(cx, initialLocation, options = {}, disabled = false, shou
 
     const symbols = (0, _selectors.getSymbols)(getState(), source);
     const astLocation = (0, _breakpoint.getASTLocation)(source, symbols, location);
-
     const originalContent = (0, _selectors.getSourceContent)(getState(), source.id);
     const originalText = (0, _source.getTextAtPosition)(source.id, originalContent, location);
-
     const content = (0, _selectors.getSourceContent)(getState(), generatedSource.id);
     const text = (0, _source.getTextAtPosition)(generatedSource.id, content, generatedLocation);
-
     const id = (0, _breakpoint.makeBreakpointId)(location);
     const breakpoint = {
       id,
@@ -128,18 +144,23 @@ function addBreakpoint(cx, initialLocation, options = {}, disabled = false, shou
     });
   };
 }
-
 /**
  * Remove a single breakpoint
  *
  * @memberof actions/breakpoints
  * @static
  */
-function removeBreakpoint(cx, initialBreakpoint) {
-  return ({ dispatch, getState, client }) => {
-    (0, _telemetry.recordEvent)("remove_breakpoint");
 
+
+function removeBreakpoint(cx, initialBreakpoint) {
+  return ({
+    dispatch,
+    getState,
+    client
+  }) => {
+    (0, _telemetry.recordEvent)("remove_breakpoint");
     const breakpoint = (0, _selectors.getBreakpoint)(getState(), initialBreakpoint.location);
+
     if (!breakpoint) {
       return;
     }
@@ -153,7 +174,6 @@ function removeBreakpoint(cx, initialBreakpoint) {
     });
   };
 }
-
 /**
  * Remove all installed, pending, and client breakpoints associated with a
  * target generated location.
@@ -161,13 +181,23 @@ function removeBreakpoint(cx, initialBreakpoint) {
  * @memberof actions/breakpoints
  * @static
  */
+
+
 function removeBreakpointAtGeneratedLocation(cx, target) {
-  return ({ dispatch, getState, client }) => {
+  return ({
+    dispatch,
+    getState,
+    client
+  }) => {
     // remove breakpoint from the server
-    const onBreakpointRemoved = clientRemoveBreakpoint(client, getState(), target);
-    // Remove any breakpoints matching the generated location.
+    const onBreakpointRemoved = clientRemoveBreakpoint(client, getState(), target); // Remove any breakpoints matching the generated location.
+
     const breakpoints = (0, _selectors.getBreakpointsList)(getState());
-    for (const { location, generatedLocation } of breakpoints) {
+
+    for (const {
+      location,
+      generatedLocation
+    } of breakpoints) {
       if (generatedLocation.sourceId == target.sourceId && (0, _location.comparePosition)(generatedLocation, target)) {
         dispatch({
           type: "REMOVE_BREAKPOINT",
@@ -176,11 +206,15 @@ function removeBreakpointAtGeneratedLocation(cx, target) {
           [_promise.PROMISE]: onBreakpointRemoved
         });
       }
-    }
+    } // Remove any remaining pending breakpoints matching the generated location.
 
-    // Remove any remaining pending breakpoints matching the generated location.
+
     const pending = (0, _selectors.getPendingBreakpointList)(getState());
-    for (const { location, generatedLocation } of pending) {
+
+    for (const {
+      location,
+      generatedLocation
+    } of pending) {
       if (generatedLocation.sourceUrl == target.sourceUrl && (0, _location.comparePosition)(generatedLocation, target)) {
         dispatch({
           type: "REMOVE_PENDING_BREAKPOINT",
@@ -189,19 +223,26 @@ function removeBreakpointAtGeneratedLocation(cx, target) {
         });
       }
     }
+
     return onBreakpointRemoved;
   };
 }
-
 /**
  * Disable a single breakpoint
  *
  * @memberof actions/breakpoints
  * @static
  */
+
+
 function disableBreakpoint(cx, initialBreakpoint) {
-  return ({ dispatch, getState, client }) => {
+  return ({
+    dispatch,
+    getState,
+    client
+  }) => {
     const breakpoint = (0, _selectors.getBreakpoint)(getState(), initialBreakpoint.location);
+
     if (!breakpoint || breakpoint.disabled) {
       return;
     }
@@ -209,12 +250,13 @@ function disableBreakpoint(cx, initialBreakpoint) {
     return dispatch({
       type: "SET_BREAKPOINT",
       cx,
-      breakpoint: { ...breakpoint, disabled: true },
+      breakpoint: { ...breakpoint,
+        disabled: true
+      },
       [_promise.PROMISE]: clientRemoveBreakpoint(client, getState(), breakpoint.generatedLocation)
     });
   };
 }
-
 /**
  * Update the options of a breakpoint.
  *
@@ -226,16 +268,26 @@ function disableBreakpoint(cx, initialBreakpoint) {
  * @param {Object} options
  *        Any options to set on the breakpoint
  */
+
+
 function setBreakpointOptions(cx, location, options = {}) {
-  return ({ dispatch, getState, client, sourceMaps }) => {
+  return ({
+    dispatch,
+    getState,
+    client,
+    sourceMaps
+  }) => {
     let breakpoint = (0, _selectors.getBreakpoint)(getState(), location);
+
     if (!breakpoint) {
       return dispatch(addBreakpoint(cx, location, options));
-    }
+    } // Note: setting a breakpoint's options implicitly enables it.
 
-    // Note: setting a breakpoint's options implicitly enables it.
-    breakpoint = { ...breakpoint, disabled: false, options };
 
+    breakpoint = { ...breakpoint,
+      disabled: false,
+      options
+    };
     return dispatch({
       type: "SET_BREAKPOINT",
       cx,

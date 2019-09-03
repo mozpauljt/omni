@@ -7,28 +7,29 @@ exports.updateFrameLocation = updateFrameLocation;
 exports.mapDisplayNames = mapDisplayNames;
 exports.mapFrames = mapFrames;
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
-loader.lazyRequireGetter(this, "_assert", "devtools/client/debugger/src/utils/assert");
 
-var _assert2 = _interopRequireDefault(_assert);
+var _assert = _interopRequireDefault(require("../../utils/assert"));
 
 loader.lazyRequireGetter(this, "_ast", "devtools/client/debugger/src/utils/ast");
 loader.lazyRequireGetter(this, "_symbols", "devtools/client/debugger/src/actions/sources/symbols");
 
-var _devtoolsSourceMap = require("devtools/client/shared/source-map/index.js");
+var _devtoolsSourceMap = _interopRequireWildcard(require("devtools/client/shared/source-map/index.js"));
 
-var _devtoolsSourceMap2 = _interopRequireDefault(_devtoolsSourceMap);
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 function isFrameBlackboxed(state, frame) {
   const source = (0, _selectors.getSource)(state, frame.location.sourceId);
   return source && source.isBlackBoxed;
-} /* This Source Code Form is subject to the terms of the Mozilla Public
-   * License, v. 2.0. If a copy of the MPL was not distributed with this
-   * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+}
 
 function getSelectedFrameId(state, thread, frames) {
   let selectedFrame = (0, _selectors.getSelectedFrame)(state, thread);
+
   if (selectedFrame && !isFrameBlackboxed(state, selectedFrame)) {
     return selectedFrame.id;
   }
@@ -41,8 +42,8 @@ function updateFrameLocation(frame, sourceMaps) {
   if (frame.isOriginal) {
     return Promise.resolve(frame);
   }
-  return sourceMaps.getOriginalLocation(frame.location).then(loc => ({
-    ...frame,
+
+  return sourceMaps.getOriginalLocation(frame.location).then(loc => ({ ...frame,
     location: loc,
     generatedLocation: frame.generatedLocation || frame.location
   }));
@@ -81,7 +82,9 @@ function mapDisplayNames(frames, getState) {
     }
 
     const originalDisplayName = originalFunction.name;
-    return { ...frame, originalDisplayName };
+    return { ...frame,
+      originalDisplayName
+    };
   });
 }
 
@@ -89,39 +92,41 @@ function isWasmOriginalSourceFrame(frame, getState) {
   if ((0, _devtoolsSourceMap.isGeneratedId)(frame.location.sourceId)) {
     return false;
   }
-  const generatedSource = (0, _selectors.getSource)(getState(), frame.generatedLocation.sourceId);
 
+  const generatedSource = (0, _selectors.getSource)(getState(), frame.generatedLocation.sourceId);
   return Boolean(generatedSource && generatedSource.isWasm);
 }
 
 async function expandFrames(frames, sourceMaps, getState) {
   const result = [];
+
   for (let i = 0; i < frames.length; ++i) {
     const frame = frames[i];
+
     if (frame.isOriginal || !isWasmOriginalSourceFrame(frame, getState)) {
       result.push(frame);
       continue;
     }
+
     const originalFrames = await sourceMaps.getOriginalStackFrames(frame.generatedLocation);
+
     if (!originalFrames) {
       result.push(frame);
       continue;
     }
 
-    (0, _assert2.default)(originalFrames.length > 0, "Expected at least one original frame");
-    // First entry has not specific location -- use one from original frame.
-    originalFrames[0] = {
-      ...originalFrames[0],
+    (0, _assert.default)(originalFrames.length > 0, "Expected at least one original frame"); // First entry has not specific location -- use one from original frame.
+
+    originalFrames[0] = { ...originalFrames[0],
       location: frame.location
     };
-
     originalFrames.forEach((originalFrame, j) => {
       if (!originalFrame.location) {
         return;
-      }
-
-      // Keep outer most frame with true actor ID, and generate uniquie
+      } // Keep outer most frame with true actor ID, and generate uniquie
       // one for the nested frames.
+
+
       const id = j == 0 ? frame.id : `${frame.id}-originalFrame${j}`;
       result.push({
         id,
@@ -140,16 +145,22 @@ async function expandFrames(frames, sourceMaps, getState) {
       });
     });
   }
+
   return result;
 }
 
-async function updateFrameSymbols(cx, frames, { dispatch, getState }) {
+async function updateFrameSymbols(cx, frames, {
+  dispatch,
+  getState
+}) {
   await Promise.all(frames.map(frame => {
     const source = (0, _selectors.getSourceFromId)(getState(), frame.location.sourceId);
-    return dispatch((0, _symbols.setSymbols)({ cx, source }));
+    return dispatch((0, _symbols.setSymbols)({
+      cx,
+      source
+    }));
   }));
 }
-
 /**
  * Map call stack frame locations and display names to originals.
  * e.g.
@@ -159,20 +170,25 @@ async function updateFrameSymbols(cx, frames, { dispatch, getState }) {
  * @memberof actions/pause
  * @static
  */
+
+
 function mapFrames(cx) {
   return async function (thunkArgs) {
-    const { dispatch, getState, sourceMaps } = thunkArgs;
+    const {
+      dispatch,
+      getState,
+      sourceMaps
+    } = thunkArgs;
     const frames = (0, _selectors.getFrames)(getState(), cx.thread);
+
     if (!frames) {
       return;
     }
 
     let mappedFrames = await updateFrameLocations(frames, sourceMaps);
     await updateFrameSymbols(cx, mappedFrames, thunkArgs);
-
     mappedFrames = await expandFrames(mappedFrames, sourceMaps, getState);
     mappedFrames = mapDisplayNames(mappedFrames, getState);
-
     const selectedFrameId = getSelectedFrameId(getState(), cx.thread, mappedFrames);
     dispatch({
       type: "MAP_FRAMES",

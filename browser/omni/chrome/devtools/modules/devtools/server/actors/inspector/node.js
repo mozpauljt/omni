@@ -11,7 +11,9 @@ const InspectorUtils = require("InspectorUtils");
 const protocol = require("devtools/shared/protocol");
 const { PSEUDO_CLASSES } = require("devtools/shared/css/constants");
 const { nodeSpec, nodeListSpec } = require("devtools/shared/specs/node");
-const { DebuggerServer } = require("devtools/server/debugger-server");
+const {
+  connectToFrame,
+} = require("devtools/server/connectors/frame-connector");
 
 loader.lazyRequireGetter(
   this,
@@ -143,11 +145,6 @@ loader.lazyRequireGetter(
 
 const SUBGRID_ENABLED = Services.prefs.getBoolPref(
   "layout.css.grid-template-subgrid-value.enabled"
-);
-
-const BROWSER_TOOLBOX_FISSION_ENABLED = Services.prefs.getBoolPref(
-  "devtools.browsertoolbox.fission",
-  false
 );
 
 const FONT_FAMILY_PREVIEW_TEXT = "The quick brown fox jumps over the lazy dog";
@@ -317,8 +314,7 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
     return (
       this.numChildren == 0 &&
       ChromeUtils.getClassName(this.rawNode) == "XULFrameElement" &&
-      this.rawNode.getAttribute("remote") == "true" &&
-      BROWSER_TOOLBOX_FISSION_ENABLED
+      this.rawNode.getAttribute("remote") == "true"
     );
   },
 
@@ -687,6 +683,19 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
   },
 
   /**
+   * Finds the background color range for the parent of a single text node
+   * (i.e. for multi-colored backgrounds with gradients, images) or a single
+   * background color for single-colored backgrounds. Defaults to the closest
+   * background color if an error is encountered.
+   *
+   * @return {Object}
+   *         Object with one or more of the following properties: value, min, max
+   */
+  getBackgroundColor: function() {
+    return InspectorActorUtils.getBackgroundColor(this);
+  },
+
+  /**
    * Returns an object with the width and height of the node's owner window.
    *
    * @return {Object}
@@ -711,7 +720,7 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
         message: "Tried to call `connectToRemoteFrame` on a local frame",
       };
     }
-    return DebuggerServer.connectToFrame(this.conn, this.rawNode);
+    return connectToFrame(this.conn, this.rawNode);
   },
 });
 

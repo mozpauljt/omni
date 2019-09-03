@@ -9,26 +9,27 @@ exports.getMappedLocation = getMappedLocation;
 exports.mapLocation = mapLocation;
 exports.isOriginalSource = isOriginalSource;
 
-var _devtoolsSourceMap = require("devtools/client/shared/source-map/index.js");
-
-var _devtoolsSourceMap2 = _interopRequireDefault(_devtoolsSourceMap);
+var _devtoolsSourceMap = _interopRequireWildcard(require("devtools/client/shared/source-map/index.js"));
 
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-
 async function getGeneratedLocation(state, source, location, sourceMaps) {
   if (!(0, _devtoolsSourceMap.isOriginalId)(location.sourceId)) {
     return location;
   }
 
-  const { line, sourceId, column } = await sourceMaps.getGeneratedLocation(location, source);
-
+  const {
+    line,
+    sourceId,
+    column
+  } = await sourceMaps.getGeneratedLocation(location);
   const generatedSource = (0, _selectors.getSource)(state, sourceId);
+
   if (!generatedSource) {
     throw new Error(`Could not find generated source ${sourceId}`);
   }
@@ -58,13 +59,18 @@ async function getMappedLocation(state, sourceMaps, location) {
 
   if ((0, _devtoolsSourceMap.isOriginalId)(location.sourceId)) {
     const generatedLocation = await getGeneratedLocation(state, source, location, sourceMaps);
-    return { location, generatedLocation };
+    return {
+      location,
+      generatedLocation
+    };
   }
 
   const generatedLocation = location;
   const originalLocation = await sourceMaps.getOriginalLocation(generatedLocation);
-
-  return { location: originalLocation, generatedLocation };
+  return {
+    location: originalLocation,
+    generatedLocation
+  };
 }
 
 async function mapLocation(state, sourceMaps, location) {

@@ -3,59 +3,34 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.onMouseOver = undefined;
-loader.lazyRequireGetter(this, "_sourceDocuments", "devtools/client/debugger/src/utils/editor/source-documents");
-Object.keys(_sourceDocuments).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _sourceDocuments[key];
-    }
-  });
-});
-loader.lazyRequireGetter(this, "_getTokenLocation", "devtools/client/debugger/src/utils/editor/get-token-location");
-Object.keys(_getTokenLocation).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _getTokenLocation[key];
-    }
-  });
-});
-loader.lazyRequireGetter(this, "_sourceSearch", "devtools/client/debugger/src/utils/editor/source-search");
-Object.keys(_sourceSearch).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _sourceSearch[key];
-    }
-  });
-});
-loader.lazyRequireGetter(this, "_ui", "devtools/client/debugger/src/utils/ui");
-Object.keys(_ui).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _ui[key];
-    }
-  });
-});
-loader.lazyRequireGetter(this, "_tokenEvents", "devtools/client/debugger/src/utils/editor/token-events");
-Object.defineProperty(exports, "onMouseOver", {
-  enumerable: true,
-  get: function () {
-    return _tokenEvents.onMouseOver;
-  }
-});
+var _exportNames = {
+  getEditor: true,
+  removeEditor: true,
+  startOperation: true,
+  endOperation: true,
+  traverseResults: true,
+  toEditorLine: true,
+  fromEditorLine: true,
+  toEditorPosition: true,
+  toEditorRange: true,
+  toSourceLine: true,
+  scrollToColumn: true,
+  getLocationsInViewport: true,
+  markText: true,
+  lineAtHeight: true,
+  getSourceLocationFromMouseEvent: true,
+  forEachLine: true,
+  removeLineClass: true,
+  clearLineClass: true,
+  getTextForLine: true,
+  getCursorLine: true,
+  getTokenEnd: true,
+  onMouseOver: true
+};
 exports.getEditor = getEditor;
 exports.removeEditor = removeEditor;
 exports.startOperation = startOperation;
 exports.endOperation = endOperation;
-exports.shouldShowPrettyPrint = shouldShowPrettyPrint;
 exports.traverseResults = traverseResults;
 exports.toEditorLine = toEditorLine;
 exports.fromEditorLine = fromEditorLine;
@@ -73,11 +48,63 @@ exports.clearLineClass = clearLineClass;
 exports.getTextForLine = getTextForLine;
 exports.getCursorLine = getCursorLine;
 exports.getTokenEnd = getTokenEnd;
+Object.defineProperty(exports, "onMouseOver", {
+  enumerable: true,
+  get: function () {
+    return _tokenEvents.onMouseOver;
+  }
+});
+loader.lazyRequireGetter(this, "_sourceDocuments", "devtools/client/debugger/src/utils/editor/source-documents");
+Object.keys(_sourceDocuments).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _sourceDocuments[key];
+    }
+  });
+});
+loader.lazyRequireGetter(this, "_getTokenLocation", "devtools/client/debugger/src/utils/editor/get-token-location");
+Object.keys(_getTokenLocation).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _getTokenLocation[key];
+    }
+  });
+});
+loader.lazyRequireGetter(this, "_sourceSearch", "devtools/client/debugger/src/utils/editor/source-search");
+Object.keys(_sourceSearch).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _sourceSearch[key];
+    }
+  });
+});
+loader.lazyRequireGetter(this, "_ui", "devtools/client/debugger/src/utils/ui");
+Object.keys(_ui).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _ui[key];
+    }
+  });
+});
+loader.lazyRequireGetter(this, "_tokenEvents", "devtools/client/debugger/src/utils/editor/token-events");
 loader.lazyRequireGetter(this, "_createEditor", "devtools/client/debugger/src/utils/editor/create-editor");
-loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
 loader.lazyRequireGetter(this, "_wasm", "devtools/client/debugger/src/utils/wasm");
 
-
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 let editor;
 
 function getEditor() {
@@ -99,6 +126,7 @@ function getCodeMirror() {
 
 function startOperation() {
   const codeMirror = getCodeMirror();
+
   if (!codeMirror) {
     return;
   }
@@ -108,15 +136,12 @@ function startOperation() {
 
 function endOperation() {
   const codeMirror = getCodeMirror();
+
   if (!codeMirror) {
     return;
   }
 
   codeMirror.endOperation();
-}
-
-function shouldShowPrettyPrint(source, content) {
-  return (0, _source.shouldPrettyPrint)(source, content);
 }
 
 function traverseResults(e, ctx, query, dir, modifiers) {
@@ -155,10 +180,17 @@ function toEditorPosition(location) {
 }
 
 function toEditorRange(sourceId, location) {
-  const { start, end } = location;
+  const {
+    start,
+    end
+  } = location;
   return {
-    start: toEditorPosition({ ...start, sourceId }),
-    end: toEditorPosition({ ...end, sourceId })
+    start: toEditorPosition({ ...start,
+      sourceId
+    }),
+    end: toEditorPosition({ ...end,
+      sourceId
+    })
   };
 }
 
@@ -167,13 +199,18 @@ function toSourceLine(sourceId, line) {
 }
 
 function scrollToColumn(codeMirror, line, column) {
-  const { top, left } = codeMirror.charCoords({ line: line, ch: column }, "local");
+  const {
+    top,
+    left
+  } = codeMirror.charCoords({
+    line: line,
+    ch: column
+  }, "local");
 
   if (!isVisible(codeMirror, top, left)) {
     const scroller = codeMirror.getScrollerElement();
     const centeredX = Math.max(left - scroller.offsetWidth / 2, 0);
     const centeredY = Math.max(top - scroller.offsetHeight / 2, 0);
-
     codeMirror.scrollTo(centeredX, centeredY);
   }
 }
@@ -186,36 +223,45 @@ function isVisible(codeMirror, top, left) {
   const scrollArea = codeMirror.getScrollInfo();
   const charWidth = codeMirror.defaultCharWidth();
   const fontHeight = codeMirror.defaultTextHeight();
-  const { scrollTop, scrollLeft } = codeMirror.doc;
-
+  const {
+    scrollTop,
+    scrollLeft
+  } = codeMirror.doc;
   const inXView = withinBounds(left, scrollLeft, scrollLeft + (scrollArea.clientWidth - 30) - charWidth);
-
   const inYView = withinBounds(top, scrollTop, scrollTop + scrollArea.clientHeight - fontHeight);
-
   return inXView && inYView;
 }
 
-function getLocationsInViewport({ codeMirror },
-// Offset represents an allowance of characters or lines offscreen to improve
+function getLocationsInViewport({
+  codeMirror
+}, // Offset represents an allowance of characters or lines offscreen to improve
+// perceived performance of column breakpoint rendering
 offsetHorizontalCharacters = 100, offsetVerticalLines = 20) {
   // Get scroll position
   if (!codeMirror) {
     return {
-      start: { line: 0, column: 0 },
-      end: { line: 0, column: 0 }
+      start: {
+        line: 0,
+        column: 0
+      },
+      end: {
+        line: 0,
+        column: 0
+      }
     };
   }
+
   const charWidth = codeMirror.defaultCharWidth();
   const scrollArea = codeMirror.getScrollInfo();
-  const { scrollLeft } = codeMirror.doc;
+  const {
+    scrollLeft
+  } = codeMirror.doc;
   const rect = codeMirror.getWrapperElement().getBoundingClientRect();
   const topVisibleLine = codeMirror.lineAtHeight(rect.top, "window") - offsetVerticalLines;
   const bottomVisibleLine = codeMirror.lineAtHeight(rect.bottom, "window") + offsetVerticalLines;
-
   const leftColumn = Math.floor(scrollLeft > 0 ? scrollLeft / charWidth - offsetHorizontalCharacters : 0);
   const rightPosition = scrollLeft + (scrollArea.clientWidth - 30);
   const rightCharacter = Math.floor(rightPosition / charWidth) + offsetHorizontalCharacters;
-
   return {
     start: {
       line: topVisibleLine || 0,
@@ -228,22 +274,42 @@ offsetHorizontalCharacters = 100, offsetVerticalLines = 20) {
   };
 }
 
-function markText({ codeMirror }, className, { start, end }) {
-  return codeMirror.markText({ ch: start.column, line: start.line }, { ch: end.column, line: end.line }, { className });
+function markText({
+  codeMirror
+}, className, {
+  start,
+  end
+}) {
+  return codeMirror.markText({
+    ch: start.column,
+    line: start.line
+  }, {
+    ch: end.column,
+    line: end.line
+  }, {
+    className
+  });
 }
 
-function lineAtHeight({ codeMirror }, sourceId, event) {
+function lineAtHeight({
+  codeMirror
+}, sourceId, event) {
   const _editorLine = codeMirror.lineAtHeight(event.clientY);
+
   return toSourceLine(sourceId, _editorLine);
 }
 
-function getSourceLocationFromMouseEvent({ codeMirror }, source, e) {
-  const { line, ch } = codeMirror.coordsChar({
+function getSourceLocationFromMouseEvent({
+  codeMirror
+}, source, e) {
+  const {
+    line,
+    ch
+  } = codeMirror.coordsChar({
     left: e.clientX,
     top: e.clientY
   });
   const sourceId = source.id;
-
   return {
     sourceId,
     line: fromEditorLine(sourceId, line),
@@ -281,6 +347,5 @@ function getTokenEnd(codeMirror, line, column) {
     ch: column + 1
   });
   const tokenString = token.string;
-
   return tokenString === "{" || tokenString === "[" ? null : token.end;
 }

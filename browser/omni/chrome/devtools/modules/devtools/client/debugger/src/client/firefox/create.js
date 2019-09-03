@@ -7,8 +7,13 @@ exports.prepareSourcePayload = prepareSourcePayload;
 exports.createFrame = createFrame;
 exports.makeSourceId = makeSourceId;
 exports.createPause = createPause;
-exports.createWorker = createWorker;
+exports.createThread = createThread;
 loader.lazyRequireGetter(this, "_commands", "devtools/client/debugger/src/client/firefox/commands");
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+// This module converts Firefox specific types to the generic types
 function prepareSourcePayload(client, source) {
   // We populate the set of sources as soon as we hear about them. Note that
   // this means that we have seen an actor, but it might still be in the
@@ -16,12 +21,11 @@ function prepareSourcePayload(client, source) {
   // a source actor with this ID yet.
   _commands.clientCommands.registerSourceActor(source.actor, makeSourceId(source));
 
-  return { thread: client.actor, source };
-} /* This Source Code Form is subject to the terms of the Mozilla Public
-   * License, v. 2.0. If a copy of the MPL was not distributed with this
-   * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-
-// This module converts Firefox specific types to the generic types
+  return {
+    thread: client.actor,
+    source
+  };
+}
 
 function createFrame(thread, frame) {
   if (!frame) {
@@ -33,7 +37,6 @@ function createFrame(thread, frame) {
     line: frame.where.line,
     column: frame.where.column
   };
-
   return {
     id: frame.actor,
     thread,
@@ -53,21 +56,30 @@ function makeSourceId(source) {
 function createPause(thread, packet, response) {
   // NOTE: useful when the debugger is already paused
   const frame = packet.frame || response.frames[0];
-
-  return {
-    ...packet,
+  return { ...packet,
     thread,
     frame: createFrame(thread, frame),
     frames: response.frames.map(createFrame.bind(null, thread))
   };
 }
 
-function createWorker(actor, url) {
+function getTargetType(target) {
+  if (target.isWorkerTarget) {
+    return "worker";
+  }
+
+  if (target.isContentProcess) {
+    return "contentProcess";
+  }
+
+  return "mainThread";
+}
+
+function createThread(actor, target) {
   return {
     actor,
-    url,
-    // Ci.nsIWorkerDebugger.TYPE_DEDICATED
-    type: 0,
-    name: ""
+    url: target.url,
+    type: getTargetType(target),
+    name: target.name
   };
 }

@@ -4,11 +4,11 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.waitUntilService = waitUntilService;
+exports.NAME = void 0;
+
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-
-/* global window */
 
 /**
  * A middleware which acts like a service, because it is stateful
@@ -30,19 +30,23 @@ exports.waitUntilService = waitUntilService;
  * }
  * ```
  */
-const NAME = exports.NAME = "@@service/waitUntil";
-function waitUntilService({ dispatch, getState }) {
+const NAME = "@@service/waitUntil";
+exports.NAME = NAME;
+
+function waitUntilService({
+  dispatch,
+  getState
+}) {
   let pending = [];
 
   function checkPending(action) {
     const readyRequests = [];
-    const stillPending = [];
-
-    // Find the pending requests whose predicates are satisfied with
+    const stillPending = []; // Find the pending requests whose predicates are satisfied with
     // this action. Wait to run the requests until after we update the
     // pending queue because the request handler may synchronously
     // dispatch again and run this service (that use case is
     // completely valid).
+
     for (const request of pending) {
       if (request.predicate(action)) {
         readyRequests.push(request);
@@ -52,6 +56,7 @@ function waitUntilService({ dispatch, getState }) {
     }
 
     pending = stillPending;
+
     for (const request of readyRequests) {
       request.run(dispatch, getState, action);
     }
@@ -62,6 +67,7 @@ function waitUntilService({ dispatch, getState }) {
       pending.push(action);
       return null;
     }
+
     const result = next(action);
     checkPending(action);
     return result;

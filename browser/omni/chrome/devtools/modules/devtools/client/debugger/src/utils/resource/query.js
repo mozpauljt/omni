@@ -16,17 +16,18 @@ loader.lazyRequireGetter(this, "_baseQuery", "devtools/client/debugger/src/utils
 loader.lazyRequireGetter(this, "_queryCache", "devtools/client/debugger/src/utils/resource/query-cache");
 loader.lazyRequireGetter(this, "_memoize", "devtools/client/debugger/src/utils/resource/memoize");
 loader.lazyRequireGetter(this, "_compare", "devtools/client/debugger/src/utils/resource/compare");
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 function filterAllIds(values) {
   return Object.keys(values);
 }
-
 /**
  * Create a query function to take a list of IDs and map each Reduceding
  * resource object into a mapped form.
  */
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+
 
 function makeWeakQuery({
   filter,
@@ -41,11 +42,12 @@ function makeWeakQuery({
     resultCompare: _compare.shallowEqual
   });
 }
-
 /**
  * Create a query function to take a list of IDs and map each Reduceding
  * resource object into a mapped form.
  */
+
+
 function makeShallowQuery({
   filter,
   map,
@@ -59,11 +61,12 @@ function makeShallowQuery({
     resultCompare: _compare.shallowEqual
   });
 }
-
 /**
  * Create a query function to take a list of IDs and map each Reduceding
  * resource object into a mapped form.
  */
+
+
 function makeStrictQuery({
   filter,
   map,
@@ -77,11 +80,12 @@ function makeStrictQuery({
     resultCompare: _compare.shallowEqual
   });
 }
-
 /**
  * Create a query function to take a list of IDs and map each Reduceding
  * resource object into a mapped form.
  */
+
+
 function makeIdQuery(map) {
   return makeWeakQuery({
     filter: (state, ids) => ids,
@@ -89,11 +93,12 @@ function makeIdQuery(map) {
     reduce: items => items.slice()
   });
 }
-
 /**
  * Create a query function to take a list of IDs and map each Reduceding
  * resource object into a mapped form.
  */
+
+
 function makeLoadQuery(map) {
   return makeWeakQuery({
     filter: (state, ids) => ids,
@@ -101,31 +106,35 @@ function makeLoadQuery(map) {
     reduce: reduceMappedArrayToObject
   });
 }
-
 /**
  * Create a query function that accepts an argument and can filter the
  * resource items to a subset before mapping each reduced resource.
  */
+
+
 function makeFilterQuery(filter, map) {
   return makeWeakQuery({
     filter: (values, args) => {
       const ids = [];
+
       for (const id of Object.keys(values)) {
         if (filter(values[id], args)) {
           ids.push(id);
         }
       }
+
       return ids;
     },
     map,
     reduce: reduceMappedArrayToObject
   });
 }
-
 /**
  * Create a query function that accepts an argument and can filter the
  * resource items to a subset before mapping each resulting resource.
  */
+
+
 function makeReduceQuery(map, reduce) {
   return makeShallowQuery({
     filter: filterAllIds,
@@ -133,11 +142,12 @@ function makeReduceQuery(map, reduce) {
     reduce
   });
 }
-
 /**
  * Create a query function that accepts an argument and can filter the
  * resource items to a subset before mapping each resulting resource.
  */
+
+
 function makeReduceAllQuery(map, reduce) {
   return makeStrictQuery({
     filter: filterAllIds,

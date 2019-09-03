@@ -201,7 +201,7 @@ if (AppConstants.platform == "macosx") {
     <command id="cmd_gestureRotateLeft" oncommand="gGestureSupport.rotate(event.sourceEvent)"/>
     <command id="cmd_gestureRotateRight" oncommand="gGestureSupport.rotate(event.sourceEvent)"/>
     <command id="cmd_gestureRotateEnd" oncommand="gGestureSupport.rotateEnd()"/>
-    <command id="Browser:OpenLocation" oncommand="openLocation();"/>
+    <command id="Browser:OpenLocation" oncommand="openLocation(event);"/>
     <command id="Browser:RestoreLastSession" oncommand="SessionStore.restoreLastSession();" disabled="true"/>
     <command id="Browser:NewUserContextTab" oncommand="openNewUserContextTab(event.sourceEvent);"/>
     <command id="Browser:OpenAboutContainers" oncommand="openPreferences('paneContainers');"/>
@@ -523,7 +523,7 @@ if (AppConstants.platform == "macosx") {
            aria-labelledby="editBookmarkPanelTitle">
       <box class="panel-header">
         <label id="editBookmarkPanelTitle"/>
-        <toolbarbutton id="editBookmarkPanelInfoButton" class="panel-info-button" oncommand="StarUI.toggleRecommendation();" >
+        <toolbarbutton tabindex="0" id="editBookmarkPanelInfoButton" class="panel-info-button" oncommand="StarUI.toggleRecommendation();" >
           <image/>
         </toolbarbutton>
       </box>
@@ -1168,7 +1168,7 @@ if (AppConstants.platform == "macosx") {
                 accesskey="&keywordfield.accesskey;"
                 oncommand="AddKeywordForSearchField();"/>
       <menuitem id="context-searchselect"
-                oncommand="BrowserSearch.loadSearchFromContext(this.searchTerms, this.principal, this.csp);"/>
+                oncommand="BrowserSearch.loadSearchFromContext(this.searchTerms, this.usePrivate, this.principal, this.csp);"/>
       <menuseparator id="context-sep-sendlinktodevice" class="sync-ui-item"
                      hidden="true"/>
       <menu id="context-sendlinktodevice"
@@ -2600,10 +2600,11 @@ if (AppConstants.platform == "macosx") {
   <panelmultiview id="identity-popup-multiView"
                   mainViewId="identity-popup-mainView">
     <panelview id="identity-popup-mainView"
+               role="document"
                descriptionheightworkaround="true">
       <vbox id="identity-popup-mainView-panel-header">
         <label>
-          <html:span id="identity-popup-mainView-panel-header-span"/>
+          <html:span id="identity-popup-mainView-panel-header-span" role="heading" aria-level="1"/>
         </label>
       </vbox>
 
@@ -2613,9 +2614,9 @@ if (AppConstants.platform == "macosx") {
 
           <vbox class="identity-popup-security-connection">
             <description class="identity-popup-connection-not-secure"
-                         when-connection="not-secure secure-cert-user-overridden secure-custom-root">&identity.connectionNotSecure;</description>
+                         when-connection="not-secure secure-cert-user-overridden secure-custom-root">&identity.connectionNotSecure2;</description>
             <description class="identity-popup-connection-secure"
-                         when-connection="secure secure-ev">&identity.connectionSecure2;</description>
+                         when-connection="secure secure-ev">&identity.connectionSecure3;</description>
             <description when-connection="chrome">&identity.connectionInternal;</description>
             <description when-connection="file">&identity.connectionFile;</description>
             <description when-connection="extension">&identity.extensionPage;</description>
@@ -2650,10 +2651,10 @@ if (AppConstants.platform == "macosx") {
             when-connection="not-secure secure secure-ev secure-cert-user-overridden file extension">
         <vbox id="identity-popup-permissions-content" flex="1" role="group"
               aria-labelledby="identity-popup-permissions-headline">
-          <hbox>
+          <hbox id="identity-popup-permissions-header" align="center">
             <label id="identity-popup-permissions-headline"
-                   flex="1"
-                   value="&identity.permissions2;"/>
+                   role="heading" aria-level="2"
+                   value="&identity.permissions3;"/>
           </hbox>
           <vbox id="identity-popup-permission-list"/>
           <description id="identity-popup-permission-reload-hint">&identity.permissionsReloadHint;</description>
@@ -2673,7 +2674,7 @@ if (AppConstants.platform == "macosx") {
 
     <!-- Security SubView -->
     <panelview id="identity-popup-securityView"
-               title="&identity.securityView.label2;"
+               role="document"
                descriptionheightworkaround="true">
       <vbox class="identity-popup-security-content">
         <vbox class="identity-popup-security-connection">
@@ -2687,7 +2688,7 @@ if (AppConstants.platform == "macosx") {
       <vbox id="identity-popup-securityView-body" class="panel-view-body-unscrollable">
         <!-- (EV) Certificate Information -->
         <description id="identity-popup-content-owner-label"
-                     when-connection="secure-ev">&identity.evOwnerLabel;</description>
+                     when-connection="secure-ev">&identity.evOwnerLabel2;</description>
         <description id="identity-popup-content-owner"
                      when-connection="secure-ev"
                      class="header"/>
@@ -2817,7 +2818,7 @@ if (AppConstants.platform == "macosx") {
                  aria-level="2">&protections.etpOFF.header;</label>
           <label id="protections-popup-tp-switch-breakage-link"
                  class="text-link"
-                 onclick="gProtectionsHandler.showSiteNotWorkingView();">&protections.siteNotWorking.label;</label>
+                 onclick="gProtectionsHandler.showSiteNotWorkingView(); gProtectionsHandler.recordClick('sitenotworking_link');">&protections.siteNotWorking.label;</label>
         </vbox>
         <vbox class="protections-popup-tp-switch-box">
           <toolbarbutton id="protections-popup-tp-switch"
@@ -2835,21 +2836,21 @@ if (AppConstants.platform == "macosx") {
         <vbox id="protections-popup-content" flex="1">
           <vbox id="protections-popup-category-list">
             <toolbarbutton id="protections-popup-category-tracking-protection"
-                           onclick="gProtectionsHandler.showTrackersSubview();"
+                           oncommand="gProtectionsHandler.showTrackersSubview(event); gProtectionsHandler.recordClick('trackers');"
                            class="protections-popup-category" align="center"
                            wrap="true">
               <image class="protections-popup-category-icon tracking-protection-icon"/>
               <label flex="1" class="protections-popup-category-label">&contentBlocking.trackingProtection4.label;</label>
             </toolbarbutton>
             <toolbarbutton id="protections-popup-category-socialblock"
-                           onclick="gProtectionsHandler.showSocialblockerSubview();"
+                           oncommand="gProtectionsHandler.showSocialblockerSubview(event); gProtectionsHandler.recordClick('social');"
                            class="protections-popup-category" align="center">
               <image class="protections-popup-category-icon socialblock-icon"/>
               <label flex="1"
               class="protections-popup-category-label">&contentBlocking.socialblock.label;</label>
             </toolbarbutton>
             <toolbarbutton id="protections-popup-category-cookies"
-                           onclick="gProtectionsHandler.showCookiesSubview();"
+                           oncommand="gProtectionsHandler.showCookiesSubview(event); gProtectionsHandler.recordClick('cookies');"
                            class="protections-popup-category" align="center"
                            wrap="true">
               <image class="protections-popup-category-icon thirdpartycookies-icon"/>
@@ -2860,30 +2861,34 @@ if (AppConstants.platform == "macosx") {
                      hidden="true"></label>
             </toolbarbutton>
             <toolbarbutton id="protections-popup-category-cryptominers"
-                           onclick="gProtectionsHandler.showCryptominersSubview();"
+                           oncommand="gProtectionsHandler.showCryptominersSubview(event); gProtectionsHandler.recordClick('cryptominers');"
                            class="protections-popup-category" align="center"
                            wrap="true">
               <image class="protections-popup-category-icon cryptominers-icon"/>
               <label flex="1" class="protections-popup-category-label">&contentBlocking.cryptominers.label;</label>
             </toolbarbutton>
             <toolbarbutton id="protections-popup-category-fingerprinters"
-                           onclick="gProtectionsHandler.showFingerprintersSubview();"
+                           oncommand="gProtectionsHandler.showFingerprintersSubview(event); gProtectionsHandler.recordClick('fingerprinters');"
                            class="protections-popup-category" align="center"
                            wrap="true">
               <image class="protections-popup-category-icon fingerprinters-icon"/>
               <label flex="1" class="protections-popup-category-label">&contentBlocking.fingerprinters.label;</label>
             </toolbarbutton>
             <description id="protections-popup-blocking-section-header"
-                         hidden="true"
                          role="heading"
-                         aria-level="2">&protections.blocking.label;</description>
-            <hbox id="protections-popup-not-blocking-section-header" hidden="true">
-              <description id="protections-popup-not-blocking-section-description">&protections.notBlocking.label;</description>
+                         aria-level="2">&protections.blocking2.label;</description>
+            <hbox id="protections-popup-not-blocking-section-header" flex="1">
+              <description id="protections-popup-not-blocking-section-description" flex="1">&protections.notBlocking2.label;</description>
               <label id="protections-popup-not-blocking-section-why"
                      class="text-link"
                      onmouseover="document.getElementById(event.target.tooltip).openPopup(event.target);"
-                     onmouseout="document.getElementById(event.target.tooltip).hidePopup()">&protections.notBlocking.why.label;</label>
+                     onfocus="document.getElementById(event.target.tooltip).openPopup(event.target);"
+                     onmouseout="document.getElementById(event.target.tooltip).hidePopup()"
+                     onblur="document.getElementById(event.target.tooltip).hidePopup()">&protections.notBlocking.why.label;</label>
             </hbox>
+            <description id="protections-popup-not-found-section-header"
+                         role="heading"
+                         aria-level="2">&protections.notFound.label;</description>
           </vbox>
         </vbox>
       </vbox>
@@ -2891,16 +2896,16 @@ if (AppConstants.platform == "macosx") {
       <vbox id="protections-popup-footer" class="protections-popup-section">
         <toolbarbutton id="protections-popup-settings-button"
                        class="protections-popup-footer-button"
-                       oncommand="gProtectionsHandler.openPreferences();">
+                       oncommand="gProtectionsHandler.openPreferences(); gProtectionsHandler.recordClick('settings');">
           <image class="protections-popup-footer-icon protections-popup-settings-icon"/>
           <label class="protections-popup-footer-button-label" flex="1">&protections.settings.label;</label>
         </toolbarbutton>
         <stack id="protections-popup-show-report-stack">
           <toolbarbutton id="protections-popup-show-report-button"
                          class="protections-popup-footer-button"
-                         oncommand="gProtectionsHandler.openProtections(true);">
+                         oncommand="gProtectionsHandler.openProtections(true); gProtectionsHandler.recordClick('full_report');">
             <image class="protections-popup-footer-icon protections-popup-show-report-icon"/>
-            <label class="protections-popup-footer-button-label" flex="1">&protections.report.label;</label>
+            <label class="protections-popup-footer-button-label" flex="1">&protections.showreport.label;</label>
           </toolbarbutton>
           <hbox id="protections-popup-trackers-blocked-counter-box"
                 align="center"
@@ -2945,9 +2950,8 @@ if (AppConstants.platform == "macosx") {
               <html:li>&protections.siteNotWorkingView.issueList.videos;</html:li>
             </html:ul>
           </label>
-          <label id="protections-popup-siteNotWorkingView-siteStillBroken">&protections.siteNotWorkingView.siteStillBroken.label;</label>
           <label id="protections-popup-siteNotWorkingView-sendReport"
-            onclick="gProtectionsHandler.showSendReportView();"
+            onclick="gProtectionsHandler.showSendReportView(); gProtectionsHandler.recordClick('send_report_link');"
             class="text-link">&protections.siteNotWorkingView.sendReport.label;</label>
         </vbox>
     </panelview>
@@ -2957,19 +2961,15 @@ if (AppConstants.platform == "macosx") {
                role="document"
                descriptionheightworkaround="true">
         <vbox id="protections-popup-trackersView-description" class="protections-popup-description">
-          <description>&protections.trackingContent.description;</description>
+          <description>&protections.trackingContent2.description;</description>
         </vbox>
         <vbox id="protections-popup-trackersView-list" class="protections-popup-list">
         </vbox>
-        <hbox id="protections-popup-trackersView-strict-info">
-          <image/>
-          <label>&contentBlocking.trackersView.strictInfo.label;</label>
-        </hbox>
         <vbox class="panel-footer">
           <button id="protections-popup-trackersView-settings-button"
                   label="&contentBlocking.manageSettings2.label;"
                   accesskey="&contentBlocking.manageSettings.accesskey;"
-                  oncommand="gProtectionsHandler.openPreferences();"/>
+                  oncommand="gProtectionsHandler.openPreferences(); gProtectionsHandler.recordClick('subview_settings', 'trackers');"/>
         </vbox>
     </panelview>
 
@@ -2986,7 +2986,7 @@ if (AppConstants.platform == "macosx") {
           <button id="protections-popup-socialblockView-settings-button"
                   label="&contentBlocking.manageSettings2.label;"
                   accesskey="&contentBlocking.manageSettings.accesskey;"
-                  oncommand="gProtectionsHandler.openPreferences();"/>
+                  oncommand="gProtectionsHandler.openPreferences(); gProtectionsHandler.recordClick('subview_settings', 'social');"/>
         </vbox>
     </panelview>
 
@@ -3003,7 +3003,7 @@ if (AppConstants.platform == "macosx") {
           <button id="protections-popup-cookiesView-settings-button"
                   label="&contentBlocking.manageSettings2.label;"
                   accesskey="&contentBlocking.manageSettings.accesskey;"
-                  oncommand="gProtectionsHandler.openPreferences();"/>
+                  oncommand="gProtectionsHandler.openPreferences(); gProtectionsHandler.recordClick('subview_settings', 'cookies');"/>
         </vbox>
     </panelview>
 
@@ -3020,7 +3020,7 @@ if (AppConstants.platform == "macosx") {
           <button id="protections-popup-fingerprintersView-settings-button"
                   label="&contentBlocking.manageSettings2.label;"
                   accesskey="&contentBlocking.manageSettings.accesskey;"
-                  oncommand="gProtectionsHandler.openPreferences();"/>
+                  oncommand="gProtectionsHandler.openPreferences(); gProtectionsHandler.recordClick('subview_settings', 'fingerprinters');"/>
         </vbox>
     </panelview>
 
@@ -3037,7 +3037,7 @@ if (AppConstants.platform == "macosx") {
           <button id="protections-popup-cryptominersView-settings-button"
                   label="&contentBlocking.manageSettings2.label;"
                   accesskey="&contentBlocking.manageSettings.accesskey;"
-                  oncommand="gProtectionsHandler.openPreferences();"/>
+                  oncommand="gProtectionsHandler.openPreferences(); gProtectionsHandler.recordClick('subview_settings', 'cryptominers');"/>
         </vbox>
     </panelview>
 
@@ -3070,7 +3070,7 @@ if (AppConstants.platform == "macosx") {
           <button id="protections-popup-sendReportView-submit"
                   default="true"
                   label="&contentBlocking.breakageReportView.sendReport.label;"
-                  oncommand="gProtectionsHandler.onSendReportClicked();"/>
+                  oncommand="gProtectionsHandler.onSendReportClicked(); gProtectionsHandler.recordClick('send_report_submit');"/>
         </vbox>
     </panelview>
   </panelmultiview>
@@ -3854,7 +3854,11 @@ if (AppConstants.platform == "macosx") {
               </hbox>
               <arrowscrollbox orient="horizontal" flex="1" style="min-width: 1px;" clicktoscroll="true" class="tabbrowser-arrowscrollbox" scrolledtostart="true" scrolledtoend="true">
                 <tab is="tabbrowser-tab" class="tabbrowser-tab" selected="true" visuallyselected="true" fadein="true"/>
-                <toolbarbutton class="tabs-newtab-button toolbarbutton-1" command="cmd_newNavigatorTab" onclick="checkForMiddleClick(this, event);"/>
+                <toolbarbutton id="tabs-newtab-button"
+                               class="toolbarbutton-1"
+                               command="cmd_newNavigatorTab"
+                               onclick="checkForMiddleClick(this, event);"
+                               tooltip="dynamic-shortcut-tooltip"/>
                 <spacer class="closing-tabs-spacer" style="width: 0;"/>
               </arrowscrollbox>
               <html:span id="tabbrowser-tab-a11y-desc" hidden="true"/>
@@ -3967,10 +3971,13 @@ if (AppConstants.platform == "macosx") {
         <toolbaritem id="urlbar-container" flex="400" persist="width"
                      removable="false"
                      class="chromeclass-location" overflows="false">
-            <toolbartabstop/>
-            <hbox id="urlbar" flex="1"
-                  defaultPlaceholder="&urlbar.placeholder2;"
-                  focused="true"
+          <toolbartabstop/>
+          <hbox id="urlbar" flex="1"
+                defaultPlaceholder="&urlbar.placeholder2;"
+                focused="true"
+                pageproxystate="invalid">
+            <hbox id="urlbar-input-container"
+                  flex="1"
                   pageproxystate="invalid">
               <!-- Use onclick instead of normal popup= syntax since the popup
                    code fires onmousedown, and hence eats our favicon drag events. -->
@@ -3994,12 +4001,15 @@ if (AppConstants.platform == "macosx") {
               <box id="identity-box" role="button"
                    align="center"
                    aria-label="&urlbar.viewSiteInfo.label;"
+                   pageproxystate="invalid"
                    onclick="gIdentityHandler.handleIdentityButtonEvent(event);"
                    onkeypress="gIdentityHandler.handleIdentityButtonEvent(event);"
                    ondragstart="gIdentityHandler.onDragStart(event);">
                 <image id="identity-icon"
                        consumeanchor="identity-box"
                        onclick="PageProxyClickHandler(event);"/>
+                <image id="permissions-granted-icon"
+                       tooltiptext="&urlbar.permissionsGranted.tooltip;"/>
                 <box mousethrough="always">
                     <image class="sharing-icon" id="webrtc-sharing-icon"/>
                     <image class="sharing-icon geo-icon" id="geo-sharing-icon"/>
@@ -4084,20 +4094,20 @@ if (AppConstants.platform == "macosx") {
                   <label id="identity-icon-country-label" class="plain"/>
                 </hbox>
               </box>
-              <box id="urlbar-display-box" align="center">
-                <label id="switchtab" class="urlbar-display urlbar-display-switchtab" value="&urlbar.switchToTab.label;"/>
-                <label id="extension" class="urlbar-display urlbar-display-extension" value="&urlbar.extension.label;"/>
+              <box id="urlbar-label-box" align="center">
+                <label id="urlbar-label-switchtab" class="urlbar-label" value="&urlbar.switchToTab.label;"/>
+                <label id="urlbar-label-extension" class="urlbar-label" value="&urlbar.extension.label;"/>
               </box>
               <moz-input-box tooltip="aHTMLTooltip"
                              class="urlbar-input-box"
                              flex="1"
                              role="combobox"
-                             aria-owns="urlbarView-results">
+                             aria-owns="urlbar-results">
                 <html:input id="urlbar-scheme"
                             required="required"/>
                 <html:input id="urlbar-input"
                             anonid="input"
-                            aria-controls="urlbarView-results"
+                            aria-controls="urlbar-results"
                             aria-autocomplete="both"
                             inputmode="mozAwesomebar"
                             placeholder="&urlbar.placeholder2;"/>
@@ -4167,7 +4177,8 @@ if (AppConstants.platform == "macosx") {
                 </hbox>
               </hbox>
             </hbox>
-            <toolbartabstop/>
+          </hbox>
+          <toolbartabstop/>
         </toolbaritem>
 
         <toolbarspring cui-areatype="toolbar" class="chromeclass-toolbar-additional"/>

@@ -9,39 +9,44 @@ exports.createTreeNodeMatcher = createTreeNodeMatcher;
 loader.lazyRequireGetter(this, "_url", "devtools/client/debugger/src/utils/url");
 loader.lazyRequireGetter(this, "_utils", "devtools/client/debugger/src/utils/sources-tree/utils");
 
-
-/*
- * Gets domain from url (without www prefix)
- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
+/*
+ * Gets domain from url (without www prefix)
+ */
 function getDomain(url) {
   if (!url) {
     return null;
   }
-  const { host } = (0, _url.parse)(url);
+
+  const {
+    host
+  } = (0, _url.parse)(url);
+
   if (!host) {
     return null;
   }
+
   return host.startsWith("www.") ? host.substr("www.".length) : host;
 }
-
 /*
  * Checks if node name matches debugger host/domain.
  */
+
+
 function isExactDomainMatch(part, debuggeeHost) {
   return part.startsWith("www.") ? part.substr("www.".length) === debuggeeHost : part === debuggeeHost;
 }
-
 /*
  * Checks if node name matches IndexName
  */
+
+
 function isIndexName(part, ...rest) {
   return part === IndexName;
 }
-
 /*
  * Function to assist with node search for a defined sorted order, see e.g.
  * `createTreeNodeMatcher`. Returns negative number if the node
@@ -59,35 +64,48 @@ function isIndexName(part, ...rest) {
  */
 function findNodeInContents(tree, matcher) {
   if (tree.type === "source" || tree.contents.length === 0) {
-    return { found: false, index: 0 };
+    return {
+      found: false,
+      index: 0
+    };
   }
 
   let left = 0;
   let right = tree.contents.length - 1;
+
   while (left < right) {
     const middle = Math.floor((left + right) / 2);
+
     if (matcher(tree.contents[middle]) < 0) {
       left = middle + 1;
     } else {
       right = middle;
     }
   }
+
   const result = matcher(tree.contents[left]);
+
   if (result === 0) {
-    return { found: true, index: left };
+    return {
+      found: true,
+      index: left
+    };
   }
-  return { found: false, index: result > 0 ? left : left + 1 };
+
+  return {
+    found: false,
+    index: result > 0 ? left : left + 1
+  };
 }
 
 const IndexName = "(index)";
-
 /*
  * An array of functions to identify exceptions when sorting sourcesTree.
  * Each function must return a boolean. Keep functions in array in the
  * order exceptions should be sorted in.
  */
-const matcherFunctions = [isIndexName, isExactDomainMatch];
 
+const matcherFunctions = [isIndexName, isExactDomainMatch];
 /*
  * Creates a matcher for findNodeInContents.
  * The sorting order of nodes during comparison is:
@@ -96,6 +114,7 @@ const matcherFunctions = [isIndexName, isExactDomainMatch];
  * - hosts/directories (not files) sorted by name
  * - files sorted by name
  */
+
 function createTreeNodeMatcher(part, isDir, debuggeeHost, source, sortByUrl) {
   return node => {
     for (let i = 0; i < matcherFunctions.length; i++) {
@@ -106,20 +125,25 @@ function createTreeNodeMatcher(part, isDir, debuggeeHost, source, sortByUrl) {
           if (matcherFunctions[j](node.name, debuggeeHost)) {
             return -1;
           }
-        }
-        // If part and node.name share the same exception, return 0
+        } // If part and node.name share the same exception, return 0
+
+
         if (matcherFunctions[i](node.name, debuggeeHost)) {
           return 0;
         }
+
         return 1;
-      }
-      // Check node.name against exceptions if part is not exception
+      } // Check node.name against exceptions if part is not exception
+
+
       if (matcherFunctions[i](node.name, debuggeeHost)) {
         return -1;
       }
-    }
-    // Sort directories before files
+    } // Sort directories before files
+
+
     const nodeIsDir = (0, _utils.nodeHasChildren)(node);
+
     if (nodeIsDir && !isDir) {
       return -1;
     } else if (!nodeIsDir && isDir) {

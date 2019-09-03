@@ -3,7 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-loader.lazyRequireGetter(this, "_core", "devtools/client/debugger/src/utils/resource/core");
 Object.defineProperty(exports, "createInitial", {
   enumerable: true,
   get: function () {
@@ -28,7 +27,6 @@ Object.defineProperty(exports, "updateResources", {
     return _core.updateResources;
   }
 });
-loader.lazyRequireGetter(this, "_selector", "devtools/client/debugger/src/utils/resource/selector");
 Object.defineProperty(exports, "hasResource", {
   enumerable: true,
   get: function () {
@@ -53,7 +51,6 @@ Object.defineProperty(exports, "getMappedResource", {
     return _selector.getMappedResource;
   }
 });
-loader.lazyRequireGetter(this, "_baseQuery", "devtools/client/debugger/src/utils/resource/base-query");
 Object.defineProperty(exports, "makeResourceQuery", {
   enumerable: true,
   get: function () {
@@ -66,7 +63,6 @@ Object.defineProperty(exports, "makeMapWithArgs", {
     return _baseQuery.makeMapWithArgs;
   }
 });
-loader.lazyRequireGetter(this, "_query", "devtools/client/debugger/src/utils/resource/query");
 Object.defineProperty(exports, "filterAllIds", {
   enumerable: true,
   get: function () {
@@ -121,7 +117,6 @@ Object.defineProperty(exports, "makeReduceAllQuery", {
     return _query.makeReduceAllQuery;
   }
 });
-loader.lazyRequireGetter(this, "_queryCache", "devtools/client/debugger/src/utils/resource/query-cache");
 Object.defineProperty(exports, "queryCacheWeak", {
   enumerable: true,
   get: function () {
@@ -140,10 +135,15 @@ Object.defineProperty(exports, "queryCacheStrict", {
     return _queryCache.queryCacheStrict;
   }
 });
-loader.lazyRequireGetter(this, "_memoize", "devtools/client/debugger/src/utils/resource/memoize");
 Object.defineProperty(exports, "memoizeResourceShallow", {
   enumerable: true,
   get: function () {
     return _memoize.memoizeResourceShallow;
   }
 });
+loader.lazyRequireGetter(this, "_core", "devtools/client/debugger/src/utils/resource/core");
+loader.lazyRequireGetter(this, "_selector", "devtools/client/debugger/src/utils/resource/selector");
+loader.lazyRequireGetter(this, "_baseQuery", "devtools/client/debugger/src/utils/resource/base-query");
+loader.lazyRequireGetter(this, "_query", "devtools/client/debugger/src/utils/resource/query");
+loader.lazyRequireGetter(this, "_queryCache", "devtools/client/debugger/src/utils/resource/query-cache");
+loader.lazyRequireGetter(this, "_memoize", "devtools/client/debugger/src/utils/resource/memoize");

@@ -3,31 +3,21 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = void 0;
 
-var _react = require("devtools/client/shared/vendor/react");
+var _react = _interopRequireWildcard(require("devtools/client/shared/vendor/react"));
 
-var _react2 = _interopRequireDefault(_react);
-
-var _classnames = require("devtools/client/debugger/dist/vendors").vendored["classnames"];
-
-var _classnames2 = _interopRequireDefault(_classnames);
+var _classnames = _interopRequireDefault(require("devtools/client/debugger/dist/vendors").vendored["classnames"]);
 
 loader.lazyRequireGetter(this, "_connect", "devtools/client/debugger/src/utils/connect");
-loader.lazyRequireGetter(this, "_ExceptionOption", "devtools/client/debugger/src/components/SecondaryPanes/Breakpoints/ExceptionOption");
 
-var _ExceptionOption2 = _interopRequireDefault(_ExceptionOption);
+var _ExceptionOption = _interopRequireDefault(require("./ExceptionOption"));
 
-loader.lazyRequireGetter(this, "_Breakpoint", "devtools/client/debugger/src/components/SecondaryPanes/Breakpoints/Breakpoint");
+var _Breakpoint = _interopRequireDefault(require("./Breakpoint"));
 
-var _Breakpoint2 = _interopRequireDefault(_Breakpoint);
+var _BreakpointHeading = _interopRequireDefault(require("./BreakpointHeading"));
 
-loader.lazyRequireGetter(this, "_BreakpointHeading", "devtools/client/debugger/src/components/SecondaryPanes/Breakpoints/BreakpointHeading");
-
-var _BreakpointHeading2 = _interopRequireDefault(_BreakpointHeading);
-
-loader.lazyRequireGetter(this, "_actions", "devtools/client/debugger/src/actions/index");
-
-var _actions2 = _interopRequireDefault(_actions);
+var _actions = _interopRequireDefault(require("../../../actions/index"));
 
 loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
 loader.lazyRequireGetter(this, "_selectedLocation", "devtools/client/debugger/src/utils/selected-location");
@@ -37,12 +27,12 @@ loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selec
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-
 class Breakpoints extends _react.Component {
-
   componentWillUnmount() {
     this.removeEditor();
   }
@@ -51,6 +41,7 @@ class Breakpoints extends _react.Component {
     if (!this.headlessEditor) {
       this.headlessEditor = (0, _createEditor.createHeadlessEditor)();
     }
+
     return this.headlessEditor;
   }
 
@@ -58,6 +49,7 @@ class Breakpoints extends _react.Component {
     if (!this.headlessEditor) {
       return;
     }
+
     this.headlessEditor.destroy();
     this.headlessEditor = null;
   }
@@ -69,79 +61,77 @@ class Breakpoints extends _react.Component {
       shouldPauseOnCaughtExceptions,
       pauseOnExceptions
     } = this.props;
-
     const isEmpty = breakpointSources.length == 0;
-
-    return _react2.default.createElement(
-      "div",
-      {
-        className: (0, _classnames2.default)("breakpoints-exceptions-options", {
-          empty: isEmpty
-        })
-      },
-      _react2.default.createElement(_ExceptionOption2.default, {
-        className: "breakpoints-exceptions",
-        label: L10N.getStr("pauseOnExceptionsItem2"),
-        isChecked: shouldPauseOnExceptions,
-        onChange: () => pauseOnExceptions(!shouldPauseOnExceptions, false)
-      }),
-      shouldPauseOnExceptions && _react2.default.createElement(_ExceptionOption2.default, {
-        className: "breakpoints-exceptions-caught",
-        label: L10N.getStr("pauseOnCaughtExceptionsItem"),
-        isChecked: shouldPauseOnCaughtExceptions,
-        onChange: () => pauseOnExceptions(true, !shouldPauseOnCaughtExceptions)
+    return _react.default.createElement("div", {
+      className: (0, _classnames.default)("breakpoints-exceptions-options", {
+        empty: isEmpty
       })
-    );
+    }, _react.default.createElement(_ExceptionOption.default, {
+      className: "breakpoints-exceptions",
+      label: L10N.getStr("pauseOnExceptionsItem2"),
+      isChecked: shouldPauseOnExceptions,
+      onChange: () => pauseOnExceptions(!shouldPauseOnExceptions, false)
+    }), shouldPauseOnExceptions && _react.default.createElement(_ExceptionOption.default, {
+      className: "breakpoints-exceptions-caught",
+      label: L10N.getStr("pauseOnCaughtExceptionsItem"),
+      isChecked: shouldPauseOnCaughtExceptions,
+      onChange: () => pauseOnExceptions(true, !shouldPauseOnCaughtExceptions)
+    }));
   }
 
   renderBreakpoints() {
-    const { breakpointSources, selectedSource } = this.props;
+    const {
+      breakpointSources,
+      selectedSource
+    } = this.props;
+
     if (!breakpointSources.length) {
       return null;
     }
 
-    const sources = [...breakpointSources.map(({ source, breakpoints }) => source)];
-
-    return _react2.default.createElement(
-      "div",
-      { className: "pane breakpoints-list" },
-      breakpointSources.map(({ source, breakpoints, i }) => {
-        const path = (0, _source.getDisplayPath)(source, sources);
-        const sortedBreakpoints = (0, _breakpoint.sortSelectedBreakpoints)(breakpoints, selectedSource);
-
-        return [_react2.default.createElement(_BreakpointHeading2.default, {
-          source: source,
-          sources: sources,
-          path: path,
-          key: source.url
-        }), ...sortedBreakpoints.map(breakpoint => _react2.default.createElement(_Breakpoint2.default, {
-          breakpoint: breakpoint,
-          source: source,
-          selectedSource: selectedSource,
-          editor: this.getEditor(),
-          key: (0, _breakpoint.makeBreakpointId)((0, _selectedLocation.getSelectedLocation)(breakpoint, selectedSource))
-        }))];
-      })
-    );
+    const sources = [...breakpointSources.map(({
+      source,
+      breakpoints
+    }) => source)];
+    return _react.default.createElement("div", {
+      className: "pane breakpoints-list"
+    }, breakpointSources.map(({
+      source,
+      breakpoints,
+      i
+    }) => {
+      const path = (0, _source.getDisplayPath)(source, sources);
+      const sortedBreakpoints = (0, _breakpoint.sortSelectedBreakpoints)(breakpoints, selectedSource);
+      return [_react.default.createElement(_BreakpointHeading.default, {
+        source: source,
+        sources: sources,
+        path: path,
+        key: source.url
+      }), ...sortedBreakpoints.map(breakpoint => _react.default.createElement(_Breakpoint.default, {
+        breakpoint: breakpoint,
+        source: source,
+        selectedSource: selectedSource,
+        editor: this.getEditor(),
+        key: (0, _breakpoint.makeBreakpointId)((0, _selectedLocation.getSelectedLocation)(breakpoint, selectedSource))
+      }))];
+    }));
   }
 
   render() {
-    const { skipPausing } = this.props;
-    return _react2.default.createElement(
-      "div",
-      { className: (0, _classnames2.default)("pane", skipPausing && "skip-pausing") },
-      this.renderExceptionsOptions(),
-      this.renderBreakpoints()
-    );
+    return _react.default.createElement("div", {
+      className: "pane"
+    }, this.renderExceptionsOptions(), this.renderBreakpoints());
   }
+
 }
 
 const mapStateToProps = state => ({
   breakpointSources: (0, _selectors.getBreakpointSources)(state),
-  selectedSource: (0, _selectors.getSelectedSource)(state),
-  skipPausing: (0, _selectors.getSkipPausing)(state)
+  selectedSource: (0, _selectors.getSelectedSource)(state)
 });
 
-exports.default = (0, _connect.connect)(mapStateToProps, {
-  pauseOnExceptions: _actions2.default.pauseOnExceptions
+var _default = (0, _connect.connect)(mapStateToProps, {
+  pauseOnExceptions: _actions.default.pauseOnExceptions
 })(Breakpoints);
+
+exports.default = _default;

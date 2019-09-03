@@ -3,36 +3,43 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = void 0;
 
-var _react = require("devtools/client/shared/vendor/react");
-
-var _react2 = _interopRequireDefault(_react);
+var _react = _interopRequireDefault(require("devtools/client/shared/vendor/react"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-class A11yIntention extends _react2.default.Component {
-  constructor(...args) {
-    var _temp;
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-    return _temp = super(...args), this.state = { keyboard: false }, this.handleKeyDown = () => {
-      this.setState({ keyboard: true });
-    }, this.handleMouseDown = () => {
-      this.setState({ keyboard: false });
-    }, _temp;
+class A11yIntention extends _react.default.Component {
+  constructor(...args) {
+    super(...args);
+
+    _defineProperty(this, "state", {
+      keyboard: false
+    });
+
+    _defineProperty(this, "handleKeyDown", () => {
+      this.setState({
+        keyboard: true
+      });
+    });
+
+    _defineProperty(this, "handleMouseDown", () => {
+      this.setState({
+        keyboard: false
+      });
+    });
   }
 
   render() {
-    return _react2.default.createElement(
-      "div",
-      {
-        className: this.state.keyboard ? "A11y-keyboard" : "A11y-mouse",
-        onKeyDown: this.handleKeyDown,
-        onMouseDown: this.handleMouseDown
-      },
-      this.props.children
-    );
+    return _react.default.createElement("div", {
+      className: this.state.keyboard ? "A11y-keyboard" : "A11y-mouse",
+      onKeyDown: this.handleKeyDown,
+      onMouseDown: this.handleMouseDown
+    }, this.props.children);
   }
+
 }
-exports.default = A11yIntention; /* This Source Code Form is subject to the terms of the Mozilla Public
-                                  * License, v. 2.0. If a copy of the MPL was not distributed with this
-                                  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+
+exports.default = A11yIntention;

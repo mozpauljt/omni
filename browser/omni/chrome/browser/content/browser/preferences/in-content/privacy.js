@@ -78,6 +78,10 @@ Preferences.addAll([
   { id: "privacy.trackingprotection.fingerprinting.enabled", type: "bool" },
   { id: "privacy.trackingprotection.cryptomining.enabled", type: "bool" },
 
+  // Social tracking
+  { id: "privacy.trackingprotection.socialtracking.enabled", type: "bool" },
+  { id: "privacy.socialtracking.block_cookies.enabled", type: "bool" },
+
   // Tracker list
   { id: "urlclassifier.trackingTable", type: "string" },
 
@@ -122,6 +126,7 @@ Preferences.addAll([
   { id: "signon.rememberSignons", type: "bool" },
   { id: "signon.generation.enabled", type: "bool" },
   { id: "signon.autofillForms", type: "bool" },
+  { id: "signon.management.page.breach-alerts.enabled", type: "bool" },
 
   // Buttons
   { id: "pref.privacy.disable_button.view_passwords", type: "bool" },
@@ -497,6 +502,14 @@ var gPrivacyPane = {
 
     this._initPasswordGenerationUI();
     this._initMasterPasswordUI();
+    // set up the breach alerts Learn More link with the correct URL
+    const breachAlertsLearnMoreLink = document.getElementById(
+      "breachAlertsLearnMoreLink"
+    );
+    const breachAlertsLearnMoreUrl =
+      Services.urlFormatter.formatURLPref("app.support.baseURL") +
+      "lockwise-alerts";
+    breachAlertsLearnMoreLink.setAttribute("href", breachAlertsLearnMoreUrl);
 
     this._initSafeBrowsing();
 
@@ -1057,6 +1070,12 @@ var gPrivacyPane = {
   trackingProtectionWritePrefs() {
     let enabledPref = Preferences.get("privacy.trackingprotection.enabled");
     let pbmPref = Preferences.get("privacy.trackingprotection.pbmode.enabled");
+    let stpPref = Preferences.get(
+      "privacy.trackingprotection.socialtracking.enabled"
+    );
+    let stpCookiePref = Preferences.get(
+      "privacy.socialtracking.block_cookies.enabled"
+    );
     let tpMenu = document.getElementById("trackingProtectionMenu");
     let tpCheckbox = document.getElementById(
       "contentBlockingTrackingProtectionCheckbox"
@@ -1077,14 +1096,23 @@ var gPrivacyPane = {
       case "always":
         enabledPref.value = true;
         pbmPref.value = true;
+        if (stpCookiePref.value) {
+          stpPref.value = true;
+        }
         break;
       case "private":
         enabledPref.value = false;
         pbmPref.value = true;
+        if (stpCookiePref.value) {
+          stpPref.value = false;
+        }
         break;
       case "never":
         enabledPref.value = false;
         pbmPref.value = false;
+        if (stpCookiePref.value) {
+          stpPref.value = false;
+        }
         break;
     }
   },
@@ -1538,8 +1566,10 @@ var gPrivacyPane = {
           continue;
         }
 
-        if (tab.pinned || !otherGBrowser.discardBrowser(tab)) {
+        if (tab.pinned || tab.selected) {
           otherGBrowser.reloadTab(tab);
+        } else {
+          otherGBrowser.discardBrowser(tab);
         }
       }
     });

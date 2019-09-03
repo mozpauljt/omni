@@ -3,78 +3,48 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-loader.lazyRequireGetter(this, "_ast", "devtools/client/debugger/src/actions/ast/index");
+exports.default = void 0;
 
-var ast = _interopRequireWildcard(_ast);
+var ast = _interopRequireWildcard(require("./ast/index"));
 
-loader.lazyRequireGetter(this, "_breakpoints", "devtools/client/debugger/src/actions/breakpoints/index");
+var breakpoints = _interopRequireWildcard(require("./breakpoints/index"));
 
-var breakpoints = _interopRequireWildcard(_breakpoints);
+var expressions = _interopRequireWildcard(require("./expressions"));
 
-loader.lazyRequireGetter(this, "_expressions", "devtools/client/debugger/src/actions/expressions");
+var eventListeners = _interopRequireWildcard(require("./event-listeners"));
 
-var expressions = _interopRequireWildcard(_expressions);
+var pause = _interopRequireWildcard(require("./pause/index"));
 
-loader.lazyRequireGetter(this, "_eventListeners", "devtools/client/debugger/src/actions/event-listeners");
+var navigation = _interopRequireWildcard(require("./navigation"));
 
-var eventListeners = _interopRequireWildcard(_eventListeners);
+var ui = _interopRequireWildcard(require("./ui"));
 
-loader.lazyRequireGetter(this, "_pause", "devtools/client/debugger/src/actions/pause/index");
+var fileSearch = _interopRequireWildcard(require("./file-search"));
 
-var pause = _interopRequireWildcard(_pause);
+var projectTextSearch = _interopRequireWildcard(require("./project-text-search"));
 
-loader.lazyRequireGetter(this, "_navigation", "devtools/client/debugger/src/actions/navigation");
+var quickOpen = _interopRequireWildcard(require("./quick-open"));
 
-var navigation = _interopRequireWildcard(_navigation);
+var sourceTree = _interopRequireWildcard(require("./source-tree"));
 
-loader.lazyRequireGetter(this, "_ui", "devtools/client/debugger/src/actions/ui");
+var sources = _interopRequireWildcard(require("./sources/index"));
 
-var ui = _interopRequireWildcard(_ui);
+var sourcesActors = _interopRequireWildcard(require("./source-actors"));
 
-loader.lazyRequireGetter(this, "_fileSearch", "devtools/client/debugger/src/actions/file-search");
+var tabs = _interopRequireWildcard(require("./tabs"));
 
-var fileSearch = _interopRequireWildcard(_fileSearch);
+var threads = _interopRequireWildcard(require("./threads"));
 
-loader.lazyRequireGetter(this, "_projectTextSearch", "devtools/client/debugger/src/actions/project-text-search");
+var toolbox = _interopRequireWildcard(require("./toolbox"));
 
-var projectTextSearch = _interopRequireWildcard(_projectTextSearch);
+var preview = _interopRequireWildcard(require("./preview"));
 
-loader.lazyRequireGetter(this, "_quickOpen", "devtools/client/debugger/src/actions/quick-open");
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
-var quickOpen = _interopRequireWildcard(_quickOpen);
-
-loader.lazyRequireGetter(this, "_sourceTree", "devtools/client/debugger/src/actions/source-tree");
-
-var sourceTree = _interopRequireWildcard(_sourceTree);
-
-loader.lazyRequireGetter(this, "_sources", "devtools/client/debugger/src/actions/sources/index");
-
-var sources = _interopRequireWildcard(_sources);
-
-loader.lazyRequireGetter(this, "_sourceActors", "devtools/client/debugger/src/actions/source-actors");
-
-var sourcesActors = _interopRequireWildcard(_sourceActors);
-
-loader.lazyRequireGetter(this, "_tabs", "devtools/client/debugger/src/actions/tabs");
-
-var tabs = _interopRequireWildcard(_tabs);
-
-loader.lazyRequireGetter(this, "_debuggee", "devtools/client/debugger/src/actions/debuggee");
-
-var debuggee = _interopRequireWildcard(_debuggee);
-
-loader.lazyRequireGetter(this, "_toolbox", "devtools/client/debugger/src/actions/toolbox");
-
-var toolbox = _interopRequireWildcard(_toolbox);
-
-loader.lazyRequireGetter(this, "_preview", "devtools/client/debugger/src/actions/preview");
-
-var preview = _interopRequireWildcard(_preview);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-exports.default = {
-  ...ast,
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+var _default = { ...ast,
   ...navigation,
   ...breakpoints,
   ...expressions,
@@ -88,9 +58,8 @@ exports.default = {
   ...projectTextSearch,
   ...quickOpen,
   ...sourceTree,
-  ...debuggee,
+  ...threads,
   ...toolbox,
   ...preview
-}; /* This Source Code Form is subject to the terms of the Mozilla Public
-    * License, v. 2.0. If a copy of the MPL was not distributed with this
-    * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+};
+exports.default = _default;

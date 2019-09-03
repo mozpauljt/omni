@@ -224,12 +224,12 @@ this.AppConstants = Object.freeze({
   DLL_SUFFIX: ".so",
 
   MOZ_APP_NAME: "firefox",
-  MOZ_APP_VERSION: "70.0a1",
-  MOZ_APP_VERSION_DISPLAY: "70.0a1",
+  MOZ_APP_VERSION: "71.0a1",
+  MOZ_APP_VERSION_DISPLAY: "71.0a1",
   MOZ_BUILD_APP: "browser",
   MOZ_MACBUNDLE_NAME: "Firefox Nightly.app",
   MOZ_UPDATE_CHANNEL: "nightly",
-  MOZ_WIDGET_TOOLKIT: "gtk3",
+  MOZ_WIDGET_TOOLKIT: "gtk",
   ANDROID_PACKAGE_NAME: "org.mozilla.firefox",
 
   DEBUG_JS_MODULES: "",
@@ -248,7 +248,7 @@ this.AppConstants = Object.freeze({
   // "https://hg.mozilla.org/mozilla-central/rev/6256ec9113c1")
   // On unofficial builds, this is an empty string.
 //@line 343 "$SRCDIR/toolkit/modules/AppConstants.jsm"
-  SOURCE_REVISION_URL: "https://hg.mozilla.org/mozilla-central/rev/b283a7ef186c216d765631f6cb1260a3fa2ee42c",
+  SOURCE_REVISION_URL: "https://hg.mozilla.org/mozilla-central/rev/4cd56624e723867b1e508d73bd8ee82c899f5670",
 
   HAVE_USR_LIB64_DIR:
 //@line 349 "$SRCDIR/toolkit/modules/AppConstants.jsm"

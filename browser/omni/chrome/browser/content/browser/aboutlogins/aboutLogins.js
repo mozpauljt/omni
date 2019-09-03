@@ -10,7 +10,12 @@ const gElements = {
   loginIntro: document.querySelector("login-intro"),
   loginItem: document.querySelector("login-item"),
   loginFilter: document.querySelector("login-filter"),
+  // loginFooter is nested inside of loginItem
+  get loginFooter() {
+    return this.loginItem.shadowRoot.querySelector("login-footer");
+  },
 };
+
 let numberOfLogins = 0;
 
 let { searchParams } = new URL(document.location);
@@ -18,13 +23,12 @@ if (searchParams.get("filter")) {
   gElements.loginFilter.value = searchParams.get("filter");
 }
 
-document.dispatchEvent(new CustomEvent("AboutLoginsInit", { bubbles: true }));
-
 gElements.loginFilter.focus();
 
 function updateNoLogins() {
   document.documentElement.classList.toggle("no-logins", numberOfLogins == 0);
   gElements.loginList.classList.toggle("no-logins", numberOfLogins == 0);
+  gElements.loginItem.classList.toggle("no-logins", numberOfLogins == 0);
 }
 
 window.addEventListener("AboutLoginsChromeToContent", event => {
@@ -33,6 +37,10 @@ window.addEventListener("AboutLoginsChromeToContent", event => {
       gElements.loginList.setLogins(event.detail.value);
       numberOfLogins = event.detail.value.length;
       updateNoLogins();
+      break;
+    }
+    case "LocalizeBadges": {
+      gElements.loginFooter.showStoreIconsForLocales(event.detail.value);
       break;
     }
     case "LoginAdded": {
@@ -58,8 +66,13 @@ window.addEventListener("AboutLoginsChromeToContent", event => {
       gElements.loginList.addFavicons(event.detail.value);
       break;
     }
+    case "ShowLoginItemError": {
+      gElements.loginItem.showLoginItemError(event.detail.value);
+      break;
+    }
     case "SyncState": {
       gElements.fxAccountsButton.updateState(event.detail.value);
+      gElements.loginFooter.hidden = event.detail.value.hideMobileFooter;
       break;
     }
     case "UpdateBreaches": {
@@ -69,3 +82,5 @@ window.addEventListener("AboutLoginsChromeToContent", event => {
     }
   }
 });
+
+document.dispatchEvent(new CustomEvent("AboutLoginsInit", { bubbles: true }));

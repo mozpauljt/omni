@@ -3,32 +3,15 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = void 0;
 
-var _immutable = require("devtools/client/shared/vendor/immutable");
+var I = _interopRequireWildcard(require("devtools/client/shared/vendor/immutable"));
 
-var I = _interopRequireWildcard(_immutable);
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-/**
- * Make an immutable record type
- *
- * @param spec - the keys and their default values
- * @return a state record factory function
- * @memberof utils/makeRecord
- * @static
- */
-
-
-/**
- * @memberof utils/makeRecord
- * @static
- */
-function makeRecord(spec) {
-  return I.Record(spec);
-} /* This Source Code Form is subject to the terms of the Mozilla Public
-   * License, v. 2.0. If a copy of the MPL was not distributed with this
-   * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 /**
  * When Flow 0.29 is released (very soon), we can use this Record type
@@ -38,4 +21,17 @@ function makeRecord(spec) {
  * @module utils/makeRecord
  */
 
-exports.default = makeRecord;
+/**
+ * Make an immutable record type
+ *
+ * @param spec - the keys and their default values
+ * @return a state record factory function
+ * @memberof utils/makeRecord
+ * @static
+ */
+function makeRecord(spec) {
+  return I.Record(spec);
+}
+
+var _default = makeRecord;
+exports.default = _default;

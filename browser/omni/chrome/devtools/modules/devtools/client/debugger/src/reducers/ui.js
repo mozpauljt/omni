@@ -3,7 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createUIState = undefined;
 exports.getSelectedPrimaryPaneTab = getSelectedPrimaryPaneTab;
 exports.getActiveSearch = getActiveSearch;
 exports.getFrameworkGroupingState = getFrameworkGroupingState;
@@ -14,8 +13,19 @@ exports.getConditionalPanelLocation = getConditionalPanelLocation;
 exports.getLogPointStatus = getLogPointStatus;
 exports.getOrientation = getOrientation;
 exports.getViewport = getViewport;
+exports.getInlinePreview = getInlinePreview;
+exports.default = exports.createUIState = void 0;
 loader.lazyRequireGetter(this, "_prefs", "devtools/client/debugger/src/utils/prefs");
-const createUIState = exports.createUIState = () => ({
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+
+/**
+ * UI reducer
+ * @module reducers/ui
+ */
+const createUIState = () => ({
   selectedPrimaryPaneTab: "sources",
   activeSearch: null,
   shownSource: null,
@@ -26,93 +36,132 @@ const createUIState = exports.createUIState = () => ({
   conditionalPanelLocation: null,
   isLogPoint: false,
   orientation: "horizontal",
-  viewport: null
-}); /* This Source Code Form is subject to the terms of the Mozilla Public
-     * License, v. 2.0. If a copy of the MPL was not distributed with this
-     * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+  viewport: null,
+  inlinePreviewEnabled: _prefs.features.inlinePreview
+});
 
-/**
- * UI reducer
- * @module reducers/ui
- */
+exports.createUIState = createUIState;
 
 function update(state = createUIState(), action) {
   switch (action.type) {
     case "TOGGLE_ACTIVE_SEARCH":
       {
-        return { ...state, activeSearch: action.value };
+        return { ...state,
+          activeSearch: action.value
+        };
       }
 
     case "TOGGLE_FRAMEWORK_GROUPING":
       {
         _prefs.prefs.frameworkGroupingOn = action.value;
-        return { ...state, frameworkGroupingOn: action.value };
+        return { ...state,
+          frameworkGroupingOn: action.value
+        };
+      }
+
+    case "TOGGLE_INLINE_PREVIEW":
+      {
+        _prefs.features.inlinePreview = action.value;
+        return { ...state,
+          inlinePreviewEnabled: action.value
+        };
       }
 
     case "SET_ORIENTATION":
       {
-        return { ...state, orientation: action.orientation };
+        return { ...state,
+          orientation: action.orientation
+        };
       }
 
     case "SHOW_SOURCE":
       {
-        return { ...state, shownSource: action.source };
+        return { ...state,
+          shownSource: action.source
+        };
       }
 
     case "TOGGLE_PANE":
       {
         if (action.position == "start") {
           _prefs.prefs.startPanelCollapsed = action.paneCollapsed;
-          return { ...state, startPanelCollapsed: action.paneCollapsed };
+          return { ...state,
+            startPanelCollapsed: action.paneCollapsed
+          };
         }
 
         _prefs.prefs.endPanelCollapsed = action.paneCollapsed;
-        return { ...state, endPanelCollapsed: action.paneCollapsed };
+        return { ...state,
+          endPanelCollapsed: action.paneCollapsed
+        };
       }
 
     case "HIGHLIGHT_LINES":
-      const { start, end, sourceId } = action.location;
+      const {
+        start,
+        end,
+        sourceId
+      } = action.location;
       let lineRange = {};
 
       if (start && end && sourceId) {
-        lineRange = { start, end, sourceId };
+        lineRange = {
+          start,
+          end,
+          sourceId
+        };
       }
 
-      return { ...state, highlightedLineRange: lineRange };
+      return { ...state,
+        highlightedLineRange: lineRange
+      };
 
     case "CLOSE_QUICK_OPEN":
     case "CLEAR_HIGHLIGHT_LINES":
-      return { ...state, highlightedLineRange: {} };
+      return { ...state,
+        highlightedLineRange: {}
+      };
 
     case "OPEN_CONDITIONAL_PANEL":
-      return {
-        ...state,
+      return { ...state,
         conditionalPanelLocation: action.location,
         isLogPoint: action.log
       };
 
     case "CLOSE_CONDITIONAL_PANEL":
-      return { ...state, conditionalPanelLocation: null };
+      return { ...state,
+        conditionalPanelLocation: null
+      };
 
     case "SET_PRIMARY_PANE_TAB":
-      return { ...state, selectedPrimaryPaneTab: action.tabName };
+      return { ...state,
+        selectedPrimaryPaneTab: action.tabName
+      };
 
     case "CLOSE_PROJECT_SEARCH":
       {
         if (state.activeSearch === "project") {
-          return { ...state, activeSearch: null };
+          return { ...state,
+            activeSearch: null
+          };
         }
+
         return state;
       }
 
     case "SET_VIEWPORT":
       {
-        return { ...state, viewport: action.viewport };
+        return { ...state,
+          viewport: action.viewport
+        };
       }
 
     case "NAVIGATE":
       {
-        return { ...state, activeSearch: null, highlightedLineRange: {} };
+        return { ...state,
+          activeSearch: null,
+          highlightedLineRange: {}
+        };
       }
 
     default:
@@ -120,10 +169,10 @@ function update(state = createUIState(), action) {
         return state;
       }
   }
-}
-
-// NOTE: we'd like to have the app state fully typed
+} // NOTE: we'd like to have the app state fully typed
 // https://github.com/firefox-devtools/debugger/blob/master/src/reducers/sources.js#L179-L185
+
+
 function getSelectedPrimaryPaneTab(state) {
   return state.ui.selectedPrimaryPaneTab;
 }
@@ -168,4 +217,9 @@ function getViewport(state) {
   return state.ui.viewport;
 }
 
-exports.default = update;
+function getInlinePreview(state) {
+  return state.ui.inlinePreviewEnabled;
+}
+
+var _default = update;
+exports.default = _default;

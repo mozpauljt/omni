@@ -3,111 +3,85 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = void 0;
 
-var _react = require("devtools/client/shared/vendor/react");
+var _react = _interopRequireWildcard(require("devtools/client/shared/vendor/react"));
 
-var _react2 = _interopRequireDefault(_react);
+var _propTypes = _interopRequireDefault(require("devtools/client/shared/vendor/react-prop-types"));
 
-var _propTypes = require("devtools/client/shared/vendor/react-prop-types");
-
-var _propTypes2 = _interopRequireDefault(_propTypes);
-
-var _classnames = require("devtools/client/debugger/dist/vendors").vendored["classnames"];
-
-var _classnames2 = _interopRequireDefault(_classnames);
+var _classnames = _interopRequireDefault(require("devtools/client/debugger/dist/vendors").vendored["classnames"]);
 
 loader.lazyRequireGetter(this, "_connect", "devtools/client/debugger/src/utils/connect");
 loader.lazyRequireGetter(this, "_prefs", "devtools/client/debugger/src/utils/prefs");
-loader.lazyRequireGetter(this, "_actions", "devtools/client/debugger/src/actions/index");
 
-var _actions2 = _interopRequireDefault(_actions);
+var _actions = _interopRequireDefault(require("../actions/index"));
 
-loader.lazyRequireGetter(this, "_A11yIntention", "devtools/client/debugger/src/components/A11yIntention");
-
-var _A11yIntention2 = _interopRequireDefault(_A11yIntention);
+var _A11yIntention = _interopRequireDefault(require("./A11yIntention"));
 
 loader.lazyRequireGetter(this, "_ShortcutsModal", "devtools/client/debugger/src/components/ShortcutsModal");
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
 
 var _devtoolsModules = require("devtools/client/debugger/dist/vendors").vendored["devtools-modules"];
 
-loader.lazyRequireGetter(this, "_devtoolsServices", "Services");
+var _devtoolsServices = _interopRequireDefault(require("Services"));
 
-var _devtoolsServices2 = _interopRequireDefault(_devtoolsServices);
+var _devtoolsSplitter = _interopRequireDefault(require("devtools/client/debugger/dist/vendors").vendored["devtools-splitter"]);
 
-var _devtoolsSplitter = require("devtools/client/debugger/dist/vendors").vendored["devtools-splitter"];
+var _ProjectSearch = _interopRequireDefault(require("./ProjectSearch"));
 
-var _devtoolsSplitter2 = _interopRequireDefault(_devtoolsSplitter);
+var _PrimaryPanes = _interopRequireDefault(require("./PrimaryPanes/index"));
 
-loader.lazyRequireGetter(this, "_ProjectSearch", "devtools/client/debugger/src/components/ProjectSearch");
+var _Editor = _interopRequireDefault(require("./Editor/index"));
 
-var _ProjectSearch2 = _interopRequireDefault(_ProjectSearch);
+var _SecondaryPanes = _interopRequireDefault(require("./SecondaryPanes/index"));
 
-loader.lazyRequireGetter(this, "_PrimaryPanes", "devtools/client/debugger/src/components/PrimaryPanes/index");
+var _WelcomeBox = _interopRequireDefault(require("./WelcomeBox"));
 
-var _PrimaryPanes2 = _interopRequireDefault(_PrimaryPanes);
+var _Tabs = _interopRequireDefault(require("./Editor/Tabs"));
 
-loader.lazyRequireGetter(this, "_Editor", "devtools/client/debugger/src/components/Editor/index");
+var _Footer = _interopRequireDefault(require("./Editor/Footer"));
 
-var _Editor2 = _interopRequireDefault(_Editor);
+var _QuickOpenModal = _interopRequireDefault(require("./QuickOpenModal"));
 
-loader.lazyRequireGetter(this, "_SecondaryPanes", "devtools/client/debugger/src/components/SecondaryPanes/index");
-
-var _SecondaryPanes2 = _interopRequireDefault(_SecondaryPanes);
-
-loader.lazyRequireGetter(this, "_WelcomeBox", "devtools/client/debugger/src/components/WelcomeBox");
-
-var _WelcomeBox2 = _interopRequireDefault(_WelcomeBox);
-
-loader.lazyRequireGetter(this, "_Tabs", "devtools/client/debugger/src/components/Editor/Tabs");
-
-var _Tabs2 = _interopRequireDefault(_Tabs);
-
-loader.lazyRequireGetter(this, "_Footer", "devtools/client/debugger/src/components/Editor/Footer");
-
-var _Footer2 = _interopRequireDefault(_Footer);
-
-loader.lazyRequireGetter(this, "_QuickOpenModal", "devtools/client/debugger/src/components/QuickOpenModal");
-
-var _QuickOpenModal2 = _interopRequireDefault(_QuickOpenModal);
-
-loader.lazyRequireGetter(this, "_WhyPaused", "devtools/client/debugger/src/components/SecondaryPanes/WhyPaused");
-
-var _WhyPaused2 = _interopRequireDefault(_WhyPaused);
+var _WhyPaused = _interopRequireDefault(require("./SecondaryPanes/WhyPaused"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-const shortcuts = new _devtoolsModules.KeyShortcuts({ window }); /* This Source Code Form is subject to the terms of the Mozilla Public
-                                                                  * License, v. 2.0. If a copy of the MPL was not distributed with this
-                                                                  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
-const { appinfo } = _devtoolsServices2.default;
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+const shortcuts = new _devtoolsModules.KeyShortcuts({
+  window
+});
+const {
+  appinfo
+} = _devtoolsServices.default;
 const isMacOS = appinfo.OS === "Darwin";
-
 const horizontalLayoutBreakpoint = window.matchMedia("(min-width: 800px)");
 const verticalLayoutBreakpoint = window.matchMedia("(min-width: 10px) and (max-width: 799px)");
 
-// $FlowIgnore
-
-
 class App extends _react.Component {
-
   constructor(props) {
     super(props);
 
-    this.getChildContext = () => {
-      return { shortcuts, l10n: L10N };
-    };
+    _defineProperty(this, "getChildContext", () => {
+      return {
+        shortcuts,
+        l10n: L10N
+      };
+    });
 
-    this.onEscape = (_, e) => {
+    _defineProperty(this, "onEscape", (_, e) => {
       const {
         activeSearch,
         closeActiveSearch,
         closeQuickOpen,
         quickOpenEnabled
       } = this.props;
-      const { shortcutsModalEnabled } = this.state;
+      const {
+        shortcutsModalEnabled
+      } = this.state;
 
       if (activeSearch) {
         e.preventDefault();
@@ -123,15 +97,18 @@ class App extends _react.Component {
         e.preventDefault();
         this.toggleShortcutsModal();
       }
-    };
+    });
 
-    this.onCommandSlash = () => {
+    _defineProperty(this, "onCommandSlash", () => {
       this.toggleShortcutsModal();
-    };
+    });
 
-    this.toggleQuickOpenModal = (_, e, query) => {
-      const { quickOpenEnabled, openQuickOpen, closeQuickOpen } = this.props;
-
+    _defineProperty(this, "toggleQuickOpenModal", (_, e, query) => {
+      const {
+        quickOpenEnabled,
+        openQuickOpen,
+        closeQuickOpen
+      } = this.props;
       e.preventDefault();
       e.stopPropagation();
 
@@ -144,53 +121,58 @@ class App extends _react.Component {
         openQuickOpen(query);
         return;
       }
+
       openQuickOpen();
-    };
+    });
 
-    this.onLayoutChange = () => {
+    _defineProperty(this, "onLayoutChange", () => {
       this.setOrientation();
-    };
+    });
 
-    this.renderEditorPane = () => {
-      const { startPanelCollapsed, endPanelCollapsed } = this.props;
-      const { endPanelSize, startPanelSize } = this.state;
+    _defineProperty(this, "renderEditorPane", () => {
+      const {
+        startPanelCollapsed,
+        endPanelCollapsed
+      } = this.props;
+      const {
+        endPanelSize,
+        startPanelSize
+      } = this.state;
       const horizontal = this.isHorizontal();
+      return _react.default.createElement("div", {
+        className: "editor-pane"
+      }, _react.default.createElement("div", {
+        className: "editor-container"
+      }, _react.default.createElement(_Tabs.default, {
+        startPanelCollapsed: startPanelCollapsed,
+        endPanelCollapsed: endPanelCollapsed,
+        horizontal: horizontal,
+        startPanelSize: startPanelSize,
+        endPanelSize: endPanelSize
+      }), _react.default.createElement(_Editor.default, {
+        horizontal: horizontal,
+        startPanelSize: startPanelSize,
+        endPanelSize: endPanelSize
+      }), this.props.endPanelCollapsed ? _react.default.createElement(_WhyPaused.default, {
+        horizontal: horizontal
+      }) : null, !this.props.selectedSource ? _react.default.createElement(_WelcomeBox.default, {
+        horizontal: horizontal,
+        toggleShortcutsModal: () => this.toggleShortcutsModal()
+      }) : null, _react.default.createElement(_Footer.default, {
+        horizontal: horizontal
+      }), _react.default.createElement(_ProjectSearch.default, null)));
+    });
 
-      return _react2.default.createElement(
-        "div",
-        { className: "editor-pane" },
-        _react2.default.createElement(
-          "div",
-          { className: "editor-container" },
-          _react2.default.createElement(_Tabs2.default, {
-            startPanelCollapsed: startPanelCollapsed,
-            endPanelCollapsed: endPanelCollapsed,
-            horizontal: horizontal,
-            startPanelSize: startPanelSize,
-            endPanelSize: endPanelSize
-          }),
-          _react2.default.createElement(_Editor2.default, {
-            horizontal: horizontal,
-            startPanelSize: startPanelSize,
-            endPanelSize: endPanelSize
-          }),
-          this.props.endPanelCollapsed ? _react2.default.createElement(_WhyPaused2.default, { horizontal: horizontal }) : null,
-          !this.props.selectedSource ? _react2.default.createElement(_WelcomeBox2.default, {
-            horizontal: horizontal,
-            toggleShortcutsModal: () => this.toggleShortcutsModal()
-          }) : null,
-          _react2.default.createElement(_Footer2.default, { horizontal: horizontal }),
-          _react2.default.createElement(_ProjectSearch2.default, null)
-        )
-      );
-    };
-
-    this.renderLayout = () => {
-      const { startPanelCollapsed, endPanelCollapsed } = this.props;
+    _defineProperty(this, "renderLayout", () => {
+      const {
+        startPanelCollapsed,
+        endPanelCollapsed
+      } = this.props;
       const horizontal = this.isHorizontal();
-
-      return _react2.default.createElement(_devtoolsSplitter2.default, {
-        style: { width: "100vw" },
+      return _react.default.createElement(_devtoolsSplitter.default, {
+        style: {
+          width: "100vw"
+        },
         initialSize: _prefs.prefs.endPanelSize,
         minSize: 30,
         maxSize: "70%",
@@ -200,8 +182,10 @@ class App extends _react.Component {
           _prefs.prefs.endPanelSize = num;
           this.triggerEditorPaneResize();
         },
-        startPanel: _react2.default.createElement(_devtoolsSplitter2.default, {
-          style: { width: "100vw" },
+        startPanel: _react.default.createElement(_devtoolsSplitter.default, {
+          style: {
+            width: "100vw"
+          },
           initialSize: _prefs.prefs.startPanelSize,
           minSize: 30,
           maxSize: "85%",
@@ -210,17 +194,19 @@ class App extends _react.Component {
             _prefs.prefs.startPanelSize = num;
           },
           startPanelCollapsed: startPanelCollapsed,
-          startPanel: _react2.default.createElement(_PrimaryPanes2.default, { horizontal: horizontal }),
+          startPanel: _react.default.createElement(_PrimaryPanes.default, {
+            horizontal: horizontal
+          }),
           endPanel: this.renderEditorPane()
         }),
         endPanelControl: true,
-        endPanel: _react2.default.createElement(_SecondaryPanes2.default, {
+        endPanel: _react.default.createElement(_SecondaryPanes.default, {
           horizontal: horizontal,
           toggleShortcutsModal: () => this.toggleShortcutsModal()
         }),
         endPanelCollapsed: endPanelCollapsed
       });
-    };
+    });
 
     this.state = {
       shortcutsModalEnabled: false,
@@ -233,14 +219,10 @@ class App extends _react.Component {
     horizontalLayoutBreakpoint.addListener(this.onLayoutChange);
     verticalLayoutBreakpoint.addListener(this.onLayoutChange);
     this.setOrientation();
-
     shortcuts.on(L10N.getStr("symbolSearch.search.key2"), (_, e) => this.toggleQuickOpenModal(_, e, "@"));
-
     const searchKeys = [L10N.getStr("sources.search.key2"), L10N.getStr("sources.search.alt.key")];
     searchKeys.forEach(key => shortcuts.on(key, this.toggleQuickOpenModal));
-
     shortcuts.on(L10N.getStr("gotoLineModal.key3"), (_, e) => this.toggleQuickOpenModal(_, e, ":"));
-
     shortcuts.on("Escape", this.onEscape);
     shortcuts.on("Cmd+/", this.onCommandSlash);
   }
@@ -249,12 +231,9 @@ class App extends _react.Component {
     horizontalLayoutBreakpoint.removeListener(this.onLayoutChange);
     verticalLayoutBreakpoint.removeListener(this.onLayoutChange);
     shortcuts.off(L10N.getStr("symbolSearch.search.key2"), this.toggleQuickOpenModal);
-
     const searchKeys = [L10N.getStr("sources.search.key2"), L10N.getStr("sources.search.alt.key")];
     searchKeys.forEach(key => shortcuts.off(key, this.toggleQuickOpenModal));
-
     shortcuts.off(L10N.getStr("gotoLineModal.key3"), this.toggleQuickOpenModal);
-
     shortcuts.off("Escape", this.onEscape);
   }
 
@@ -277,12 +256,13 @@ class App extends _react.Component {
     this.setState(prevState => ({
       shortcutsModalEnabled: !prevState.shortcutsModalEnabled
     }));
-  }
-
-  // Important so that the tabs chevron updates appropriately when
+  } // Important so that the tabs chevron updates appropriately when
   // the user resizes the left or right columns
+
+
   triggerEditorPaneResize() {
     const editorPane = window.document.querySelector(".editor-pane");
+
     if (editorPane) {
       editorPane.dispatchEvent(new Event("resizeend"));
     }
@@ -295,7 +275,7 @@ class App extends _react.Component {
       return;
     }
 
-    return _react2.default.createElement(_ShortcutsModal.ShortcutsModal, {
+    return _react.default.createElement(_ShortcutsModal.ShortcutsModal, {
       additionalClass: additionalClass,
       enabled: this.state.shortcutsModalEnabled,
       handleClose: () => this.toggleShortcutsModal()
@@ -303,27 +283,25 @@ class App extends _react.Component {
   }
 
   render() {
-    const { quickOpenEnabled, canRewind } = this.props;
-    return _react2.default.createElement(
-      "div",
-      { className: (0, _classnames2.default)("debugger", { "can-rewind": canRewind }) },
-      _react2.default.createElement(
-        _A11yIntention2.default,
-        null,
-        this.renderLayout(),
-        quickOpenEnabled === true && _react2.default.createElement(_QuickOpenModal2.default, {
-          shortcutsModalEnabled: this.state.shortcutsModalEnabled,
-          toggleShortcutsModal: () => this.toggleShortcutsModal()
-        }),
-        this.renderShortcutsModal()
-      )
-    );
+    const {
+      quickOpenEnabled,
+      canRewind
+    } = this.props;
+    return _react.default.createElement("div", {
+      className: (0, _classnames.default)("debugger", {
+        "can-rewind": canRewind
+      })
+    }, _react.default.createElement(_A11yIntention.default, null, this.renderLayout(), quickOpenEnabled === true && _react.default.createElement(_QuickOpenModal.default, {
+      shortcutsModalEnabled: this.state.shortcutsModalEnabled,
+      toggleShortcutsModal: () => this.toggleShortcutsModal()
+    }), this.renderShortcutsModal()));
   }
+
 }
 
 App.childContextTypes = {
-  shortcuts: _propTypes2.default.object,
-  l10n: _propTypes2.default.object
+  shortcuts: _propTypes.default.object,
+  l10n: _propTypes.default.object
 };
 
 const mapStateToProps = state => ({
@@ -336,11 +314,13 @@ const mapStateToProps = state => ({
   orientation: (0, _selectors.getOrientation)(state)
 });
 
-exports.default = (0, _connect.connect)(mapStateToProps, {
-  setActiveSearch: _actions2.default.setActiveSearch,
-  closeActiveSearch: _actions2.default.closeActiveSearch,
-  closeProjectSearch: _actions2.default.closeProjectSearch,
-  openQuickOpen: _actions2.default.openQuickOpen,
-  closeQuickOpen: _actions2.default.closeQuickOpen,
-  setOrientation: _actions2.default.setOrientation
+var _default = (0, _connect.connect)(mapStateToProps, {
+  setActiveSearch: _actions.default.setActiveSearch,
+  closeActiveSearch: _actions.default.closeActiveSearch,
+  closeProjectSearch: _actions.default.closeProjectSearch,
+  openQuickOpen: _actions.default.openQuickOpen,
+  closeQuickOpen: _actions.default.closeQuickOpen,
+  setOrientation: _actions.default.setOrientation
 })(App);
+
+exports.default = _default;

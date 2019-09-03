@@ -3,34 +3,33 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getSourcesForTabs = exports.getSourceTabs = exports.getTabs = undefined;
 exports.removeSourceFromTabList = removeSourceFromTabList;
 exports.removeSourcesFromTabList = removeSourcesFromTabList;
 exports.getNewSelectedSourceId = getNewSelectedSourceId;
+exports.default = exports.getSourcesForTabs = exports.getSourceTabs = exports.getTabs = void 0;
 
 var _reselect = require("devtools/client/shared/vendor/reselect");
 
 var _devtoolsSourceMap = require("devtools/client/shared/source-map/index.js");
 
-var _lodashMove = require("devtools/client/debugger/dist/vendors").vendored["lodash-move"];
-
-var _lodashMove2 = _interopRequireDefault(_lodashMove);
+var _lodashMove = _interopRequireDefault(require("devtools/client/debugger/dist/vendors").vendored["lodash-move"]);
 
 loader.lazyRequireGetter(this, "_prefs", "devtools/client/debugger/src/utils/prefs");
 loader.lazyRequireGetter(this, "_sources", "devtools/client/debugger/src/reducers/sources");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function isSimilarTab(tab, url, isOriginal) {
-  return tab.url === url && tab.isOriginal === isOriginal;
-} /* This Source Code Form is subject to the terms of the Mozilla Public
-   * License, v. 2.0. If a copy of the MPL was not distributed with this
-   * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 /**
  * Tabs reducer
  * @module reducers/tabs
  */
+function isSimilarTab(tab, url, isOriginal) {
+  return tab.url === url && tab.isOriginal === isOriginal;
+}
 
 function update(state = [], action) {
   switch (action.type) {
@@ -58,19 +57,30 @@ function removeSourceFromTabList(tabs, source) {
 function removeSourcesFromTabList(tabs, sources) {
   return sources.reduce((t, source) => removeSourceFromTabList(t, source), tabs);
 }
-
 /**
  * Adds the new source to the tab list if it is not already there
  * @memberof reducers/tabs
  * @static
  */
-function updateTabList(tabs, { url, framework = null, sourceId, isOriginal = false }) {
+
+
+function updateTabList(tabs, {
+  url,
+  framework = null,
+  sourceId,
+  isOriginal = false
+}) {
   // Set currentIndex to -1 for URL-less tabs so that they aren't
   // filtered by isSimilarTab
   const currentIndex = url ? tabs.findIndex(tab => isSimilarTab(tab, url, isOriginal)) : -1;
 
   if (currentIndex === -1) {
-    tabs = [{ url, framework, sourceId, isOriginal }, ...tabs];
+    tabs = [{
+      url,
+      framework,
+      sourceId,
+      isOriginal
+    }, ...tabs];
   } else if (framework) {
     tabs[currentIndex].framework = framework;
   }
@@ -81,19 +91,22 @@ function updateTabList(tabs, { url, framework = null, sourceId, isOriginal = fal
 
 function persistTabs(tabs) {
   return tabs.filter(tab => tab.url).map(tab => {
-    const newTab = { ...tab };
+    const newTab = { ...tab
+    };
     delete newTab.sourceId;
     return newTab;
   });
 }
 
-function moveTabInList(tabs, { url, tabIndex: newIndex }) {
+function moveTabInList(tabs, {
+  url,
+  tabIndex: newIndex
+}) {
   const currentIndex = tabs.findIndex(tab => tab.url == url);
-  tabs = (0, _lodashMove2.default)(tabs, currentIndex, newIndex);
+  tabs = (0, _lodashMove.default)(tabs, currentIndex, newIndex);
   _prefs.asyncStore.tabs = tabs;
   return tabs;
 }
-
 /**
  * Gets the next tab to select when a tab closes. Heuristics:
  * 1. if the selected tab is available, it remains selected
@@ -103,13 +116,17 @@ function moveTabInList(tabs, { url, tabIndex: newIndex }) {
  * @memberof reducers/tabs
  * @static
  */
+
+
 function getNewSelectedSourceId(state, availableTabs) {
   const selectedLocation = state.sources.selectedLocation;
+
   if (!selectedLocation) {
     return "";
   }
 
   const selectedTab = (0, _sources.getSource)(state, selectedLocation.sourceId);
+
   if (!selectedTab) {
     return "";
   }
@@ -118,6 +135,7 @@ function getNewSelectedSourceId(state, availableTabs) {
 
   if (matchingTab) {
     const sources = state.sources.sources;
+
     if (!sources) {
       return "";
     }
@@ -146,10 +164,7 @@ function getNewSelectedSourceId(state, availableTabs) {
   }
 
   return "";
-}
-
-// Selectors
-
+} // Selectors
 // Unfortunately, it's really hard to make these functions accept just
 // the state that we care about and still type it with Flow. The
 // problem is that we want to re-export all selectors from a single
@@ -157,11 +172,15 @@ function getNewSelectedSourceId(state, availableTabs) {
 // top-level app state, so we'd have to "wrap" them to automatically
 // pick off the piece of state we're interested in. It's impossible
 // (right now) to type those wrapped functions.
-const getTabs = exports.getTabs = state => state.tabs;
 
-const getSourceTabs = exports.getSourceTabs = (0, _reselect.createSelector)(getTabs, _sources.getSources, _sources.getUrls, (tabs, sources, urls) => tabs.filter(tab => getTabWithOrWithoutUrl(tab, sources, urls)));
 
-const getSourcesForTabs = exports.getSourcesForTabs = (0, _reselect.createSelector)(getSourceTabs, _sources.getSources, _sources.getUrls, (tabs, sources, urls) => tabs.map(tab => getTabWithOrWithoutUrl(tab, sources, urls)).filter(Boolean));
+const getTabs = state => state.tabs;
+
+exports.getTabs = getTabs;
+const getSourceTabs = (0, _reselect.createSelector)(getTabs, _sources.getSources, _sources.getUrls, (tabs, sources, urls) => tabs.filter(tab => getTabWithOrWithoutUrl(tab, sources, urls)));
+exports.getSourceTabs = getSourceTabs;
+const getSourcesForTabs = (0, _reselect.createSelector)(getSourceTabs, _sources.getSources, _sources.getUrls, (tabs, sources, urls) => tabs.map(tab => getTabWithOrWithoutUrl(tab, sources, urls)).filter(Boolean));
+exports.getSourcesForTabs = getSourcesForTabs;
 
 function getTabWithOrWithoutUrl(tab, sources, urls) {
   if (tab.url) {
@@ -171,4 +190,5 @@ function getTabWithOrWithoutUrl(tab, sources, urls) {
   return tab.sourceId ? (0, _sources.getSourceInSources)(sources, tab.sourceId) : null;
 }
 
-exports.default = update;
+var _default = update;
+exports.default = _default;

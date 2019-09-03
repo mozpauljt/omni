@@ -3,148 +3,29 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getVisibleSelectedFrame = exports.getSelectedFrames = exports.getSelectedFrame = exports.shouldPauseOnAnyXHR = exports.getXHRBreakpoints = exports.isLineInScope = exports.getBreakpointSources = exports.getCallStackFrames = exports.isSelectedFrameVisible = exports.inComponent = exports.getFirstVisibleBreakpoints = exports.getVisibleBreakpoints = exports.getBreakpointsAtLine = exports.getBreakpointAtLocation = exports.getQuickOpenType = exports.getQuickOpenQuery = exports.getQuickOpenEnabled = exports.getSourceActorsForThread = exports.getSourceActors = exports.hasSourceActor = exports.getSourceActor = undefined;
-loader.lazyRequireGetter(this, "_expressions", "devtools/client/debugger/src/reducers/expressions");
-Object.keys(_expressions).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _expressions[key];
-    }
-  });
-});
-loader.lazyRequireGetter(this, "_sources", "devtools/client/debugger/src/reducers/sources");
-Object.keys(_sources).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _sources[key];
-    }
-  });
-});
-loader.lazyRequireGetter(this, "_tabs", "devtools/client/debugger/src/reducers/tabs");
-Object.keys(_tabs).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _tabs[key];
-    }
-  });
-});
-loader.lazyRequireGetter(this, "_eventListeners", "devtools/client/debugger/src/reducers/event-listeners");
-Object.keys(_eventListeners).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _eventListeners[key];
-    }
-  });
-});
-loader.lazyRequireGetter(this, "_pause", "devtools/client/debugger/src/reducers/pause");
-Object.keys(_pause).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _pause[key];
-    }
-  });
-});
-loader.lazyRequireGetter(this, "_debuggee", "devtools/client/debugger/src/reducers/debuggee");
-Object.keys(_debuggee).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _debuggee[key];
-    }
-  });
-});
-loader.lazyRequireGetter(this, "_breakpoints", "devtools/client/debugger/src/reducers/breakpoints");
-Object.keys(_breakpoints).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _breakpoints[key];
-    }
-  });
-});
-loader.lazyRequireGetter(this, "_pendingBreakpoints", "devtools/client/debugger/src/reducers/pending-breakpoints");
-Object.keys(_pendingBreakpoints).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _pendingBreakpoints[key];
-    }
-  });
-});
-loader.lazyRequireGetter(this, "_ui", "devtools/client/debugger/src/reducers/ui");
-Object.keys(_ui).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _ui[key];
-    }
-  });
-});
-loader.lazyRequireGetter(this, "_fileSearch", "devtools/client/debugger/src/reducers/file-search");
-Object.keys(_fileSearch).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _fileSearch[key];
-    }
-  });
-});
-loader.lazyRequireGetter(this, "_ast", "devtools/client/debugger/src/reducers/ast");
-Object.keys(_ast).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _ast[key];
-    }
-  });
-});
-loader.lazyRequireGetter(this, "_projectTextSearch", "devtools/client/debugger/src/reducers/project-text-search");
-Object.keys(_projectTextSearch).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _projectTextSearch[key];
-    }
-  });
-});
-loader.lazyRequireGetter(this, "_sourceTree", "devtools/client/debugger/src/reducers/source-tree");
-Object.keys(_sourceTree).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _sourceTree[key];
-    }
-  });
-});
-loader.lazyRequireGetter(this, "_preview", "devtools/client/debugger/src/reducers/preview");
-Object.keys(_preview).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _preview[key];
-    }
-  });
-});
-loader.lazyRequireGetter(this, "_sourceActors", "devtools/client/debugger/src/reducers/source-actors");
+var _exportNames = {
+  getSourceActor: true,
+  hasSourceActor: true,
+  getSourceActors: true,
+  getSourceActorsForThread: true,
+  getQuickOpenEnabled: true,
+  getQuickOpenQuery: true,
+  getQuickOpenType: true,
+  getBreakpointAtLocation: true,
+  getBreakpointsAtLine: true,
+  getVisibleBreakpoints: true,
+  getFirstVisibleBreakpoints: true,
+  inComponent: true,
+  isSelectedFrameVisible: true,
+  getCallStackFrames: true,
+  getBreakpointSources: true,
+  isLineInScope: true,
+  getXHRBreakpoints: true,
+  shouldPauseOnAnyXHR: true,
+  getSelectedFrame: true,
+  getSelectedFrames: true,
+  getVisibleSelectedFrame: true
+};
 Object.defineProperty(exports, "getSourceActor", {
   enumerable: true,
   get: function () {
@@ -169,7 +50,6 @@ Object.defineProperty(exports, "getSourceActorsForThread", {
     return _sourceActors.getSourceActorsForThread;
   }
 });
-loader.lazyRequireGetter(this, "_quickOpen", "devtools/client/debugger/src/reducers/quick-open");
 Object.defineProperty(exports, "getQuickOpenEnabled", {
   enumerable: true,
   get: function () {
@@ -188,7 +68,6 @@ Object.defineProperty(exports, "getQuickOpenType", {
     return _quickOpen.getQuickOpenType;
   }
 });
-loader.lazyRequireGetter(this, "_breakpointAtLocation", "devtools/client/debugger/src/selectors/breakpointAtLocation");
 Object.defineProperty(exports, "getBreakpointAtLocation", {
   enumerable: true,
   get: function () {
@@ -201,7 +80,6 @@ Object.defineProperty(exports, "getBreakpointsAtLine", {
     return _breakpointAtLocation.getBreakpointsAtLine;
   }
 });
-loader.lazyRequireGetter(this, "_visibleBreakpoints", "devtools/client/debugger/src/selectors/visibleBreakpoints");
 Object.defineProperty(exports, "getVisibleBreakpoints", {
   enumerable: true,
   get: function () {
@@ -214,42 +92,36 @@ Object.defineProperty(exports, "getFirstVisibleBreakpoints", {
     return _visibleBreakpoints.getFirstVisibleBreakpoints;
   }
 });
-loader.lazyRequireGetter(this, "_inComponent", "devtools/client/debugger/src/selectors/inComponent");
 Object.defineProperty(exports, "inComponent", {
   enumerable: true,
   get: function () {
     return _inComponent.inComponent;
   }
 });
-loader.lazyRequireGetter(this, "_isSelectedFrameVisible", "devtools/client/debugger/src/selectors/isSelectedFrameVisible");
 Object.defineProperty(exports, "isSelectedFrameVisible", {
   enumerable: true,
   get: function () {
     return _isSelectedFrameVisible.isSelectedFrameVisible;
   }
 });
-loader.lazyRequireGetter(this, "_getCallStackFrames", "devtools/client/debugger/src/selectors/getCallStackFrames");
 Object.defineProperty(exports, "getCallStackFrames", {
   enumerable: true,
   get: function () {
     return _getCallStackFrames.getCallStackFrames;
   }
 });
-loader.lazyRequireGetter(this, "_breakpointSources", "devtools/client/debugger/src/selectors/breakpointSources");
 Object.defineProperty(exports, "getBreakpointSources", {
   enumerable: true,
   get: function () {
     return _breakpointSources.getBreakpointSources;
   }
 });
-loader.lazyRequireGetter(this, "_isLineInScope", "devtools/client/debugger/src/selectors/isLineInScope");
 Object.defineProperty(exports, "isLineInScope", {
   enumerable: true,
   get: function () {
     return _isLineInScope.isLineInScope;
   }
 });
-loader.lazyRequireGetter(this, "_breakpoints2", "devtools/client/debugger/src/selectors/breakpoints");
 Object.defineProperty(exports, "getXHRBreakpoints", {
   enumerable: true,
   get: function () {
@@ -262,17 +134,6 @@ Object.defineProperty(exports, "shouldPauseOnAnyXHR", {
     return _breakpoints2.shouldPauseOnAnyXHR;
   }
 });
-loader.lazyRequireGetter(this, "_visibleColumnBreakpoints", "devtools/client/debugger/src/selectors/visibleColumnBreakpoints");
-Object.keys(_visibleColumnBreakpoints).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _visibleColumnBreakpoints[key];
-    }
-  });
-});
-loader.lazyRequireGetter(this, "_pause2", "devtools/client/debugger/src/selectors/pause");
 Object.defineProperty(exports, "getSelectedFrame", {
   enumerable: true,
   get: function () {
@@ -291,18 +152,197 @@ Object.defineProperty(exports, "getVisibleSelectedFrame", {
     return _pause2.getVisibleSelectedFrame;
   }
 });
+loader.lazyRequireGetter(this, "_expressions", "devtools/client/debugger/src/reducers/expressions");
+Object.keys(_expressions).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _expressions[key];
+    }
+  });
+});
+loader.lazyRequireGetter(this, "_sources", "devtools/client/debugger/src/reducers/sources");
+Object.keys(_sources).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _sources[key];
+    }
+  });
+});
+loader.lazyRequireGetter(this, "_tabs", "devtools/client/debugger/src/reducers/tabs");
+Object.keys(_tabs).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _tabs[key];
+    }
+  });
+});
+loader.lazyRequireGetter(this, "_eventListeners", "devtools/client/debugger/src/reducers/event-listeners");
+Object.keys(_eventListeners).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _eventListeners[key];
+    }
+  });
+});
+loader.lazyRequireGetter(this, "_pause", "devtools/client/debugger/src/reducers/pause");
+Object.keys(_pause).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _pause[key];
+    }
+  });
+});
+loader.lazyRequireGetter(this, "_threads", "devtools/client/debugger/src/reducers/threads");
+Object.keys(_threads).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _threads[key];
+    }
+  });
+});
+loader.lazyRequireGetter(this, "_breakpoints", "devtools/client/debugger/src/reducers/breakpoints");
+Object.keys(_breakpoints).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _breakpoints[key];
+    }
+  });
+});
+loader.lazyRequireGetter(this, "_pendingBreakpoints", "devtools/client/debugger/src/reducers/pending-breakpoints");
+Object.keys(_pendingBreakpoints).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _pendingBreakpoints[key];
+    }
+  });
+});
+loader.lazyRequireGetter(this, "_ui", "devtools/client/debugger/src/reducers/ui");
+Object.keys(_ui).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _ui[key];
+    }
+  });
+});
+loader.lazyRequireGetter(this, "_fileSearch", "devtools/client/debugger/src/reducers/file-search");
+Object.keys(_fileSearch).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _fileSearch[key];
+    }
+  });
+});
+loader.lazyRequireGetter(this, "_ast", "devtools/client/debugger/src/reducers/ast");
+Object.keys(_ast).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _ast[key];
+    }
+  });
+});
+loader.lazyRequireGetter(this, "_projectTextSearch", "devtools/client/debugger/src/reducers/project-text-search");
+Object.keys(_projectTextSearch).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _projectTextSearch[key];
+    }
+  });
+});
+loader.lazyRequireGetter(this, "_sourceTree", "devtools/client/debugger/src/reducers/source-tree");
+Object.keys(_sourceTree).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _sourceTree[key];
+    }
+  });
+});
+loader.lazyRequireGetter(this, "_preview", "devtools/client/debugger/src/reducers/preview");
+Object.keys(_preview).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _preview[key];
+    }
+  });
+});
+loader.lazyRequireGetter(this, "_sourceActors", "devtools/client/debugger/src/reducers/source-actors");
+loader.lazyRequireGetter(this, "_quickOpen", "devtools/client/debugger/src/reducers/quick-open");
+loader.lazyRequireGetter(this, "_breakpointAtLocation", "devtools/client/debugger/src/selectors/breakpointAtLocation");
+loader.lazyRequireGetter(this, "_visibleBreakpoints", "devtools/client/debugger/src/selectors/visibleBreakpoints");
+loader.lazyRequireGetter(this, "_inComponent", "devtools/client/debugger/src/selectors/inComponent");
+loader.lazyRequireGetter(this, "_isSelectedFrameVisible", "devtools/client/debugger/src/selectors/isSelectedFrameVisible");
+loader.lazyRequireGetter(this, "_getCallStackFrames", "devtools/client/debugger/src/selectors/getCallStackFrames");
+loader.lazyRequireGetter(this, "_breakpointSources", "devtools/client/debugger/src/selectors/breakpointSources");
+loader.lazyRequireGetter(this, "_isLineInScope", "devtools/client/debugger/src/selectors/isLineInScope");
+loader.lazyRequireGetter(this, "_breakpoints2", "devtools/client/debugger/src/selectors/breakpoints");
+loader.lazyRequireGetter(this, "_visibleColumnBreakpoints", "devtools/client/debugger/src/selectors/visibleColumnBreakpoints");
+Object.keys(_visibleColumnBreakpoints).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _visibleColumnBreakpoints[key];
+    }
+  });
+});
+loader.lazyRequireGetter(this, "_pause2", "devtools/client/debugger/src/selectors/pause");
 
 var _devtoolsReps = require("devtools/client/shared/components/reps/reps.js");
 
-const { reducer } = _devtoolsReps.objectInspector;
-
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 // eslint-disable-next-line import/named
-
-
+const {
+  reducer
+} = _devtoolsReps.objectInspector;
 Object.keys(reducer).forEach(function (key) {
   if (key === "default" || key === "__esModule") {
     return;
   }
+
   Object.defineProperty(exports, key, {
     enumerable: true,
     get: reducer[key]

@@ -3,26 +3,25 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-loader.lazyRequireGetter(this, "_astBreakpointLocation", "devtools/client/debugger/src/utils/breakpoint/astBreakpointLocation");
-Object.keys(_astBreakpointLocation).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _astBreakpointLocation[key];
-    }
-  });
-});
-loader.lazyRequireGetter(this, "_breakpointPositions", "devtools/client/debugger/src/utils/breakpoint/breakpointPositions");
-Object.keys(_breakpointPositions).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _breakpointPositions[key];
-    }
-  });
-});
+var _exportNames = {
+  firstString: true,
+  makeBreakpointId: true,
+  getLocationWithoutColumn: true,
+  makePendingLocationId: true,
+  makeBreakpointLocation: true,
+  makeSourceActorLocation: true,
+  makeBreakpointActorId: true,
+  assertBreakpoint: true,
+  assertPendingBreakpoint: true,
+  assertLocation: true,
+  assertPendingLocation: true,
+  breakpointAtLocation: true,
+  breakpointExists: true,
+  createXHRBreakpoint: true,
+  createPendingBreakpoint: true,
+  getSelectedText: true,
+  sortSelectedBreakpoints: true
+};
 exports.firstString = firstString;
 exports.makeBreakpointId = makeBreakpointId;
 exports.getLocationWithoutColumn = getLocationWithoutColumn;
@@ -43,14 +42,38 @@ exports.sortSelectedBreakpoints = sortSelectedBreakpoints;
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
 loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
 loader.lazyRequireGetter(this, "_location", "devtools/client/debugger/src/utils/location");
-loader.lazyRequireGetter(this, "_assert", "devtools/client/debugger/src/utils/assert");
 
-var _assert2 = _interopRequireDefault(_assert);
+var _assert = _interopRequireDefault(require("../assert"));
 
 loader.lazyRequireGetter(this, "_prefs", "devtools/client/debugger/src/utils/prefs");
+loader.lazyRequireGetter(this, "_astBreakpointLocation", "devtools/client/debugger/src/utils/breakpoint/astBreakpointLocation");
+Object.keys(_astBreakpointLocation).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _astBreakpointLocation[key];
+    }
+  });
+});
+loader.lazyRequireGetter(this, "_breakpointPositions", "devtools/client/debugger/src/utils/breakpoint/breakpointPositions");
+Object.keys(_breakpointPositions).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _breakpointPositions[key];
+    }
+  });
+});
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 // Return the first argument that is a string, or null if nothing is a
 // string.
 function firstString(...args) {
@@ -59,48 +82,59 @@ function firstString(...args) {
       return arg;
     }
   }
-  return null;
-}
 
-// The ID for a Breakpoint is derived from its location in its Source.
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+  return null;
+} // The ID for a Breakpoint is derived from its location in its Source.
+
 
 function makeBreakpointId(location) {
-  const { sourceId, line, column } = location;
+  const {
+    sourceId,
+    line,
+    column
+  } = location;
   const columnString = column || "";
   return `${sourceId}:${line}:${columnString}`;
 }
 
 function getLocationWithoutColumn(location) {
-  const { sourceId, line } = location;
+  const {
+    sourceId,
+    line
+  } = location;
   return `${sourceId}:${line}`;
 }
 
 function makePendingLocationId(location) {
   assertPendingLocation(location);
-  const { sourceUrl, line, column } = location;
+  const {
+    sourceUrl,
+    line,
+    column
+  } = location;
   const sourceUrlString = sourceUrl || "";
   const columnString = column || "";
-
   return `${sourceUrlString}:${line}:${columnString}`;
 }
 
 function makeBreakpointLocation(state, location) {
   const source = (0, _selectors.getSource)(state, location.sourceId);
+
   if (!source) {
     throw new Error("no source");
   }
+
   const breakpointLocation = {
     line: location.line,
     column: location.column
   };
+
   if (source.url) {
     breakpointLocation.sourceUrl = source.url;
   } else {
     breakpointLocation.sourceId = (0, _selectors.getSourceActorsForSource)(state, source.id)[0].id;
   }
+
   return breakpointLocation;
 }
 
@@ -110,11 +144,15 @@ function makeSourceActorLocation(sourceActor, location) {
     line: location.line,
     column: location.column
   };
-}
+} // The ID for a BreakpointActor is derived from its location in its SourceActor.
 
-// The ID for a BreakpointActor is derived from its location in its SourceActor.
+
 function makeBreakpointActorId(location) {
-  const { sourceActor, line, column } = location;
+  const {
+    sourceActor,
+    line,
+    column
+  } = location;
   const columnString = column || "";
   return `${sourceActor}:${line}:${columnString}`;
 }
@@ -131,31 +169,37 @@ function assertPendingBreakpoint(pendingBreakpoint) {
 
 function assertLocation(location) {
   assertPendingLocation(location);
-  const { sourceId } = location;
-  (0, _assert2.default)(!!sourceId, "location must have a source id");
+  const {
+    sourceId
+  } = location;
+  (0, _assert.default)(!!sourceId, "location must have a source id");
 }
 
 function assertPendingLocation(location) {
-  (0, _assert2.default)(!!location, "location must exist");
+  (0, _assert.default)(!!location, "location must exist");
+  const {
+    sourceUrl
+  } = location; // sourceUrl is null when the source does not have a url
 
-  const { sourceUrl } = location;
+  (0, _assert.default)(sourceUrl !== undefined, "location must have a source url");
+  (0, _assert.default)(location.hasOwnProperty("line"), "location must have a line");
+  (0, _assert.default)(location.hasOwnProperty("column") != null, "location must have a column");
+} // syncing
 
-  // sourceUrl is null when the source does not have a url
-  (0, _assert2.default)(sourceUrl !== undefined, "location must have a source url");
-  (0, _assert2.default)(location.hasOwnProperty("line"), "location must have a line");
-  (0, _assert2.default)(location.hasOwnProperty("column") != null, "location must have a column");
-}
 
-// syncing
-function breakpointAtLocation(breakpoints, { line, column }) {
+function breakpointAtLocation(breakpoints, {
+  line,
+  column
+}) {
   return breakpoints.find(breakpoint => {
     const sameLine = breakpoint.location.line === line;
+
     if (!sameLine) {
       return false;
-    }
-
-    // NOTE: when column breakpoints are disabled we want to find
+    } // NOTE: when column breakpoints are disabled we want to find
     // the first breakpoint
+
+
     if (!_prefs.features.columnBreakpoints) {
       return true;
     }
@@ -177,21 +221,28 @@ function createXHRBreakpoint(path, method, overrides = {}) {
     loading: false,
     text: L10N.getFormatStr("xhrBreakpoints.item.label", path)
   };
-
-  return { ...properties, ...overrides };
+  return { ...properties,
+    ...overrides
+  };
 }
 
 function createPendingLocation(location) {
-  const { sourceUrl, line, column } = location;
-  return { sourceUrl, line, column };
+  const {
+    sourceUrl,
+    line,
+    column
+  } = location;
+  return {
+    sourceUrl,
+    line,
+    column
+  };
 }
 
 function createPendingBreakpoint(bp) {
   const pendingLocation = createPendingLocation(bp.location);
   const pendingGeneratedLocation = createPendingLocation(bp.generatedLocation);
-
   assertPendingLocation(pendingLocation);
-
   return {
     options: bp.options,
     disabled: bp.disabled,

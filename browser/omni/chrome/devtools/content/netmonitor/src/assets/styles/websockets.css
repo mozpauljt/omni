@@ -70,6 +70,8 @@
   font-family: var(--monospace-font-family);
   font-size: var(--theme-code-font-size);
   line-height: calc(15/11);
+  direction: ltr;
+  text-align: left;
 }
 
 #messages-panel #ws-frame-rawData-header,
@@ -144,4 +146,8 @@
 
 #messages-panel .truncation-checkbox {
   margin-right: 5px;
+}
+
+#messages-panel .truncated-message {
+  font-variant-numeric: tabular-nums;
 }
