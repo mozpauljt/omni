@@ -1,4 +1,4 @@
-!/bin/bash
+#!/bin/bash
 SRCDIR=$1
 if [ -f "$SRCDIR/omni.ja" ] && [ -f "$SRCDIR"/browser/omni.ja ]; then
 	mkdir -p omni
