@@ -479,6 +479,10 @@ menupopup::part(drop-indicator) {
   width: 343px;
 }
 
+#contextual-feature-recommendation-notification[data-notification-bucket="CFR_SOCIAL_TRACKING_PROTECTION"] {
+  width: 386px;
+}
+
 #contextual-feature-recommendation-notification .popup-notification-icon {
   margin-inline-end: 4px;
 }
@@ -489,6 +493,7 @@ menupopup::part(drop-indicator) {
 }
 
 #contextual-feature-recommendation-notification .popup-notification-body-container {
+  width: 100%;
   padding-bottom: 0;
 }
 
@@ -536,6 +541,10 @@ menupopup::part(drop-indicator) {
   padding-bottom: 20px;
 }
 
+#contextual-feature-recommendation-notification[data-notification-bucket="CFR_SOCIAL_TRACKING_PROTECTION"] .popup-notification-description {
+  font-size: 13px;
+}
+
 #cfr-notification-feature-steps {
   display: flex;
   flex-direction: column;
@@ -568,6 +577,7 @@ menupopup::part(drop-indicator) {
   margin: 0;
 }
 
+#contextual-feature-recommendation-notification .popup-notification-learnmore-link,
 #cfr-notification-footer-users,
 #cfr-notification-footer-learn-more-link {
   font-size: 12px;
@@ -2081,7 +2091,8 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
 
 #urlbar-container,
 #search-container {
-  padding: 3px 5px;
+  padding-block: 3px;
+  margin-inline: 5px;
 }
 
 #urlbar,
@@ -2138,21 +2149,45 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
   border-color: var(--toolbar-field-focus-border-color);
 }
 
+#urlbar-container[breakout] {
+  position: relative;
+  min-height: var(--urlbar-container-height);
+}
+
 #urlbar[breakout] {
   position: absolute;
-  /* The z-index needs to be big enough to trump other positioned UI pieces
-     that we want to overlay. 3 is used in the tab bar. */
-  z-index: 3;
-  top: 0;
-  margin-top: -4px;
-  margin-inline-start: -55px;
-  width: calc(var(--urlbar-width) + 2 * 55px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  height: var(--urlbar-height);
+  top: calc((var(--urlbar-toolbar-height) - var(--urlbar-height)) / 2);
+  left: 0;
+  transition-property: left, width;
 }
 
 #urlbar[breakout] > #urlbar-input-container {
-  height: calc(var(--urlbar-toolbar-height) + 2 * 4px - 2px /* urlbar border */);
   width: 100%;
+  height: 100%;
+  transition-property: width, padding-inline;
+}
+
+:root[sessionrestored] #urlbar[breakout],
+:root[sessionrestored] #urlbar[breakout] > #urlbar-input-container {
+  transition-duration: 250ms;
+  transition-timing-function: var(--animation-easing-function);
+}
+
+#urlbar[breakout][breakout-extend] {
+  /* The z-index needs to be big enough to trump other positioned UI pieces
+     that we want to overlay. 3 is used in the tab bar. */
+  z-index: 3;
+  top: -4px;
+  left: -55px;
+  width: calc(100% + 2 * 55px);
+  height: auto;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+#urlbar[breakout][breakout-extend] > #urlbar-input-container {
+  height: calc(var(--urlbar-toolbar-height) + 2 * 4px - 2px /* urlbar border */);
   padding-block: calc(4px + (var(--urlbar-toolbar-height) - var(--urlbar-height)) / 2);
   padding-inline: 55px;
 }
@@ -2894,6 +2929,10 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
   padding-inline-start: 6px;
   padding-inline-end: 6px;
   margin-inline-end: 4px;
+}
+
+#identity-box,
+#tracking-protection-icon-container {
   /* Set default fill for icons in the identity block.
      Individual icons can override this. */
   fill: currentColor;
@@ -3107,8 +3146,6 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
 #tracking-protection-icon-container {
   padding-inline-start: 6px;
   padding-inline-end: 6px;
-  fill-opacity: .3;
-  fill: currentColor;
   /* Separator */
   border-inline-end: 1px solid var(--urlbar-separator-color);
   border-image: linear-gradient(transparent 15%, var(--urlbar-separator-color) 15%, var(--urlbar-separator-color) 85%, transparent 85%);
@@ -3532,7 +3569,6 @@ html|*#webRTC-previewVideo {
 
 /* OFFLINE APPS */
 
-.popup-notification-icon[popupid*="offline-app-requested"],
 .popup-notification-icon[popupid="offline-app-usage"] {
   list-style-image: url(chrome://global/skin/icons/question-64.png);
 }
@@ -3623,14 +3659,6 @@ html|*#webRTC-previewVideo {
 .popup-notification-icon[popupid="update-unsupported"] {
   background: #FFE900 url(chrome://browser/skin/notification-icons/update.svg) no-repeat center;
   border-radius: 50%;
-}
-
-/* Social Tracking */
-:root[lwt-toolbar-field-brighttext] .popup-notification-icon[popupid="socialblock"] {
-  list-style-image: url(chrome://browser/skin/notification-icons/block-social-dark.svg);
-}
-.popup-notification-icon[popupid="socialblock"] {
-  list-style-image: url(chrome://browser/skin/notification-icons/block-social.svg);
 }
 
 .popup-notification-body[popupid="addon-progress"],
@@ -3986,6 +4014,14 @@ notification[value="translation"] menulist > .menulist-dropmarker {
   --autocomplete-popup-color: var(--arrowpanel-color);
   --autocomplete-popup-highlight-background: Highlight;
   --autocomplete-popup-highlight-color: HighlightText;
+
+  /* From in-content/common.inc.css. */
+  --in-content-button-background: rgba(12, 12, 13, 0.1);
+  --in-content-button-background-hover: rgba(12, 12, 13, 0.2);
+  --in-content-button-background-active: rgba(12, 12, 13, 0.3);
+  --in-content-primary-button-background: #0060df;
+  --in-content-primary-button-background-hover: #003eaa;
+  --in-content-primary-button-background-active: #002275;
 }
 
 :root[lwt-popup-darktext] {
@@ -3996,6 +4032,10 @@ notification[value="translation"] menulist > .menulist-dropmarker {
 :root[lwt-popup-brighttext] {
   --urlbar-popup-url-color: #45a1ff;
   --urlbar-popup-action-color: #30e60b;
+
+  /* From in-content/common.inc.css. */
+  --in-content-button-background-hover: rgba(249, 249, 250, 0.15);
+  --in-content-button-background-active: rgba(249, 249, 250, 0.2);
 }
 
 .urlbarView {
@@ -4006,6 +4046,16 @@ notification[value="translation"] menulist > .menulist-dropmarker {
 
 .urlbarView.megabar {
   margin-inline: 8px;
+  width: calc(100% - 2 * 8px);
+}
+
+.urlbarView.megabar:not([hidden]) {
+  display: block;
+}
+
+.urlbarView.megabar .urlbarView-body-inner {
+  width: 100%;
+  border-top: 1px solid var(--panel-separator-color);
 }
 
 .urlbarView:not(.megabar) {
@@ -4019,10 +4069,8 @@ notification[value="translation"] menulist > .menulist-dropmarker {
 }
 
 #urlbar-contextual-tip {
-  font-size: 13px;
   align-items: center;
   display: flex;
-
   padding-top: 24px;
   padding-bottom: 24px;
   padding-inline-start: calc((55px - 16px /* type icon width */ - 8px - 2px /* border */));
@@ -4036,25 +4084,25 @@ notification[value="translation"] menulist > .menulist-dropmarker {
 
 #urlbar-contextual-tip-title {
   flex-grow: 1;
-  padding-right: 75px;
+  padding-inline-end: 75px;
 }
 
 #urlbar-contextual-tip-button {
-  height: 32px;
-  width: 128px;
-  font-size: 11px;
+  height: 2.3em;
+  width: 9.15em;
+  font-size: inherit;
   border: none;
   border-radius: 2px;
   color: white;
-  background-color: #0060df; /* corresponds to blue-60 */
+  background-color: var(--in-content-primary-button-background);
 }
 
 #urlbar-contextual-tip-button:hover {
-  background-color: #003eaa; /* corresponds to blue-70 */
+  background-color: var(--in-content-primary-button-background-hover);
 }
 
 #urlbar-contextual-tip-button:active {
-  background-color: #002275; /* corresponds to blue-80 */
+  background-color: var(--in-content-primary-button-background-active);
 }
 
 #urlbar-contextual-tip-button:-moz-focusring {
@@ -4063,11 +4111,6 @@ notification[value="translation"] menulist > .menulist-dropmarker {
 
 #urlbar-contextual-tip-link {
   text-align: end;
-}
-
-.urlbarView.megabar .urlbarView-body-inner {
-  width: calc(var(--urlbar-width) + 2 * 55px - 2 * 8px - 2px /* urlbar border */);
-  border-top: 1px solid var(--panel-separator-color);
 }
 
 .urlbarView-results {
@@ -4120,11 +4163,11 @@ notification[value="translation"] menulist > .menulist-dropmarker {
   direction: ltr !important;
 }
 
-.urlbarView-row:hover {
+.urlbarView-row:not([type=tip]):hover {
   background: var(--arrowpanel-dimmed);
 }
 
-.urlbarView-row[selected] {
+.urlbarView-row:not([type=tip])[selected] {
   background: var(--autocomplete-popup-highlight-background);
   color: var(--autocomplete-popup-highlight-color);
   fill-opacity: 1;
@@ -4138,6 +4181,38 @@ notification[value="translation"] menulist > .menulist-dropmarker {
   background-repeat: no-repeat;
   background-size: contain;
   -moz-context-properties: fill, fill-opacity;
+}
+
+.urlbarView-row[type=tip] > .urlbarView-row-inner > .urlbarView-favicon {
+  min-width: 24px;
+  height: 24px;
+  margin-inline-end: 12px;
+}
+
+/* The help icon is a standard Photon ghost button. */
+.urlbarView-tip-help {
+  min-width: 16px;
+  height: 32px;
+  background-image: url("chrome://global/skin/icons/help.svg");
+  background-size: 16px;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding-inline: 8px;
+  margin-inline-start: 8px;
+  -moz-context-properties: fill, fill-opacity;
+}
+
+.urlbarView-tip-help:hover {
+  background-color: var(--in-content-button-background-hover);
+}
+
+.urlbarView-tip-help:hover:active {
+  background-color: var(--in-content-button-background-active);
+}
+
+.urlbarView-tip-help:-moz-focusring,
+.urlbarView-tip-button:-moz-focusring {
+  box-shadow: 0 0 0 1px #0a84ff inset, 0 0 0 1px #0a84ff, 0 0 0 4px rgba(10, 132, 255, 0.3);
 }
 
 #urlbar-contextual-tip-icon {
@@ -4166,6 +4241,58 @@ notification[value="translation"] menulist > .menulist-dropmarker {
   background-image: url(chrome://browser/skin/tab.svg);
 }
 
+.urlbarView-row[type=tip] {
+  border-bottom: 1px solid var(--panel-separator-color);
+  padding-block: 24px;
+  margin-bottom: 4px;
+}
+
+.urlbarView-row[type=tip]:not(:first-child) {
+  border-top: 1px solid var(--panel-separator-color);
+  margin-top: 4px;
+}
+
+.urlbarView-row[type=tip] > .urlbarView-row-inner {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  width: 100%;
+}
+
+/* The tip button is a Photon default button when unfocused and a
+   primary button in all other states. */
+.urlbarView-tip-button {
+  min-height: 32px;
+  padding: 8px;
+  border: none;
+  border-radius: 2px;
+  font-size: 0.93em;
+  color: inherit;
+  background-color: var(--in-content-button-background);
+  min-width: 10em;
+  flex-shrink: 0;
+}
+
+.urlbarView-tip-button:hover {
+  color: white;
+  background-color: var(--in-content-primary-button-background-hover);
+}
+
+.urlbarView-tip-button:hover:active {
+  color: white;
+  background-color: var(--in-content-primary-button-background-active);
+}
+
+.urlbarView-tip-button:-moz-focusring {
+ color: white:
+ background-color: var(--in-content-primary-button-background);
+}
+
+.urlbarView-tip-button-spacer {
+  flex: 1;
+  min-width: 75px;
+}
+
 .urlbarView-title {
   overflow: hidden;
   white-space: nowrap;
@@ -4173,6 +4300,11 @@ notification[value="translation"] menulist > .menulist-dropmarker {
      never crop the url completely */
   flex-shrink: 0;
   max-width: calc(70% - 2 * (16px + 8px));
+}
+
+.urlbarView-row[type=tip] > .urlbarView-row-inner > .urlbarView-title {
+   white-space: normal;
+   flex: auto;
 }
 
 .urlbarView-title-separator::before {
@@ -5038,14 +5170,14 @@ toolbarseparator + #sidebar-extensions-separator {
   width: 16px;
   height: 16px;
   padding: 0;
+  -moz-context-properties: fill;
+  fill: currentColor;
 }
 
 .tab-icon-sound[soundplaying],
 .tab-icon-sound[muted],
 .tab-icon-sound[activemedia-blocked] {
   list-style-image: url(chrome://browser/skin/tabbrowser/tab-audio-playing.svg);
-  -moz-context-properties: fill;
-  fill: currentColor;
 }
 
 .tab-icon-sound[muted] {
@@ -6035,6 +6167,7 @@ toolbarpaletteitem[place=toolbar] > toolbarspring {
   background: var(--arrowpanel-background);
   background-clip: padding-box;
   border: 1px solid var(--arrowpanel-border-color);
+  margin: 0;
   box-shadow: 0 0 4px hsla(0,0%,0%,.2);
   max-width: 29em;
 }

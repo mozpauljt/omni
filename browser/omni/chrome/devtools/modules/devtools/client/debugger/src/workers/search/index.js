@@ -13,12 +13,42 @@ var _devtoolsUtils = require("devtools/client/debugger/dist/vendors").vendored["
 const {
   WorkerDispatcher
 } = _devtoolsUtils.workerUtils;
-const dispatcher = new WorkerDispatcher();
-const start = dispatcher.start.bind(dispatcher);
+let startArgs;
+let dispatcher;
+
+function getDispatcher() {
+  if (!dispatcher) {
+    dispatcher = new WorkerDispatcher();
+    dispatcher.start(...startArgs);
+  }
+
+  return dispatcher;
+}
+
+const start = (...args) => {
+  startArgs = args;
+};
+
 exports.start = start;
-const stop = dispatcher.stop.bind(dispatcher);
+
+const stop = () => {
+  if (dispatcher) {
+    dispatcher.stop();
+    dispatcher = null;
+    startArgs = null;
+  }
+};
+
 exports.stop = stop;
-const getMatches = dispatcher.task("getMatches");
+
+const getMatches = (...args) => {
+  return getDispatcher().invoke("getMatches", ...args);
+};
+
 exports.getMatches = getMatches;
-const findSourceMatches = dispatcher.task("findSourceMatches");
+
+const findSourceMatches = (...args) => {
+  return getDispatcher().invoke("findSourceMatches", ...args);
+};
+
 exports.findSourceMatches = findSourceMatches;

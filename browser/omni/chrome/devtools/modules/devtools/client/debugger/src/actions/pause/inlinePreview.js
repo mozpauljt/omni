@@ -9,6 +9,7 @@ var _lodash = require("devtools/client/shared/vendor/lodash");
 
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
 loader.lazyRequireGetter(this, "_prefs", "devtools/client/debugger/src/utils/prefs");
+loader.lazyRequireGetter(this, "_context", "devtools/client/debugger/src/utils/context");
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,7 +26,7 @@ function getLocalScopeLevels(originalAstScopes) {
   return levels;
 }
 
-function generateInlinePreview(thread, frame) {
+function generateInlinePreview(cx, frame) {
   return async function ({
     dispatch,
     getState,
@@ -36,12 +37,21 @@ function generateInlinePreview(thread, frame) {
       return;
     }
 
-    const originalAstScopes = await parser.getScopes(frame.location);
+    const {
+      thread
+    } = cx;
     const originalFrameScopes = (0, _selectors.getOriginalFrameScope)(getState(), thread, frame.location.sourceId, frame.id);
     const generatedFrameScopes = (0, _selectors.getGeneratedFrameScope)(getState(), thread, frame.id);
     let scopes = originalFrameScopes && originalFrameScopes.scope || generatedFrameScopes && generatedFrameScopes.scope;
 
-    if (!scopes || !scopes.bindings || !originalAstScopes) {
+    if (!scopes || !scopes.bindings) {
+      return;
+    }
+
+    const originalAstScopes = await parser.getScopes(frame.location);
+    (0, _context.validateThreadContext)(getState(), cx);
+
+    if (!originalAstScopes) {
       return;
     }
 
@@ -57,15 +67,14 @@ function generateInlinePreview(thread, frame) {
           bindings[key] = argument[key];
         });
       });
-
-      for (const name in bindings) {
+      const previewBindings = Object.keys(bindings).map(async name => {
         // We want to show values of properties of objects only and not
         // function calls on other data types like someArr.forEach etc..
         let properties = null;
 
         if (bindings[name].value.class === "Object") {
           const root = {
-            name: name,
+            name,
             path: name,
             contents: {
               value: bindings[name].value
@@ -75,17 +84,20 @@ function generateInlinePreview(thread, frame) {
         }
 
         const preview = getBindingValues(originalAstScopes, pausedOnLine, name, bindings[name].value, curLevel, properties);
-
-        for (const line in preview) {
+        Object.keys(preview).forEach(line => {
           previews[line] = (previews[line] || []).concat(preview[line]);
-        }
-      }
-
+        });
+      });
+      await Promise.all(previewBindings);
       scopes = scopes.parent;
     }
 
-    for (const line in previews) {
+    Object.keys(previews).forEach(line => {
       previews[line] = (0, _lodash.sortBy)(previews[line], ["column"]);
+    }); // Bail if there are no previews to display
+
+    if (Object.keys(previews).length == 0) {
+      return;
     }
 
     return dispatch({
@@ -169,13 +181,12 @@ ref, properties) {
         const {
           ownProperties
         } = displayValue.preview;
-
-        for (const prop in ownProperties) {
+        Object.keys(ownProperties).forEach(prop => {
           if (prop === meta.property) {
             displayValue = ownProperties[prop].value;
             displayName += `.${meta.property}`;
           }
-        }
+        });
       }
 
       meta = meta.parent;

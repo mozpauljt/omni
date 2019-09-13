@@ -219,7 +219,10 @@ function removeAllBreakpoints(cx) {
     getState
   }) => {
     const breakpointList = (0, _selectors.getBreakpointsList)(getState());
-    return Promise.all(breakpointList.map(bp => dispatch((0, _modify.removeBreakpoint)(cx, bp))));
+    await Promise.all(breakpointList.map(bp => dispatch((0, _modify.removeBreakpoint)(cx, bp))));
+    dispatch({
+      type: "REMOVE_BREAKPOINTS"
+    });
   };
 }
 /**

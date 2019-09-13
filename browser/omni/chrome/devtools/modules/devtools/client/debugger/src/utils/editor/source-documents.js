@@ -16,6 +16,7 @@ exports.showErrorMessage = showErrorMessage;
 exports.showSourceText = showSourceText;
 loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
 loader.lazyRequireGetter(this, "_wasm", "devtools/client/debugger/src/utils/wasm");
+loader.lazyRequireGetter(this, "_isMinified", "devtools/client/debugger/src/utils/isMinified");
 loader.lazyRequireGetter(this, "_ui", "devtools/client/debugger/src/utils/ui");
 
 var _sourceEditor = _interopRequireDefault(require("devtools/client/shared/sourceeditor/editor"));
@@ -136,6 +137,11 @@ function setEditorText(editor, sourceId, content) {
 }
 
 function setMode(editor, source, content, symbols) {
+  // Disable modes for minified files with 1+ million characters Bug 1569829
+  if (content.type === "text" && (0, _isMinified.isMinified)(source) && content.value.length > 1000000) {
+    return;
+  }
+
   const mode = (0, _source.getMode)(source, content, symbols);
   const currentMode = editor.codeMirror.getOption("mode");
 

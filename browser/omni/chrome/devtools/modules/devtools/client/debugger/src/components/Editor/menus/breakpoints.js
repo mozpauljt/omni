@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.breakpointItems = breakpointItems;
 exports.createBreakpointItems = createBreakpointItems;
 exports.breakpointItemActions = breakpointItemActions;
-exports.disableBreakpointsOnLineItem = exports.enableBreakpointsOnLineItem = exports.removeBreakpointsOnLineItem = exports.toggleDisabledBreakpointItem = exports.logPointItem = exports.editLogPointItem = exports.addLogPointItem = exports.conditionalBreakpointItem = exports.editConditionalBreakpointItem = exports.addConditionalBreakpointItem = exports.removeBreakpointItem = exports.addBreakpointItem = void 0;
+exports.disableBreakpointsOnLineItem = exports.enableBreakpointsOnLineItem = exports.removeBreakpointsOnLineItem = exports.toggleDbgStatementItem = exports.toggleDisabledBreakpointItem = exports.logPointItem = exports.editLogPointItem = exports.addLogPointItem = exports.conditionalBreakpointItem = exports.editConditionalBreakpointItem = exports.addConditionalBreakpointItem = exports.removeBreakpointItem = exports.addBreakpointItem = void 0;
 
 var _actions = _interopRequireDefault(require("../../../actions/index"));
 
@@ -124,8 +124,36 @@ const toggleDisabledBreakpointItem = (cx, breakpoint, breakpointActions) => {
 
 exports.toggleDisabledBreakpointItem = toggleDisabledBreakpointItem;
 
+const toggleDbgStatementItem = (cx, breakpoint, location, breakpointActions) => {
+  return {
+    disabled: false,
+    ...(breakpoint.options.condition === "false" ? {
+      id: "node-menu-enable-dbgStatement",
+      label: L10N.getStr("breakpointMenuItem.enabledbg.label"),
+      click: () => breakpointActions.setBreakpointOptions(cx, location, { ...breakpoint.options,
+        condition: null
+      })
+    } : {
+      id: "node-menu-disable-dbgStatement",
+      label: L10N.getStr("breakpointMenuItem.disabledbg.label"),
+      click: () => breakpointActions.setBreakpointOptions(cx, location, { ...breakpoint.options,
+        condition: "false"
+      })
+    })
+  };
+};
+
+exports.toggleDbgStatementItem = toggleDbgStatementItem;
+
 function breakpointItems(cx, breakpoint, selectedLocation, breakpointActions) {
   const items = [removeBreakpointItem(cx, breakpoint, breakpointActions), toggleDisabledBreakpointItem(cx, breakpoint, breakpointActions)];
+
+  if (breakpoint.originalText.startsWith("debugger")) {
+    items.push({
+      type: "separator"
+    }, toggleDbgStatementItem(cx, breakpoint, selectedLocation, breakpointActions));
+  }
+
   items.push({
     type: "separator"
   }, removeBreakpointsOnLineItem(cx, selectedLocation, breakpointActions), breakpoint.disabled ? enableBreakpointsOnLineItem(cx, selectedLocation, breakpointActions) : disableBreakpointsOnLineItem(cx, selectedLocation, breakpointActions), {
@@ -187,6 +215,7 @@ function breakpointItemActions(dispatch) {
     disableBreakpoint: _actions.default.disableBreakpoint,
     toggleDisabledBreakpoint: _actions.default.toggleDisabledBreakpoint,
     toggleBreakpointsAtLine: _actions.default.toggleBreakpointsAtLine,
+    setBreakpointOptions: _actions.default.setBreakpointOptions,
     openConditionalPanel: _actions.default.openConditionalPanel
   }, dispatch);
 }

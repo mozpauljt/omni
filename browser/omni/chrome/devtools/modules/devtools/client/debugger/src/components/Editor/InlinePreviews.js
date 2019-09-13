@@ -33,17 +33,21 @@ class InlinePreviews extends _react.Component {
       return null;
     }
 
-    return _react.default.createElement("div", null, Object.keys(previews).map(line => {
-      const lineNum = parseInt(line, 10);
-      const numColumnBreakpoints = columnBreakpoints.filter(bp => bp.location.line === lineNum + 1).length;
-      return _react.default.createElement(_InlinePreviewRow.default, {
-        editor: editor,
-        key: line,
-        line: lineNum,
-        previews: previews[line],
-        numColumnBreakpoints: numColumnBreakpoints
+    let inlinePreviewRows;
+    editor.codeMirror.operation(() => {
+      inlinePreviewRows = Object.keys(previews).map(line => {
+        const lineNum = parseInt(line, 10);
+        const numColumnBreakpoints = columnBreakpoints.filter(bp => bp.location.line === lineNum + 1).length;
+        return _react.default.createElement(_InlinePreviewRow.default, {
+          editor: editor,
+          key: line,
+          line: lineNum,
+          previews: previews[line],
+          numColumnBreakpoints: numColumnBreakpoints
+        });
       });
-    }));
+    });
+    return _react.default.createElement("div", null, inlinePreviewRows);
   }
 
 }

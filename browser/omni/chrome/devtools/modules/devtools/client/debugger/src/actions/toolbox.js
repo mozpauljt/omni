@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.openLink = openLink;
 exports.evaluateInConsole = evaluateInConsole;
 exports.openElementInInspectorCommand = openElementInInspectorCommand;
+exports.openInspector = openInspector;
 exports.highlightDomElement = highlightDomElement;
 exports.unHighlightDomElement = unHighlightDomElement;
 
@@ -38,6 +39,14 @@ function openElementInInspectorCommand(grip) {
     panel
   }) => {
     return panel.openElementInInspector(grip);
+  };
+}
+
+function openInspector(grip) {
+  return async ({
+    panel
+  }) => {
+    return panel.openInspector();
   };
 }
 

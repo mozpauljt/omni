@@ -63,7 +63,8 @@ async function onConnect(connection, actions) {
     observeAsmJS: true,
     pauseWorkersUntilAttach: true,
     wasmBinarySource: supportsWasm,
-    skipBreakpoints: _prefs.prefs.skipPausing
+    skipBreakpoints: _prefs.prefs.skipPausing,
+    logEventBreakpoints: _prefs.features.logEventBreakpoints
   }); // Retrieve possible event listener breakpoints
 
   actions.getEventListenerBreakpointTypes().catch(e => console.error(e)); // Initialize the event breakpoints on the thread up front so that

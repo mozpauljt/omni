@@ -65,6 +65,9 @@ export default class LoginItem extends HTMLElement {
     this._timeChanged = this.shadowRoot.querySelector(".time-changed");
     this._timeUsed = this.shadowRoot.querySelector(".time-used");
     this._breachAlert = this.shadowRoot.querySelector(".breach-alert");
+    this._breachAlertLink = this._breachAlert.querySelector(
+      ".breach-alert-link"
+    );
     this._dismissBreachAlert = this.shadowRoot.querySelector(
       ".dismiss-breach-alert"
     );
@@ -82,10 +85,30 @@ export default class LoginItem extends HTMLElement {
     this._originInput.addEventListener("click", this);
     this._revealCheckbox.addEventListener("click", this);
     this._originInput.addEventListener("auxclick", this);
+    this._breachAlertLink.addEventListener("click", this);
     window.addEventListener("AboutLoginsInitialLoginSelected", this);
     window.addEventListener("AboutLoginsLoadInitialFavicon", this);
     window.addEventListener("AboutLoginsLoginSelected", this);
     window.addEventListener("AboutLoginsShowBlankLogin", this);
+  }
+
+  focus() {
+    if (!this._breachAlert.hidden) {
+      const breachAlertLink = this._breachAlert.querySelector(
+        ".breach-alert-link"
+      );
+      breachAlertLink.focus();
+      return;
+    }
+    if (!this._editButton.disabled) {
+      this._editButton.focus();
+      return;
+    }
+    if (!this._deleteButton.disabled) {
+      this._deleteButton.focus();
+      return;
+    }
+    this._originInput.focus();
   }
 
   async render() {
@@ -94,10 +117,7 @@ export default class LoginItem extends HTMLElement {
     });
     if (this._breachesMap && this._breachesMap.has(this._login.guid)) {
       const breachDetails = this._breachesMap.get(this._login.guid);
-      const breachAlertLink = this._breachAlert.querySelector(
-        ".breach-alert-link"
-      );
-      breachAlertLink.href = breachDetails.breachAlertURL;
+      this._breachAlertLink.href = breachDetails.breachAlertURL;
       document.l10n.setAttributes(
         this._dismissBreachAlert,
         "breach-alert-dismiss"
@@ -130,9 +150,11 @@ export default class LoginItem extends HTMLElement {
     this._title.textContent = this._login.title;
     this._originInput.defaultValue = this._login.origin || "";
     this._usernameInput.defaultValue = this._login.username || "";
-    this._passwordInput.defaultValue = this._login.password || "";
+    // The password gets filled in _updatePasswordRevealState
+
     if (this.dataset.editing) {
       this._usernameInput.removeAttribute("data-l10n-id");
+      this._usernameInput.placeholder = "";
     } else {
       document.l10n.setAttributes(
         this._usernameInput,
@@ -161,6 +183,10 @@ export default class LoginItem extends HTMLElement {
         detail: this._login,
       })
     );
+    this._recordTelemetryEvent({
+      object: "existing_login",
+      method: "dismiss_breach_alert",
+    });
   }
 
   showLoginItemError(error) {
@@ -225,7 +251,8 @@ export default class LoginItem extends HTMLElement {
       case "click": {
         let classList = event.currentTarget.classList;
         if (classList.contains("reveal-password-checkbox")) {
-          if (this._revealCheckbox.checked) {
+          // We prompt for the master password when entering edit mode already.
+          if (this._revealCheckbox.checked && !this.dataset.editing) {
             let masterPasswordAuth = await new Promise(resolve => {
               window.AboutLoginsUtils.promptForMasterPassword(resolve);
             });
@@ -237,7 +264,7 @@ export default class LoginItem extends HTMLElement {
           this._updatePasswordRevealState();
 
           let method = this._revealCheckbox.checked ? "show" : "hide";
-          recordTelemetryEvent({ object: "password", method });
+          this._recordTelemetryEvent({ object: "password", method });
           return;
         }
 
@@ -253,7 +280,7 @@ export default class LoginItem extends HTMLElement {
             }
           } else if (!this.hasPendingChanges()) {
             window.dispatchEvent(new CustomEvent("AboutLoginsClearSelection"));
-            recordTelemetryEvent({
+            this._recordTelemetryEvent({
               object: "new_login",
               method: "cancel",
             });
@@ -271,6 +298,10 @@ export default class LoginItem extends HTMLElement {
           classList.contains("copy-username-button")
         ) {
           let copyButton = event.currentTarget;
+          let otherCopyButton =
+            copyButton == this._copyPasswordButton
+              ? this._copyUsernameButton
+              : this._copyPasswordButton;
           if (copyButton.dataset.copyLoginProperty == "password") {
             let masterPasswordAuth = await new Promise(resolve => {
               window.AboutLoginsUtils.promptForMasterPassword(resolve);
@@ -291,6 +322,10 @@ export default class LoginItem extends HTMLElement {
               detail: propertyToCopy,
             })
           );
+          otherCopyButton.disabled = false;
+          delete otherCopyButton.dataset.copied;
+          clearTimeout(this._copyUsernameTimeoutId);
+          clearTimeout(this._copyPasswordTimeoutId);
           let timeoutId = setTimeout(() => {
             copyButton.disabled = false;
             delete copyButton.dataset.copied;
@@ -301,7 +336,7 @@ export default class LoginItem extends HTMLElement {
             this._copyUsernameTimeoutId = timeoutId;
           }
 
-          recordTelemetryEvent({
+          this._recordTelemetryEvent({
             object: copyButton.dataset.telemetryObject,
             method: "copy",
           });
@@ -323,14 +358,30 @@ export default class LoginItem extends HTMLElement {
           return;
         }
         if (classList.contains("edit-button")) {
+          let masterPasswordAuth = await new Promise(resolve => {
+            window.AboutLoginsUtils.promptForMasterPassword(resolve);
+          });
+          if (!masterPasswordAuth) {
+            return;
+          }
+
           this._toggleEditing();
           this.render();
 
-          recordTelemetryEvent({ object: "existing_login", method: "edit" });
+          this._recordTelemetryEvent({
+            object: "existing_login",
+            method: "edit",
+          });
           return;
         }
         if (classList.contains("origin-input")) {
           this._handleOriginClick();
+        }
+        if (classList.contains("breach-alert-link")) {
+          this._recordTelemetryEvent({
+            object: "existing_login",
+            method: "learn_more_breach",
+          });
         }
         break;
       }
@@ -350,7 +401,10 @@ export default class LoginItem extends HTMLElement {
             })
           );
 
-          recordTelemetryEvent({ object: "existing_login", method: "save" });
+          this._recordTelemetryEvent({
+            object: "existing_login",
+            method: "save",
+          });
         } else {
           document.dispatchEvent(
             new CustomEvent("AboutLoginsCreateLogin", {
@@ -359,7 +413,7 @@ export default class LoginItem extends HTMLElement {
             })
           );
 
-          recordTelemetryEvent({ object: "new_login", method: "save" });
+          this._recordTelemetryEvent({ object: "new_login", method: "save" });
         }
       }
     }
@@ -424,7 +478,7 @@ export default class LoginItem extends HTMLElement {
         try {
           onConfirm();
         } catch (ex) {}
-        recordTelemetryEvent({
+        this._recordTelemetryEvent({
           object: wasExistingLogin ? "existing_login" : "new_login",
           method,
         });
@@ -462,6 +516,7 @@ export default class LoginItem extends HTMLElement {
     } else {
       this.dataset.isNewLogin = true;
     }
+    document.documentElement.classList.toggle("login-selected", login.guid);
     this._toggleEditing(!login.guid);
 
     this._revealCheckbox.checked = false;
@@ -548,7 +603,10 @@ export default class LoginItem extends HTMLElement {
       })
     );
 
-    recordTelemetryEvent({ object: "existing_login", method: "open_site" });
+    this._recordTelemetryEvent({
+      object: "existing_login",
+      method: "open_site",
+    });
   }
 
   /**
@@ -583,6 +641,15 @@ export default class LoginItem extends HTMLElement {
       origin:
         window.AboutLoginsUtils.getLoginOrigin(this._originInput.value) || "",
     };
+  }
+
+  _recordTelemetryEvent(eventObject) {
+    const extra = eventObject.hasOwnProperty("extra") ? eventObject.extra : {};
+    if (this._breachesMap && this._breachesMap.has(this._login.guid)) {
+      Object.assign(extra, { breached: "true" });
+      eventObject.extra = extra;
+    }
+    recordTelemetryEvent(eventObject);
   }
 
   /**
@@ -634,7 +701,15 @@ export default class LoginItem extends HTMLElement {
 
     let { checked } = this._revealCheckbox;
     let inputType = checked ? "text" : "password";
-    this._passwordInput.setAttribute("type", inputType);
+    this._passwordInput.type = inputType;
+    // Don't include the password value in the attribute when it's supposed to be
+    // masked so that it's not trivial to bypass the Master Password prompt with
+    // the inspector in devtools.
+    let password = this._login.password || "";
+    // We prompt for the master password before entering edit mode so we can use
+    // the password in the markup then.
+    this._passwordInput.defaultValue =
+      checked || this.dataset.editing ? password : " ".repeat(password.length);
   }
 }
 customElements.define("login-item", LoginItem);

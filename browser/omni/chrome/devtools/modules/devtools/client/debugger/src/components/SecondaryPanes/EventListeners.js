@@ -21,10 +21,71 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 class EventListeners extends _react.Component {
+  constructor(...args) {
+    super(...args);
+
+    _defineProperty(this, "state", {
+      searchText: "",
+      focused: false
+    });
+
+    _defineProperty(this, "onInputChange", event => {
+      this.setState({
+        searchText: event.target.value
+      });
+    });
+
+    _defineProperty(this, "onKeyDown", event => {
+      if (event.key === "Escape") {
+        this.setState({
+          searchText: ""
+        });
+      }
+    });
+
+    _defineProperty(this, "onFocus", event => {
+      this.setState({
+        focused: true
+      });
+    });
+
+    _defineProperty(this, "onBlur", event => {
+      this.setState({
+        focused: false
+      });
+    });
+  }
+
+  hasMatch(eventOrCategoryName, searchText) {
+    const lowercaseEventOrCategoryName = eventOrCategoryName.toLowerCase();
+    const lowercaseSearchText = searchText.toLowerCase();
+    return lowercaseEventOrCategoryName.includes(lowercaseSearchText);
+  }
+
+  getSearchResults() {
+    const {
+      searchText
+    } = this.state;
+    const {
+      categories
+    } = this.props;
+    const searchResults = categories.reduce((results, cat, index) => {
+      const category = categories[index];
+
+      if (this.hasMatch(category.name, searchText)) {
+        results[category.name] = category.events;
+      } else {
+        results[category.name] = category.events.filter(event => this.hasMatch(event.name, searchText));
+      }
+
+      return results;
+    }, {});
+    return searchResults;
+  }
+
   onCategoryToggle(category) {
     const {
       expandedCategories,
@@ -64,6 +125,70 @@ class EventListeners extends _react.Component {
     } else {
       removeEventListeners([eventId]);
     }
+  }
+
+  renderSearchInput() {
+    const {
+      focused,
+      searchText
+    } = this.state;
+    const placeholder = L10N.getStr("eventListenersHeader1.placeholder");
+    return _react.default.createElement("form", {
+      className: "event-search-form",
+      onSubmit: e => e.preventDefault()
+    }, _react.default.createElement("input", {
+      className: (0, _classnames.default)("event-search-input", {
+        focused
+      }),
+      placeholder: placeholder,
+      value: searchText,
+      onChange: this.onInputChange,
+      onKeyDown: this.onKeyDown,
+      onFocus: this.onFocus,
+      onBlur: this.onBlur
+    }));
+  }
+
+  renderClearSearchButton() {
+    const {
+      searchText
+    } = this.state;
+
+    if (!searchText) {
+      return null;
+    }
+
+    return _react.default.createElement("button", {
+      onClick: () => this.setState({
+        searchText: ""
+      }),
+      className: "devtools-searchinput-clear"
+    });
+  }
+
+  renderCategoriesList() {
+    const {
+      categories
+    } = this.props;
+    return _react.default.createElement("ul", {
+      className: "event-listeners-list"
+    }, categories.map((category, index) => {
+      return _react.default.createElement("li", {
+        className: "event-listener-group",
+        key: index
+      }, this.renderCategoryHeading(category), this.renderCategoryListing(category));
+    }));
+  }
+
+  renderSearchResultsList() {
+    const searchResults = this.getSearchResults();
+    return _react.default.createElement("ul", {
+      className: "event-search-results-list"
+    }, Object.keys(searchResults).map(category => {
+      return searchResults[category].map(event => {
+        return this.renderListenerEvent(event, category);
+      });
+    }));
   }
 
   renderCategoryHeading(category) {
@@ -109,7 +234,6 @@ class EventListeners extends _react.Component {
 
   renderCategoryListing(category) {
     const {
-      activeEventListeners,
       expandedCategories
     } = this.props;
     const expanded = expandedCategories.includes(category.name);
@@ -119,36 +243,49 @@ class EventListeners extends _react.Component {
     }
 
     return _react.default.createElement("ul", null, category.events.map(event => {
-      return _react.default.createElement("li", {
-        className: "event-listener-event",
-        key: event.id
-      }, _react.default.createElement("label", {
-        className: "event-listener-label"
-      }, _react.default.createElement("input", {
-        type: "checkbox",
-        value: event.id,
-        onChange: e => this.onEventTypeClick(event.id, e.target.checked),
-        checked: activeEventListeners.includes(event.id)
-      }), _react.default.createElement("span", {
-        className: "event-listener-name"
-      }, event.name)));
+      return this.renderListenerEvent(event, category);
     }));
+  }
+
+  renderCategory(category) {
+    return _react.default.createElement("span", {
+      className: "category-label"
+    }, category.toString(), " \u25B8 ");
+  }
+
+  renderListenerEvent(event, category) {
+    const {
+      activeEventListeners
+    } = this.props;
+    const {
+      searchText
+    } = this.state;
+    return _react.default.createElement("li", {
+      className: "event-listener-event",
+      key: event.id
+    }, _react.default.createElement("label", {
+      className: "event-listener-label"
+    }, _react.default.createElement("input", {
+      type: "checkbox",
+      value: event.id,
+      onChange: e => this.onEventTypeClick(event.id, e.target.checked),
+      checked: activeEventListeners.includes(event.id)
+    }), _react.default.createElement("span", {
+      className: "event-listener-name"
+    }, searchText ? this.renderCategory(category) : null, event.name)));
   }
 
   render() {
     const {
-      categories
-    } = this.props;
+      searchText
+    } = this.state;
     return _react.default.createElement("div", {
+      className: "event-listeners"
+    }, _react.default.createElement("div", {
+      className: "event-search-container"
+    }, this.renderSearchInput(), this.renderClearSearchButton()), _react.default.createElement("div", {
       className: "event-listeners-content"
-    }, _react.default.createElement("ul", {
-      className: "event-listeners-list"
-    }, categories.map((category, index) => {
-      return _react.default.createElement("li", {
-        className: "event-listener-group",
-        key: index
-      }, this.renderCategoryHeading(category), this.renderCategoryListing(category));
-    })));
+    }, searchText ? this.renderSearchResultsList() : this.renderCategoriesList()));
   }
 
 }

@@ -74,6 +74,7 @@
 <linkset>
   <html:link rel="localization" href="branding/brand.ftl"/>
   <html:link rel="localization" href="browser/branding/sync-brand.ftl"/>
+  <html:link rel="localization" href="browser/browser.ftl"/>
   <html:link rel="localization" href="browser/menubar.ftl"/>
 </linkset>
 
@@ -167,6 +168,7 @@ if (AppConstants.platform == "macosx") {
     <command id="View:PageInfo" oncommand="BrowserPageInfo();"/>
     <command id="View:FullScreen" oncommand="BrowserFullScreen();"/>
     <command id="View:ReaderView" oncommand="ReaderParent.toggleReaderMode(event);"/>
+    <command id="View:PictureInPicture" oncommand="PictureInPicture.onCommand(event);"/>
     <command id="cmd_find" oncommand="gLazyFindCommand('onFindCommand')"/>
     <command id="cmd_findAgain" oncommand="gLazyFindCommand('onFindAgainCommand', false)"/>
     <command id="cmd_findPrevious" oncommand="gLazyFindCommand('onFindAgainCommand', true)"/>
@@ -316,6 +318,8 @@ if (AppConstants.platform == "macosx") {
     <key keycode="VK_F5" command="Browser:ReloadSkipCache" modifiers="accel"/>
     <key id="key_fullScreen" keycode="VK_F11" command="View:FullScreen"/>
     <key id="key_toggleReaderMode" key="&toggleReaderMode.key;" command="View:ReaderView" modifiers="accel,alt" disabled="true"/>
+
+
     <key key="&reloadCmd.commandkey;" command="Browser:Reload" modifiers="accel" id="key_reload"/>
     <key key="&reloadCmd.commandkey;" command="Browser:ReloadSkipCache" modifiers="accel,shift" id="key_reload_skip_cache"/>
     <key id="key_viewSource" key="&pageSourceCmd.commandkey;" command="View:PageSource" modifiers="accel"/>
@@ -1682,12 +1686,6 @@ if (AppConstants.platform == "macosx") {
       </popupnotificationcontent>
     </popupnotification>
 
-    <popupnotification id="socialblock-notification" hidden="true">
-      <popupnotificationcontent id="socialblock-content" orient="vertical">
-        <description id="socialblock-message"></description>
-      </popupnotificationcontent>
-    </popupnotification>
-
 <!-- This Source Code Form is subject to the terms of the Mozilla Public
    - License, v. 2.0. If a copy of the MPL was not distributed with this
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
@@ -2214,9 +2212,21 @@ if (AppConstants.platform == "macosx") {
                 class="PanelUI-remotetabs-instruction-box"
                 hidden="true">
             <image class="fxaSyncIllustration"/>
-            <label class="PanelUI-remotetabs-instruction-label">&appMenuRemoteTabs.notsignedin.label;</label>
+            <label class="PanelUI-remotetabs-instruction-label">&appMenuRemoteTabs.welcome.label;</label>
             <toolbarbutton class="PanelUI-remotetabs-button"
-                           label="&appMenuRemoteTabs.signin.label;"
+                           label="&appMenuRemoteTabs.signintosync.label;"
+                           oncommand="gSync.openPrefs('synced-tabs');"/>
+          </vbox>
+          <!-- When Sync is not enabled -->
+          <vbox id="PanelUI-remotetabs-syncdisabled"
+                flex="1"
+                align="center"
+                class="PanelUI-remotetabs-instruction-box"
+                hidden="true">
+            <image class="fxaSyncIllustration"/>
+            <label class="PanelUI-remotetabs-instruction-label">&appMenuRemoteTabs.welcome.label;</label>
+            <toolbarbutton class="PanelUI-remotetabs-button"
+                           label="&appMenuRemoteTabs.turnonsync.label;"
                            oncommand="gSync.openPrefs('synced-tabs');"/>
           </vbox>
           <!-- When Sync needs re-authentication -->
@@ -2226,9 +2236,9 @@ if (AppConstants.platform == "macosx") {
                 class="PanelUI-remotetabs-instruction-box"
                 hidden="true">
             <image class="fxaSyncIllustrationIssue"/>
-            <label class="PanelUI-remotetabs-instruction-label">&appMenuRemoteTabs.notsignedin.label;</label>
+            <label class="PanelUI-remotetabs-instruction-label">&appMenuRemoteTabs.welcome.label;</label>
             <toolbarbutton class="PanelUI-remotetabs-button"
-                           label="&appMenuRemoteTabs.signin.label;"
+                           label="&appMenuRemoteTabs.signintosync.label;"
                            oncommand="gSync.openPrefs('synced-tabs');"/>
           </vbox>
           <!-- When Sync needs verification -->
@@ -2331,7 +2341,7 @@ if (AppConstants.platform == "macosx") {
                        oncommand="PanelUI.showSubView('PanelUI-characterEncodingView', this)"/>
         <toolbarbutton id="appMenu-workoffline-button"
                        class="subviewbutton"
-                       label="&goOfflineCmd.label;"
+                       data-l10n-id="menu-file-go-offline"
                        type="checkbox"
                        command="cmd_toggleOfflineStatus"/>
       </vbox>
@@ -2456,7 +2466,7 @@ if (AppConstants.platform == "macosx") {
         <toolbarbutton id="PanelUI-fxa-menu-sendtab-not-configured-button"
                        class="PanelUI-fxa-signin-button"
                        label="&fxa.menu.signin.label;"
-                       oncommand="gSync.openFxAEmailFirstPageFromFxaMenu(this);"/>
+                       oncommand="gSync.openPrefsFromFxaMenu('send_tab', this);"/>
       </vbox>
     </panelview>
     <panelview id="PanelUI-fxa-menu-sendtab-no-devices" flex="1" class="PanelUI-subView">
@@ -2527,7 +2537,7 @@ if (AppConstants.platform == "macosx") {
 </panel>
 
 <panel id="extension-notification-panel"
-       class="panel-no-padding"
+       class="popup-notification-panel panel-no-padding"
        role="group"
        type="arrow"
        hidden="true"
@@ -2781,6 +2791,7 @@ if (AppConstants.platform == "macosx") {
        hidden="true"
        role="alertdialog"
        aria-labelledby="protections-popup-main-header-label"
+       onpopupshowing="gProtectionsHandler.reorderCategoryItems()"
        onpopupshown="gProtectionsHandler.onPopupShown(event);"
        onpopuphidden="gProtectionsHandler.onPopupHidden(event);"
        orient="vertical">
@@ -2878,7 +2889,7 @@ if (AppConstants.platform == "macosx") {
                          role="heading"
                          aria-level="2">&protections.blocking2.label;</description>
             <hbox id="protections-popup-not-blocking-section-header" flex="1">
-              <description id="protections-popup-not-blocking-section-description" flex="1">&protections.notBlocking2.label;</description>
+              <description id="protections-popup-not-blocking-section-description" flex="1" role="heading" aria-level="2">&protections.notBlocking2.label;</description>
               <label id="protections-popup-not-blocking-section-why"
                      class="text-link"
                      onmouseover="document.getElementById(event.target.tooltip).openPopup(event.target);"
@@ -2968,7 +2979,7 @@ if (AppConstants.platform == "macosx") {
         <vbox class="panel-footer">
           <button id="protections-popup-trackersView-settings-button"
                   label="&contentBlocking.manageSettings2.label;"
-                  accesskey="&contentBlocking.manageSettings.accesskey;"
+                  accesskey="&contentBlocking.manageSettings2.accesskey;"
                   oncommand="gProtectionsHandler.openPreferences(); gProtectionsHandler.recordClick('subview_settings', 'trackers');"/>
         </vbox>
     </panelview>
@@ -2985,7 +2996,7 @@ if (AppConstants.platform == "macosx") {
         <vbox class="panel-footer">
           <button id="protections-popup-socialblockView-settings-button"
                   label="&contentBlocking.manageSettings2.label;"
-                  accesskey="&contentBlocking.manageSettings.accesskey;"
+                  accesskey="&contentBlocking.manageSettings2.accesskey;"
                   oncommand="gProtectionsHandler.openPreferences(); gProtectionsHandler.recordClick('subview_settings', 'social');"/>
         </vbox>
     </panelview>
@@ -3002,7 +3013,7 @@ if (AppConstants.platform == "macosx") {
         <vbox class="panel-footer">
           <button id="protections-popup-cookiesView-settings-button"
                   label="&contentBlocking.manageSettings2.label;"
-                  accesskey="&contentBlocking.manageSettings.accesskey;"
+                  accesskey="&contentBlocking.manageSettings2.accesskey;"
                   oncommand="gProtectionsHandler.openPreferences(); gProtectionsHandler.recordClick('subview_settings', 'cookies');"/>
         </vbox>
     </panelview>
@@ -3019,7 +3030,7 @@ if (AppConstants.platform == "macosx") {
         <vbox class="panel-footer">
           <button id="protections-popup-fingerprintersView-settings-button"
                   label="&contentBlocking.manageSettings2.label;"
-                  accesskey="&contentBlocking.manageSettings.accesskey;"
+                  accesskey="&contentBlocking.manageSettings2.accesskey;"
                   oncommand="gProtectionsHandler.openPreferences(); gProtectionsHandler.recordClick('subview_settings', 'fingerprinters');"/>
         </vbox>
     </panelview>
@@ -3036,7 +3047,7 @@ if (AppConstants.platform == "macosx") {
         <vbox class="panel-footer">
           <button id="protections-popup-cryptominersView-settings-button"
                   label="&contentBlocking.manageSettings2.label;"
-                  accesskey="&contentBlocking.manageSettings.accesskey;"
+                  accesskey="&contentBlocking.manageSettings2.accesskey;"
                   oncommand="gProtectionsHandler.openPreferences(); gProtectionsHandler.recordClick('subview_settings', 'cryptominers');"/>
         </vbox>
     </panelview>
@@ -3741,11 +3752,15 @@ if (AppConstants.platform == "macosx") {
                         key="key_openAddons"
                         command="Tools:Addons" data-l10n-id="menu-tools-addons"/>
 
-              <!-- only one of sync-setup, sync-unverifieditem, sync-syncnowitem or sync-reauthitem will be showing at once -->
+              <!-- only one of sync-setup, sync-enable, sync-unverifieditem, sync-syncnowitem or sync-reauthitem will be showing at once -->
               <menuitem id="sync-setup"
                         class="sync-ui-item"
                         hidden="true"
                         oncommand="gSync.openPrefs('menubar')" data-l10n-id="menu-tools-sync-sign-in"/>
+              <menuitem id="sync-enable"
+                        class="sync-ui-item"
+                        hidden="true"
+                        oncommand="gSync.openPrefs('menubar')" data-l10n-id="menu-tools-turn-on-sync"/>
               <menuitem id="sync-unverifieditem"
                         class="sync-ui-item"
                         hidden="true"
@@ -3908,7 +3923,7 @@ if (AppConstants.platform == "macosx") {
 
     <toolbar id="nav-bar"
              class="browser-toolbar"
-             aria-label="&navbarCmd.label;"
+             aria-label="&navbar.accessibleLabel;"
              fullscreentoolbar="true" mode="icons" customizable="true"
              customizationtarget="nav-bar-customization-target"
              overflowable="true"
@@ -4000,7 +4015,7 @@ if (AppConstants.platform == "macosx") {
               </box>
               <box id="identity-box" role="button"
                    align="center"
-                   aria-label="&urlbar.viewSiteInfo.label;"
+                   data-l10n-id="browser-urlbar-identity-button"
                    pageproxystate="invalid"
                    onclick="gIdentityHandler.handleIdentityButtonEvent(event);"
                    onkeypress="gIdentityHandler.handleIdentityButtonEvent(event);"
@@ -4291,6 +4306,7 @@ if (AppConstants.platform == "macosx") {
              class="browser-toolbar chromeclass-directories"
              context="toolbar-context-menu"
              toolbarname="&personalbarCmd.label;" accesskey="&personalbarCmd.accesskey;"
+             aria-label="&personalbar.accessibleLabel;"
              collapsed="true"
              customizable="true">
       <toolbartabstop skipintoolbarset="true"/>
@@ -4407,6 +4423,7 @@ if (AppConstants.platform == "macosx") {
             <menupopup id="BMB_bookmarksToolbarPopup"
                        is="places-popup"
                        placespopup="true"
+                       nofooterpopup="true"
                        context="placesContext"
                        onpopupshowing="if (!this.parentNode._placesView)
                                          new PlacesMenu(event, `place:parent=${PlacesUtils.bookmarks.toolbarGuid}`,
@@ -4427,6 +4444,7 @@ if (AppConstants.platform == "macosx") {
             <menupopup id="BMB_unsortedBookmarksPopup"
                        is="places-popup"
                        placespopup="true"
+                       nofooterpopup="true"
                        context="placesContext"
                        onpopupshowing="if (!this.parentNode._placesView)
                                          new PlacesMenu(event, `place:parent=${PlacesUtils.bookmarks.unfiledGuid}`,
@@ -4440,6 +4458,7 @@ if (AppConstants.platform == "macosx") {
             <menupopup id="BMB_mobileBookmarksPopup"
                        is="places-popup"
                        placespopup="true"
+                       nofooterpopup="true"
                        context="placesContext"
                        onpopupshowing="if (!this.parentNode._placesView)
                                          new PlacesMenu(event, `place:parent=${PlacesUtils.bookmarks.mobileGuid}`,

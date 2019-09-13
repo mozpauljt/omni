@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.validateNavigateContext = validateNavigateContext;
+exports.validateThreadContext = validateThreadContext;
 exports.validateContext = validateContext;
 exports.ContextError = void 0;
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");

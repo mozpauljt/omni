@@ -246,10 +246,7 @@ var gSync = {
   showSendToDeviceView(anchor) {
     PanelUI.showSubView("PanelUI-sendTabToDevice", anchor);
     let panelViewNode = document.getElementById("PanelUI-sendTabToDevice");
-    this.populateSendTabToDevicesView(
-      panelViewNode,
-      this.populateSendTabToDevicesView.bind(this)
-    );
+    this.populateSendTabToDevicesView(panelViewNode);
   },
 
   showSendToDeviceViewFromFxaMenu(anchor) {
@@ -278,7 +275,7 @@ var gSync = {
     this.emitFxaToolbarTelemetry("sync_tabs_sidebar", panel);
   },
 
-  populateSendTabToDevicesView(panelViewNode, reloadFunc) {
+  populateSendTabToDevicesView(panelViewNode, reloadDevices = true) {
     let bodyNode = panelViewNode.querySelector(".panel-subview-body");
     let panelNode = panelViewNode.closest("panel");
     let browser = gBrowser.selectedBrowser;
@@ -330,13 +327,14 @@ var gSync = {
     // of devices will be empty.
     if (gSync.sendTabConfiguredAndLoading) {
       bodyNode.setAttribute("state", "notready");
+    }
+    if (reloadDevices) {
       // Force a background Sync
       Services.tm.dispatchToMainThread(async () => {
-        await Weave.Service.sync({ why: "pageactions", engines: [] }); // [] = clients engine only
-        // There's no way Sync is still syncing at this point, but we check
-        // anyway to avoid infinite looping.
-        if (!window.closed && !gSync.sendTabConfiguredAndLoading) {
-          reloadFunc(panelViewNode);
+        // `engines: []` = clients engine only + refresh FxA Devices.
+        await Weave.Service.sync({ why: "pageactions", engines: [] });
+        if (!window.closed) {
+          this.populateSendTabToDevicesView(panelViewNode, false);
         }
       });
     }
@@ -562,27 +560,36 @@ var gSync = {
   },
 
   updateState(state) {
-    for (let [status, menuId, boxId] of [
+    for (let [shown, menuId, boxId] of [
       [
-        UIState.STATUS_NOT_CONFIGURED,
+        state.status == UIState.STATUS_NOT_CONFIGURED,
         "sync-setup",
         "PanelUI-remotetabs-setupsync",
       ],
       [
-        UIState.STATUS_LOGIN_FAILED,
+        state.status == UIState.STATUS_SIGNED_IN && !state.syncEnabled,
+        "sync-enable",
+        "PanelUI-remotetabs-syncdisabled",
+      ],
+      [
+        state.status == UIState.STATUS_LOGIN_FAILED,
         "sync-reauthitem",
         "PanelUI-remotetabs-reauthsync",
       ],
       [
-        UIState.STATUS_NOT_VERIFIED,
+        state.status == UIState.STATUS_NOT_VERIFIED,
         "sync-unverifieditem",
         "PanelUI-remotetabs-unverified",
       ],
-      [UIState.STATUS_SIGNED_IN, "sync-syncnowitem", "PanelUI-remotetabs-main"],
+      [
+        state.status == UIState.STATUS_SIGNED_IN && state.syncEnabled,
+        "sync-syncnowitem",
+        "PanelUI-remotetabs-main",
+      ],
     ]) {
       document.getElementById(menuId).hidden = document.getElementById(
         boxId
-      ).hidden = status != state.status;
+      ).hidden = !shown;
     }
   },
 
@@ -787,19 +794,18 @@ var gSync = {
     const fragment = document.createDocumentFragment();
 
     const state = UIState.get();
-    if (
-      state.status == UIState.STATUS_SIGNED_IN &&
-      this.sendTabTargets.length > 0
-    ) {
-      this._appendSendTabDeviceList(
-        fragment,
-        createDeviceNodeFn,
-        url,
-        title,
-        multiselected
-      );
-    } else if (state.status == UIState.STATUS_SIGNED_IN) {
-      this._appendSendTabSingleDevice(fragment, createDeviceNodeFn);
+    if (state.status == UIState.STATUS_SIGNED_IN) {
+      if (this.sendTabTargets.length > 0) {
+        this._appendSendTabDeviceList(
+          fragment,
+          createDeviceNodeFn,
+          url,
+          title,
+          multiselected
+        );
+      } else {
+        this._appendSendTabSingleDevice(fragment, createDeviceNodeFn);
+      }
     } else if (
       state.status == UIState.STATUS_NOT_VERIFIED ||
       state.status == UIState.STATUS_LOGIN_FAILED

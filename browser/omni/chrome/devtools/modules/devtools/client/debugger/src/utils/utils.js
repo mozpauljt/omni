@@ -9,7 +9,9 @@ exports.endTruncateStr = endTruncateStr;
 exports.waitForMs = waitForMs;
 exports.downloadFile = downloadFile;
 
-var _devtoolsSharedUtils = require("devtools/shared/DevToolsUtils");
+var _DevToolsUtils = _interopRequireDefault(require("devtools/shared/DevToolsUtils"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -69,5 +71,6 @@ function downloadFile(content, fileName) {
   }
 
   const data = new TextEncoder().encode(content.value);
-  (0, _devtoolsSharedUtils.saveAs)(window, data, fileName);
+
+  _DevToolsUtils.default.saveAs(window, data, fileName);
 }

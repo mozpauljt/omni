@@ -248,7 +248,7 @@ this.AppConstants = Object.freeze({
   // "https://hg.mozilla.org/mozilla-central/rev/6256ec9113c1")
   // On unofficial builds, this is an empty string.
 //@line 343 "$SRCDIR/toolkit/modules/AppConstants.jsm"
-  SOURCE_REVISION_URL: "https://hg.mozilla.org/mozilla-central/rev/4cd56624e723867b1e508d73bd8ee82c899f5670",
+  SOURCE_REVISION_URL: "https://hg.mozilla.org/mozilla-central/rev/cbec1b8d83edf24146e48d6819dda24d9ab7a57b",
 
   HAVE_USR_LIB64_DIR:
 //@line 349 "$SRCDIR/toolkit/modules/AppConstants.jsm"

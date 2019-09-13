@@ -18,8 +18,13 @@
 
 <!DOCTYPE page>
 
+<!-- @CSP: The 'oncommand' handler for 'focusSearch1' can not easily be rewritten (see Bug 371900)
+     hence we are allowing the inline handler in the script-src directive using the hash
+     sha512-X8+p/CqXeMdssOoFOf5RV+RpkvnN9pukQ20acGc7LqMgfYLW+lR0WAYT66OtSTpFHE/Qgx/ZCBs2RMc4QrA8FQ==
+     Additionally we should remove 'unsafe-inline' from style-src, see Bug 1579160 -->
 <page xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
       xmlns:html="http://www.w3.org/1999/xhtml"
+      csp="default-src chrome:; script-src chrome: 'sha512-X8+p/CqXeMdssOoFOf5RV+RpkvnN9pukQ20acGc7LqMgfYLW+lR0WAYT66OtSTpFHE/Qgx/ZCBs2RMc4QrA8FQ=='; img-src chrome: moz-icon:; style-src chrome: data: 'unsafe-inline'"
       role="document"
       data-l10n-id="pref-page"
       data-l10n-attrs="title">
@@ -159,6 +164,8 @@
     </vbox>
 
     <keyset>
+      <!-- If you change the code within the oncommand handler of 'focusSearch1' you have to update the current hash of
+           sha512-X8+p/CqXeMdssOoFOf5RV+RpkvnN9pukQ20acGc7LqMgfYLW+lR0WAYT66OtSTpFHE/Qgx/ZCBs2RMc4QrA8FQ== within the CSP above. -->
       <key data-l10n-id="focus-search" key="" modifiers="accel" id="focusSearch1" oncommand="gSearchResultsPane.searchInput.focus();"/>
     </keyset>
 
@@ -277,8 +284,7 @@
     <label><html:h2 data-l10n-id="tabs-group-header"/></label>
 
     <checkbox id="ctrlTabRecentlyUsedOrder" data-l10n-id="ctrl-tab-recently-used-order"
-              preference="browser.ctrlTab.recentlyUsedOrder"
-              oncommand="Services.prefs.clearUserPref('browser.ctrlTab.migrated');"/>
+              preference="browser.ctrlTab.recentlyUsedOrder"/>
 
     <checkbox id="linkTargeting" data-l10n-id="open-new-link-as-tabs"
               preference="browser.link.open_newwindow"/>
@@ -488,8 +494,7 @@
       <button id="manageBrowserLanguagesButton"
               is="highlightable-button"
               class="accessory-button"
-              data-l10n-id="manage-browser-languages-button"
-              oncommand="gMainPane.showBrowserLanguages({search: false})"/>
+              data-l10n-id="manage-browser-languages-button"/>
     </hbox>
   </vbox>
   <hbox id="confirmBrowserLanguage" class="message-bar" align="center" hidden="true">
@@ -650,22 +655,19 @@
         <spacer flex="1"/>
         <button id="checkForUpdatesButton"
                 is="highlightable-button"
-                data-l10n-id="update-checkForUpdatesButton"
-                oncommand="gAppUpdater.checkForUpdates();"/>
+                data-l10n-id="update-checkForUpdatesButton"/>
       </hbox>
       <hbox id="downloadAndInstall" align="start">
         <spacer flex="1"/>
         <button id="downloadAndInstallButton"
-                is="highlightable-button"
-                oncommand="gAppUpdater.startDownload();"/>
+                is="highlightable-button"/>
                 <!-- label and accesskey will be filled by JS -->
       </hbox>
       <hbox id="apply" align="start">
         <spacer flex="1"/>
         <button id="updateButton"
                 is="highlightable-button"
-                data-l10n-id="update-updateButton"
-                oncommand="gAppUpdater.buttonRestartAfterDownload();"/>
+                data-l10n-id="update-updateButton"/>
       </hbox>
       <hbox id="checkingForUpdates" align="start">
         <image class="update-throbber"/>
@@ -688,9 +690,9 @@
           <html:a id="failedLink" target="_blank" class="learnMore text-link" data-l10n-name="failed-link-main"></html:a>
         </label>
         <spacer flex="1"/>
-        <button data-l10n-id="update-checkForUpdatesButton"
-                is="highlightable-button"
-                oncommand="gAppUpdater.checkForUpdates();"/>
+        <button id="checkForUpdatesButton2"
+                data-l10n-id="update-checkForUpdatesButton"
+                is="highlightable-button"/>
       </hbox>
       <hbox id="policyDisabled" align="start">
         <label data-l10n-id="update-adminDisabled"></label>
@@ -703,9 +705,9 @@
         <image class="face-smile"/>
         <label data-l10n-id="update-noUpdatesFound"></label>
         <spacer flex="1"/>
-        <button data-l10n-id="update-checkForUpdatesButton"
-                is="highlightable-button"
-                oncommand="gAppUpdater.checkForUpdates();"/>
+        <button id="checkForUpdatesButton3"
+                data-l10n-id="update-checkForUpdatesButton"
+                is="highlightable-button"/>
       </hbox>
       <hbox id="otherInstanceHandlingUpdates" align="start">
         <label data-l10n-id="update-otherInstanceHandlingUpdates"></label>
@@ -1154,7 +1156,7 @@
             <hbox>
               <radio id="standardRadio"
                      value="standard"
-                     data-l10n-id="content-blocking-setting-standard"
+                     data-l10n-id="enhanced-tracking-protection-setting-standard"
                      flex="1"/>
               <button id="standardArrow"
                       is="highlightable-button"
@@ -1235,7 +1237,7 @@
             <hbox>
               <radio id="strictRadio"
                      value="strict"
-                     data-l10n-id="content-blocking-setting-strict"
+                     data-l10n-id="enhanced-tracking-protection-setting-strict"
                      flex="1"/>
               <button id="strictArrow"
                       is="highlightable-button"
@@ -1331,7 +1333,7 @@
           <hbox>
             <radio id="customRadio"
                    value="custom"
-                   data-l10n-id="content-blocking-setting-custom"
+                   data-l10n-id="enhanced-tracking-protection-setting-custom"
                    flex="1"/>
             <button id="customArrow"
                     is="highlightable-button"
@@ -1916,8 +1918,7 @@
   <vbox id="a11yPermissionsBox">
     <hbox flex="1" align="center">
       <checkbox id="a11yPrivacyCheckbox" class="tail-with-learn-more"
-                data-l10n-id="permissions-a11y-privacy-checkbox"
-                oncommand="return gPrivacyPane.updateA11yPrefs(this.checked)"/>
+                data-l10n-id="permissions-a11y-privacy-checkbox"/>
       <label id="a11yLearnMoreLink" class="learnMore" is="text-link"
              data-l10n-id="permissions-a11y-privacy-link"/>
     </hbox>
@@ -2109,7 +2110,6 @@
     <hbox flex="1">
       <button id="containersAdd"
               is="highlightable-button"
-              oncommand="gContainersPane.onAddButtonCommand();"
               data-l10n-id="containers-add-button"/>
     </hbox>
   </vbox>
@@ -2189,10 +2189,9 @@
 
             <!-- logged in and verified and all is good -->
             <hbox id="fxaLoginVerified" align="center" flex="1">
-              <image class="fxaProfileImage actionable"
+              <image id="openChangeProfileImage"
+                     class="fxaProfileImage actionable"
                      role="button"
-                     onclick="gSyncPane.openChangeProfileImage(event);"
-                     onkeypress="gSyncPane.openChangeProfileImage(event);"
                      data-l10n-id="sync-profile-picture"/>
               <vbox flex="1" pack="center">
                 <hbox flex="1" align="baseline">
@@ -2207,8 +2206,7 @@
                 </hbox>
                 <hbox>
                   <html:a id="verifiedManage" class="openLink"
-                          data-l10n-id="sync-manage-account"
-                          onkeypress="gSyncPane.openManageFirefoxAccount(event);"/>
+                          data-l10n-id="sync-manage-account"/>
                 </hbox>
               </vbox>
             </hbox>

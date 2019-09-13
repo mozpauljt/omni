@@ -82,7 +82,8 @@ if ((0, _devtoolsEnvironment.isDevelopment)()) {
   pref("devtools.debugger.features.log-points", true);
   pref("devtools.debugger.features.inline-preview", true);
   pref("devtools.debugger.log-actions", true);
-  pref("devtools.debugger.features.overlay-step-buttons", false);
+  pref("devtools.debugger.features.overlay-step-buttons", true);
+  pref("devtools.debugger.features.log-event-breakpoints", false);
 }
 
 const prefs = new _devtoolsModules.PrefsHelper("devtools", {
@@ -145,8 +146,9 @@ const features = new _devtoolsModules.PrefsHelper("devtools.debugger.features", 
   eventListenersBreakpoints: ["Bool", "event-listeners-breakpoints"],
   domMutationBreakpoints: ["Bool", "dom-mutation-breakpoints"],
   logPoints: ["Bool", "log-points"],
-  showOverlayStepButtons: ["Bool", "debugger.features.overlay-step-buttons"],
-  inlinePreview: ["Bool", "inline-preview"]
+  showOverlayStepButtons: ["Bool", "overlay-step-buttons"],
+  inlinePreview: ["Bool", "inline-preview"],
+  logEventBreakpoints: ["Bool", "log-event-breakpoints"]
 });
 exports.features = features;
 const asyncStore = (0, _asyncStoreHelper.default)("debugger", {

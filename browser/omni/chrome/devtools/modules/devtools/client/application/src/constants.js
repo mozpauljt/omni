@@ -6,7 +6,10 @@
 
 const actionTypes = {
   // manifest substate
-  UPDATE_MANIFEST: "UPDATE_MANIFEST",
+  FETCH_MANIFEST_FAILURE: "FETCH_MANIFEST_FAILURE",
+  FETCH_MANIFEST_START: "FETCH_MANIFEST_START",
+  FETCH_MANIFEST_SUCCESS: "FETCH_MANIFEST_SUCCESS",
+  RESET_MANIFEST: "RESET_MANIFEST",
   // page substate
   UPDATE_DOMAIN: "UPDATE_DOMAIN",
   // ui substate
@@ -16,6 +19,7 @@ const actionTypes = {
   UPDATE_WORKERS: "UPDATE_WORKERS",
 };
 
+// NOTE: these const values are used as part of CSS selectors - be mindful of the characters used
 const PAGE_TYPES = {
   MANIFEST: "manifest",
   SERVICE_WORKERS: "service-workers",

@@ -192,7 +192,8 @@ class Outline extends _react.Component {
     }
 
     return _react.default.createElement("ul", {
-      className: "outline-list devtools-monospace"
+      className: "outline-list devtools-monospace",
+      dir: "ltr"
     }, namedFunctions.map(func => this.renderFunction(func)), classes.map(klass => this.renderClassFunctions(klass, classFunctions)));
   }
 

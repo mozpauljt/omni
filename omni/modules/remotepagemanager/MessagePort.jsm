@@ -51,6 +51,7 @@ let RPMAccessManager = {
         "services.settings.last_update_seconds",
       ],
       getAppBuildID: ["yes"],
+      recordTelemetryEvent: ["yes"],
     },
     "about:privatebrowsing": {
       // "sendAsyncMessage": handled within AboutPrivateBrowsingHandler.jsm
@@ -62,6 +63,7 @@ let RPMAccessManager = {
         "browser.contentblocking.report.lockwise.enabled",
         "browser.contentblocking.report.monitor.enabled",
         "privacy.socialtracking.block_cookies.enabled",
+        "browser.contentblocking.report.proxy.enabled",
       ],
       getStringPref: [
         "browser.contentblocking.category",
@@ -69,6 +71,7 @@ let RPMAccessManager = {
         "browser.contentblocking.report.monitor.url",
         "browser.contentblocking.report.monitor.sign_in_url",
         "browser.contentblocking.report.manage_devices.url",
+        "browser.contentblocking.report.proxy_extension.url",
       ],
       getFormatURLPref: [
         "browser.contentblocking.report.monitor.how_it_works.url",

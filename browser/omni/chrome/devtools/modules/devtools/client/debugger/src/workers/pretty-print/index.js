@@ -14,16 +14,34 @@ var _devtoolsUtils = require("devtools/client/debugger/dist/vendors").vendored["
 const {
   WorkerDispatcher
 } = _devtoolsUtils.workerUtils;
-const dispatcher = new WorkerDispatcher();
-const start = dispatcher.start.bind(dispatcher);
+let dispatcher;
+let workerPath;
+
+const start = path => {
+  workerPath = path;
+};
+
 exports.start = start;
-const stop = dispatcher.stop.bind(dispatcher);
+
+const stop = () => {
+  if (dispatcher) {
+    dispatcher.stop();
+    dispatcher = null;
+    workerPath = null;
+  }
+};
+
 exports.stop = stop;
 
 async function prettyPrint({
   text,
   url
 }) {
+  if (!dispatcher) {
+    dispatcher = new WorkerDispatcher();
+    dispatcher.start(workerPath);
+  }
+
   return dispatcher.invoke("prettyPrint", {
     url,
     indent: 2,

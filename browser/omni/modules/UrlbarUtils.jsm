@@ -90,6 +90,9 @@ var UrlbarUtils = {
     // A tab from another synced device.
     // Payload: { url, icon, device, title }
     REMOTE_TAB: 6,
+    // An actionable message to help the user with their query.
+    // Payload: { icon, text, buttonText, [buttonUrl], data, helpUrl }
+    TIP: 7,
   },
 
   // This defines the source of results returned by a provider. Each provider
@@ -107,10 +110,11 @@ var UrlbarUtils = {
     OTHER_NETWORK: 6,
   },
 
-  // This defines icon locations that are common used in the UI.
+  // This defines icon locations that are commonly used in the UI.
   ICON: {
     // DEFAULT is defined lazily so it doesn't eagerly initialize PlacesUtils.
     SEARCH_GLASS: "chrome://browser/skin/search-glass.svg",
+    TIP: "chrome://browser/skin/tip.svg",
   },
 
   // The number of results by which Page Up/Down move the selection.

@@ -261,6 +261,16 @@ var gSyncPane = {
         .addEventListener(aEventType, aCallback.bind(gSyncPane));
     }
 
+    setEventListener("openChangeProfileImage", "click", function(event) {
+      gSyncPane.openChangeProfileImage(event);
+    });
+    setEventListener("openChangeProfileImage", "keypress", function(event) {
+      gSyncPane.openChangeProfileImage(event);
+    });
+    setEventListener("verifiedManage", "keypress", function(event) {
+      gSyncPane.openManageFirefoxAccount(event);
+    });
+
     setEventListener("fxaChangeDeviceName", "command", function() {
       this._toggleComputerNameControls(true);
       this._focusComputerNameTextbox();
@@ -558,7 +568,10 @@ var gSyncPane = {
   _populateComputerName(value) {
     let textbox = document.getElementById("fxaSyncComputerName");
     if (!textbox.hasAttribute("placeholder")) {
-      textbox.setAttribute("placeholder", Weave.Utils.getDefaultDeviceName());
+      textbox.setAttribute(
+        "placeholder",
+        fxAccounts.device.getDefaultLocalName()
+      );
     }
     textbox.value = value;
   },

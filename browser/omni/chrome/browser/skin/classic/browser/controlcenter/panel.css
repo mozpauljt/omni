@@ -8,20 +8,20 @@
   display: none;
 }
 
+
 #identity-popup,
 #protections-popup {
-  font-size: 1.18rem;
-  --popup-width: 36.36rem;
+  --popup-width: 30.81em;
   /* Set default fill for icons in the identity popup.
      Individual icons can override this. */
   fill: currentColor;
-  --horizontal-padding: 2.1rem;
+  --horizontal-padding: 1.78em;
   --vertical-section-padding: 0.9em;
   --height-offset: 0px;
 }
 
 #protections-popup[toast] {
-  --popup-width: 32rem;
+  --popup-width: 27.12em;
 }
 
 #protections-popup[infoMessageShowing] {
@@ -299,13 +299,15 @@
   border-radius: 0;
   outline: 3px solid transparent;
   -moz-outline-radius: var(--toolbarbutton-border-radius);
+  -moz-appearance: none;
 }
 
 #protections-popup-info-button > image {
   fill-opacity: 1;
 }
 
-#protections-popup-info-button:hover {
+#protections-popup-info-button:hover,
+#protections-popup-info-button:-moz-focusring {
   outline-color: rgba(12, 12, 13, 0.2);
   background-color: rgba(12, 12, 13, 0.2);
 }
@@ -1110,9 +1112,7 @@ description#identity-popup-content-verifier,
 }
 
 /* This overrides color: -moz-buttonhovertext from toolbarbutton.css */
-.protections-popup-category:hover,
-.protections-popup-category:hover:active,
-.protections-popup-footer-button:hover,
-.protections-popup-footer-button:hover:active {
+#protections-popup toolbarbutton:not([disabled="true"]):hover,
+#protections-popup toolbarbutton:not([disabled="true"]):hover:active {
   color: inherit;
 }

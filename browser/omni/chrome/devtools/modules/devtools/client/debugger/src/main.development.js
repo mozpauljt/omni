@@ -26,6 +26,7 @@ bootstrap(_react.default, _reactDom.default).then(connection => {
       const win = window.open(url, "_blank");
       win.focus();
     },
+    openInspector: () => console.log("opening inspector"),
     openElementInInspector: grip => alert(`Opening node in Inspector: ${grip.class}`),
     openConsoleAndEvaluate: input => alert(`console.log: ${input}`),
     highlightDomElement: grip => console.log("highlighting dom element"),

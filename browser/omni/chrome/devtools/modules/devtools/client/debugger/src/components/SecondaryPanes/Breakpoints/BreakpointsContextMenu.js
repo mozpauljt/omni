@@ -45,6 +45,8 @@ function showContextMenu(props) {
   const disableSelfLabel = L10N.getStr("breakpointMenuItem.disableSelf2.label");
   const disableAllLabel = L10N.getStr("breakpointMenuItem.disableAll2.label");
   const disableOthersLabel = L10N.getStr("breakpointMenuItem.disableOthers2.label");
+  const enableDbgStatementLabel = L10N.getStr("breakpointMenuItem.enabledbg.label");
+  const disableDbgStatementLabel = L10N.getStr("breakpointMenuItem.disabledbg.label");
   const removeConditionLabel = L10N.getStr("breakpointMenuItem.removeCondition2.label");
   const addConditionLabel = L10N.getStr("breakpointMenuItem.addCondition2.label");
   const editConditionLabel = L10N.getStr("breakpointMenuItem.editCondition2.label");
@@ -134,6 +136,22 @@ function showContextMenu(props) {
     accesskey: disableOthersKey,
     click: () => toggleBreakpoints(cx, true, otherEnabledBreakpoints)
   };
+  const enableDbgStatementItem = {
+    id: "node-menu-enable-dbgStatement",
+    label: enableDbgStatementLabel,
+    disabled: false,
+    click: () => setBreakpointOptions(cx, selectedLocation, { ...breakpoint.options,
+      condition: null
+    })
+  };
+  const disableDbgStatementItem = {
+    id: "node-menu-disable-dbgStatement",
+    label: disableDbgStatementLabel,
+    disabled: false,
+    click: () => setBreakpointOptions(cx, selectedLocation, { ...breakpoint.options,
+      condition: "false"
+    })
+  };
   const removeConditionItem = {
     id: "node-menu-remove-condition",
     label: removeConditionLabel,
@@ -195,6 +213,8 @@ function showContextMenu(props) {
   const hideDisableAllItem = enabledBreakpoints.length === 0;
   const hideDisableOthersItem = otherEnabledBreakpoints.length === 0;
   const hideDisableSelfItem = breakpoint.disabled;
+  const hideEnableDbgStatementItem = !breakpoint.originalText.startsWith("debugger") || breakpoint.originalText.startsWith("debugger") && breakpoint.options.condition !== "false";
+  const hideDisableDbgStatementItem = !breakpoint.originalText.startsWith("debugger") || breakpoint.originalText.startsWith("debugger") && breakpoint.options.condition === "false";
   const items = [{
     item: enableSelfItem,
     hidden: () => hideEnableSelfItem
@@ -234,6 +254,17 @@ function showContextMenu(props) {
     item: {
       type: "separator"
     }
+  }, {
+    item: enableDbgStatementItem,
+    hidden: () => hideEnableDbgStatementItem
+  }, {
+    item: disableDbgStatementItem,
+    hidden: () => hideDisableDbgStatementItem
+  }, {
+    item: {
+      type: "separator"
+    },
+    hidden: () => hideDisableDbgStatementItem && hideEnableDbgStatementItem
   }, {
     item: addConditionItem,
     hidden: () => breakpoint.options.condition

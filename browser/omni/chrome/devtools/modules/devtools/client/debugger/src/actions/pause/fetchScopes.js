@@ -33,7 +33,7 @@ function fetchScopes(cx) {
       [_promise.PROMISE]: client.getFrameScopes(frame)
     });
     scopes.then(() => {
-      dispatch((0, _inlinePreview.generateInlinePreview)(cx.thread, frame));
+      dispatch((0, _inlinePreview.generateInlinePreview)(cx, frame));
     });
     await dispatch((0, _mapScopes.mapScopes)(cx, scopes, frame));
   };

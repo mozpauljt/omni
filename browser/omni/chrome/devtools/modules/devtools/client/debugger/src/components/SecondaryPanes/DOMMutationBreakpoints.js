@@ -88,11 +88,22 @@ class DOMMutationBreakpointsContents extends _react.Component {
       handleClick: () => deleteBreakpoint(nodeFront, mutationType)
     }));
   }
+  /* eslint-disable react/no-danger */
+
 
   renderEmpty() {
+    const {
+      openInspector
+    } = this.props;
+    const text = L10N.getFormatStr("noDomMutationBreakpoints", `<a>${L10N.getStr("inspectorTool")}</a>`);
     return _react.default.createElement("div", {
       className: "dom-mutation-empty"
-    }, L10N.getStr("noDomMutationBreakpointsText"));
+    }, _react.default.createElement("div", {
+      onClick: () => openInspector(),
+      dangerouslySetInnerHTML: {
+        __html: text
+      }
+    }));
   }
 
   render() {
@@ -128,7 +139,8 @@ class DomMutationBreakpoints extends _react.Component {
       openElementInInspector: this.props.openElementInInspector,
       highlightDomElement: this.props.highlightDomElement,
       unHighlightDomElement: this.props.unHighlightDomElement,
-      setSkipPausing: this.props.setSkipPausing
+      setSkipPausing: this.props.setSkipPausing,
+      openInspector: this.props.openInspector
     });
   }
 
@@ -140,7 +152,8 @@ var _default = (0, _connect.connect)(undefined, {
   openElementInInspector: _actions.default.openElementInInspectorCommand,
   highlightDomElement: _actions.default.highlightDomElement,
   unHighlightDomElement: _actions.default.unHighlightDomElement,
-  setSkipPausing: _actions.default.setSkipPausing
+  setSkipPausing: _actions.default.setSkipPausing,
+  openInspector: _actions.default.openInspector
 })(DomMutationBreakpoints);
 
 exports.default = _default;

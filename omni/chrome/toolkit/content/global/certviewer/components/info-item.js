@@ -33,7 +33,15 @@ export class InfoItem extends HTMLElement {
   render() {
     let label = this.shadowRoot.querySelector("label");
     let labelText = normalizeToKebabCase(this.item.label);
-    label.setAttribute("data-l10n-id", "certificate-viewer-" + labelText);
+
+    // Map specific elements to a different message ID, to allow updates to
+    // existing labels and avoid duplicates.
+    let stringMapping = {
+      signaturealgorithm: "signature-algorithm",
+    };
+    let fluentID = stringMapping[labelText] || labelText;
+
+    label.setAttribute("data-l10n-id", "certificate-viewer-" + fluentID);
 
     this.classList.add(labelText);
 
@@ -46,12 +54,35 @@ export class InfoItem extends HTMLElement {
       ? this.item.info.join(", ")
       : this.item.info;
 
+    this.classList.add(labelText);
+
     // TODO: Use Fluent-friendly condition.
     if (this.item.label === "Modulus") {
       info.classList.add("long-hex");
       this.addEventListener("click", () => {
         info.classList.toggle("long-hex-open");
       });
+    }
+
+    let isURL = false;
+    if (
+      typeof this.item.info === "string" &&
+      this.item.info.startsWith("http")
+    ) {
+      try {
+        new URL(this.item.info);
+        isURL = true;
+      } catch (e) {}
+    }
+
+    if (isURL) {
+      let link = document.createElement("a");
+      link.setAttribute("href", this.item.info);
+      link.setAttribute("rel", "noreferrer noopener");
+      link.setAttribute("target", "_blank");
+      link.textContent = this.item.info;
+      info.textContent = "";
+      info.appendChild(link);
     }
   }
 }

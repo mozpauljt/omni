@@ -19,6 +19,8 @@ const {
   makeEventBreakpointMessage,
 } = require("devtools/server/actors/utils/event-breakpoints");
 
+const { logEvent } = require("devtools/server/actors/utils/logEvent");
+
 loader.lazyRequireGetter(
   this,
   "EnvironmentActor",
@@ -715,6 +717,16 @@ const ThreadActor = ActorClassWithSpec(threadSpec, {
       return undefined;
     }
 
+    if (this._options.logEventBreakpoints) {
+      return logEvent({
+        threadActor: this,
+        frame,
+        level: "logPoint",
+        expression: `[_event]`,
+        bindings: { _event: frame.arguments[0] },
+      });
+    }
+
     return this._pauseAndRespond(frame, {
       type: "eventBreakpoint",
       breakpoint: eventBreakpoint,
@@ -1105,6 +1117,14 @@ const ThreadActor = ActorClassWithSpec(threadSpec, {
     }
   },
 
+  paint: function(point) {
+    this.dbg.replayPaint(point);
+  },
+
+  paintCurrentPoint: function() {
+    this.dbg.replayPaintCurrentPoint();
+  },
+
   /**
    * Handle a protocol request to resume execution of the debuggee.
    */
@@ -1315,7 +1335,9 @@ const ThreadActor = ActorClassWithSpec(threadSpec, {
     // collected but not all.
     const urlMap = {};
     for (const url of this.dbg.findSourceURLs()) {
-      urlMap[url] = 1 + (urlMap[url] || 0);
+      if (url !== "self-hosted") {
+        urlMap[url] = 1 + (urlMap[url] || 0);
+      }
     }
 
     const sources = this.dbg.findSources();
@@ -1423,21 +1445,6 @@ const ThreadActor = ActorClassWithSpec(threadSpec, {
       reportError(e);
       return { error: "notInterrupted", message: e.toString() };
     }
-  },
-
-  /**
-   * Return the Debug.Frame for a frame mentioned by the protocol.
-   */
-  _requestFrame: function(frameID) {
-    if (!frameID) {
-      return this.youngestFrame;
-    }
-
-    if (this._framePool.has(frameID)) {
-      return this._framePool.get(frameID).frame;
-    }
-
-    return undefined;
   },
 
   _paused: function(frame) {
@@ -1573,36 +1580,6 @@ const ThreadActor = ActorClassWithSpec(threadSpec, {
   },
 
   /**
-   * Return a protocol completion value representing the given
-   * Debugger-provided completion value.
-   */
-  createProtocolCompletionValue: function(completion) {
-    const protoValue = {};
-    if (completion == null) {
-      return protoValue;
-    } else if ("return" in completion) {
-      protoValue.return = createValueGrip(
-        completion.return,
-        this._pausePool,
-        this.objectGrip
-      );
-    } else if ("throw" in completion) {
-      protoValue.throw = createValueGrip(
-        completion.throw,
-        this._pausePool,
-        this.objectGrip
-      );
-    } else {
-      protoValue.return = createValueGrip(
-        completion.yield,
-        this._pausePool,
-        this.objectGrip
-      );
-    }
-    return protoValue;
-  },
-
-  /**
    * Create a grip for the given debuggee object.
    *
    * @param value Debugger.Object
@@ -1677,31 +1654,6 @@ const ThreadActor = ActorClassWithSpec(threadSpec, {
     actor.registeredPool.objectActors.delete(actor.obj);
     this.threadLifetimePool.addActor(actor);
     this.threadLifetimePool.objectActors.set(actor.obj, actor);
-  },
-
-  /**
-   * Handle a protocol request to promote multiple pause-lifetime grips to
-   * thread-lifetime grips.
-   *
-   * @param aRequest object
-   *        The protocol request object.
-   */
-  onThreadGrips: function(request) {
-    if (this.state != "paused") {
-      return { error: "wrongState" };
-    }
-
-    if (!request.actors) {
-      return { error: "missingParameter", message: "no actors were specified" };
-    }
-
-    for (const actorID of request.actors) {
-      const actor = this._pausePool.get(actorID);
-      if (actor) {
-        this.threadObjectGrip(actor);
-      }
-    }
-    return {};
   },
 
   _onWindowReady: function({ isTopLevel, isBFCache, window }) {
@@ -2141,7 +2093,6 @@ Object.assign(ThreadActor.prototype.requestTypes, {
   frames: ThreadActor.prototype.onFrames,
   interrupt: ThreadActor.prototype.onInterrupt,
   sources: ThreadActor.prototype.onSources,
-  threadGrips: ThreadActor.prototype.onThreadGrips,
   skipBreakpoints: ThreadActor.prototype.onSkipBreakpoints,
   pauseOnExceptions: ThreadActor.prototype.onPauseOnExceptions,
   dumpThread: ThreadActor.prototype.onDump,

@@ -21,7 +21,7 @@ class SearchOneOffs {
       <hbox class="search-panel-one-offs-header search-panel-header search-panel-current-input">
         <label class="searchbar-oneoffheader-search" value="&searchWithDesc.label;"/>
       </hbox>
-      <hbox class="search-panel-one-offs"/>
+      <hbox class="search-panel-one-offs" role="group"/>
       <vbox class="search-add-engines"/>
       <hbox class="search-one-offs-spacer"/>
       <button class="searchbar-engine-one-off-item search-setting-button-compact" tooltiptext="&changeSearchSettings.tooltip;"/>
@@ -172,7 +172,7 @@ class SearchOneOffs {
    * Width in pixels of the one-off buttons.
    */
   get buttonWidth() {
-    return this.compact ? 40 : 48;
+    return 48;
   }
 
   /**
@@ -299,6 +299,12 @@ class SearchOneOffs {
     }
     if (val) {
       val.setAttribute("selected", "true");
+      if (!val.engine) {
+        // If the button doesn't have an engine, then clear the popup's
+        // selection to indicate that pressing Return while the button is
+        // selected will do the button's command, not search.
+        this.selectedAutocompleteIndex = -1;
+      }
     }
     this._selectedButton = val;
 
@@ -313,12 +319,6 @@ class SearchOneOffs {
       }
     }
 
-    if (val && !val.engine) {
-      // If the button doesn't have an engine, then clear the popup's
-      // selection to indicate that pressing Return while the button is
-      // selected will do the button's command, not search.
-      this.selectedAutocompleteIndex = -1;
-    }
     let event = new CustomEvent("SelectedOneOffButtonChanged", {
       previousSelectedButton: previousButton,
     });
@@ -476,51 +476,45 @@ class SearchOneOffs {
       return;
     }
 
-    // this.buttonWidth is for the compact settings button.
-    let buttonsWidth = this.compact
-      ? this._textboxWidth - this.buttonWidth - this.header.clientWidth
-      : this.popup.clientWidth;
-
-    // There's one weird thing to guard against: when layout pixels
-    // aren't an integral multiple of device pixels, the last button
-    // of each row sometimes gets pushed to the next row, depending on the
-    // panel and button widths.
-    // This is likely because the clientWidth getter rounds the value, but
-    // the panel's border width is not an integer.
-    // As a workaround, decrement the width if the scale is not an integer.
-    let scale = window.windowUtils.screenPixelsPerCSSPixel;
-    if (Math.floor(scale) != scale) {
-      --buttonsWidth;
-    }
-
-    // If the header string is very long, then the searchbar buttons will
-    // overflow their container unless max-width is set.
     if (this.compact) {
       this.spacerCompact.setAttribute("flex", "1");
-    } else {
+    }
+
+    if (this.popup) {
+      let buttonsWidth = this.popup.clientWidth;
+
+      // There's one weird thing to guard against: when layout pixels
+      // aren't an integral multiple of device pixels, the last button
+      // of each row sometimes gets pushed to the next row, depending on the
+      // panel and button widths.
+      // This is likely because the clientWidth getter rounds the value, but
+      // the panel's border width is not an integer.
+      // As a workaround, decrement the width if the scale is not an integer.
+      let scale = window.windowUtils.screenPixelsPerCSSPixel;
+      if (Math.floor(scale) != scale) {
+        --buttonsWidth;
+      }
+
+      // If the header string is very long, then the searchbar buttons will
+      // overflow their container unless max-width is set.
       this.buttons.style.setProperty("max-width", `${buttonsWidth}px`);
+
+      // In very narrow windows, we should always have at least one button
+      // per row.
+      buttonsWidth = Math.max(buttonsWidth, this.buttonWidth);
+
+      let enginesPerRow = Math.floor(buttonsWidth / this.buttonWidth);
+      // There will be an empty area of:
+      //   buttonsWidth - enginesPerRow * this.buttonWidth  px
+      // at the end of each row.
+
+      // If the <div> with the list of search engines doesn't have
+      // a fixed height, the panel will be sized incorrectly, causing the bottom
+      // of the suggestion <tree> to be hidden.
+      let rowCount = Math.ceil(oneOffCount / enginesPerRow);
+      let height = rowCount * this.buttonHeight;
+      this.buttons.style.setProperty("height", `${height}px`);
     }
-
-    // 24: 12px left padding + 12px right padding.
-    if (this.compact) {
-      buttonsWidth -= 24;
-    }
-
-    // In very narrow windows, we should always have at least one button
-    // per row.
-    buttonsWidth = Math.max(buttonsWidth, this.buttonWidth);
-
-    let enginesPerRow = Math.floor(buttonsWidth / this.buttonWidth);
-    // There will be an empty area of:
-    //   buttonsWidth - enginesPerRow * this.buttonWidth  px
-    // at the end of each row.
-
-    // If the <div> with the list of search engines doesn't have
-    // a fixed height, the panel will be sized incorrectly, causing the bottom
-    // of the suggestion <tree> to be hidden.
-    let rowCount = Math.ceil(oneOffCount / enginesPerRow);
-    let height = rowCount * this.buttonHeight;
-    this.buttons.style.setProperty("height", `${height}px`);
     // Ensure we can refer to the settings buttons by ID:
     let origin = this.telemetryOrigin;
     this.settingsButton.id = origin + "-anon-search-settings";
@@ -930,16 +924,18 @@ class SearchOneOffs {
       }
       if (this.selectedAutocompleteIndex == numListItems - 1) {
         // Moving down from the last item in the list to the buttons.
+        if (!allowEmptySelection) {
+          this.selectedAutocompleteIndex = -1;
+          if (this.textbox && typeof textboxUserValue == "string") {
+            this.textbox.value = textboxUserValue;
+          }
+        }
         this.selectedButtonIndex = 0;
         if (allowEmptySelection) {
           // Let the autocomplete controller remove selection in the list
           // and revert the typed text in the textbox.
           return false;
         }
-        if (this.textbox && typeof textboxUserValue == "string") {
-          this.textbox.value = textboxUserValue;
-        }
-        this.selectedAutocompleteIndex = -1;
         return true;
       }
       if (this.selectedButton) {
