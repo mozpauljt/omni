@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.addEventListenerBreakpoints = addEventListenerBreakpoints;
 exports.removeEventListenerBreakpoints = removeEventListenerBreakpoints;
+exports.toggleEventLogging = toggleEventLogging;
 exports.addEventListenerExpanded = addEventListenerExpanded;
 exports.removeEventListenerExpanded = removeEventListenerExpanded;
 exports.getEventListenerBreakpointTypes = getEventListenerBreakpointTypes;
@@ -52,6 +53,21 @@ function removeEventListenerBreakpoints(eventsToRemove) {
     const activeListenerBreakpoints = await (0, _selectors.getActiveEventListeners)(getState());
     const newEvents = (0, _lodash.remove)(activeListenerBreakpoints, event => !eventsToRemove.includes(event));
     await updateBreakpoints(dispatch, client, newEvents);
+  };
+}
+
+function toggleEventLogging() {
+  return async ({
+    dispatch,
+    getState,
+    client
+  }) => {
+    const logEventBreakpoints = !(0, _selectors.shouldLogEventBreakpoints)(getState());
+    await client.toggleEventLogging(logEventBreakpoints);
+    dispatch({
+      type: "TOGGLE_EVENT_LISTENERS",
+      logEventBreakpoints
+    });
   };
 }
 

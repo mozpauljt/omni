@@ -24,9 +24,9 @@ const PROTECTIONS_PANEL_INFOMSG_PREF =
 
 const TOOLBAR_BUTTON_ID = "whats-new-menu-button";
 const APPMENU_BUTTON_ID = "appMenu-whatsnew-button";
-const PANEL_HEADER_SELECTOR = "#PanelUI-whatsNew-title > label";
 
 const BUTTON_STRING_ID = "cfr-whatsnew-button";
+const WHATS_NEW_PANEL_SELECTOR = "PanelUI-whatsNew-message-container";
 
 class _ToolbarPanelHub {
   constructor() {
@@ -154,8 +154,10 @@ class _ToolbarPanelHub {
   }
 
   // Render what's new messages into the panel.
-  async renderMessages(win, doc, containerId) {
-    const messages = (await this.messages).sort(this._sortWhatsNewMessages);
+  async renderMessages(win, doc, containerId, options = {}) {
+    const messages =
+      (options.force && options.messages) ||
+      (await this.messages).sort(this._sortWhatsNewMessages);
     const container = doc.getElementById(containerId);
 
     if (messages && !container.querySelector(".whatsNew-message")) {
@@ -190,23 +192,43 @@ class _ToolbarPanelHub {
     });
   }
 
+  removeMessages(win, containerId) {
+    const doc = win.document;
+    const messageNodes = doc
+      .getElementById(containerId)
+      .querySelectorAll(".whatsNew-message");
+    for (const messageNode of messageNodes) {
+      messageNode.remove();
+    }
+  }
+
   /**
-   * Attach click event listener defined in message payload
+   * Dispatch the action defined in the message and user telemetry event.
+   */
+  _dispatchUserAction(win, message) {
+    this._handleUserAction({
+      target: win,
+      data: {
+        type: message.content.cta_type,
+        data: {
+          args: message.content.cta_url,
+          where: "tabshifted",
+        },
+      },
+    });
+
+    this.sendUserEventTelemetry(win, "CLICK", message);
+  }
+
+  /**
+   * Attach event listener to dispatch message defined action.
    */
   _attachClickListener(win, element, message) {
-    element.addEventListener("click", () => {
-      this._handleUserAction({
-        target: win,
-        data: {
-          type: message.content.cta_type,
-          data: {
-            args: message.content.cta_url,
-            where: "tabshifted",
-          },
-        },
-      });
-
-      this.sendUserEventTelemetry(win, "CLICK", message);
+    // Add event listener for `mouseup` not to overlap with the
+    // `mousedown` & `click` events dispatched from PanelMultiView.jsm
+    // https://searchfox.org/mozilla-central/rev/7531325c8660cfa61bf71725f83501028178cbb9/browser/components/customizableui/PanelMultiView.jsm#1830-1837
+    element.addEventListener("mouseup", () => {
+      this._dispatchUserAction(win, message);
     });
   }
 
@@ -233,8 +255,7 @@ class _ToolbarPanelHub {
     }
 
     const wrapperEl = this._createElement(doc, "button");
-    // istanbul ignore next
-    wrapperEl.doCommand = () => {};
+    wrapperEl.doCommand = () => this._dispatchUserAction(win, message);
     wrapperEl.classList.add("whatsNew-message-body");
     messageEl.appendChild(wrapperEl);
 
@@ -250,12 +271,12 @@ class _ToolbarPanelHub {
     wrapperEl.appendChild(this._createMessageContent(win, doc, content));
 
     if (content.link_text) {
-      wrapperEl.appendChild(
-        this._createElement(doc, "a", {
-          classList: "text-link",
-          content: content.link_text,
-        })
-      );
+      const anchorEl = this._createElement(doc, "a", {
+        classList: "text-link",
+        content: content.link_text,
+      });
+      anchorEl.doCommand = () => this._dispatchUserAction(win, message);
+      wrapperEl.appendChild(anchorEl);
     }
 
     // Attach event listener on entire message container
@@ -375,7 +396,7 @@ class _ToolbarPanelHub {
   // If `string_id` is present it means we are relying on fluent for translations.
   // Otherwise, we have a vanilla string.
   _setString(doc, el, stringObj) {
-    if (stringObj.string_id) {
+    if (stringObj && stringObj.string_id) {
       doc.l10n.setAttributes(
         el,
         stringObj.string_id,
@@ -390,7 +411,7 @@ class _ToolbarPanelHub {
   // If `string_id` is present it means we are relying on fluent for translations.
   // Otherwise, we have a vanilla string.
   _setTextAttribute(doc, el, attr, stringObj) {
-    if (stringObj.string_id) {
+    if (stringObj && stringObj.string_id) {
       doc.l10n.setAttributes(el, stringObj.string_id);
     } else {
       el.setAttribute(attr, stringObj);
@@ -414,13 +435,6 @@ class _ToolbarPanelHub {
     const document = win.browser.ownerDocument;
     this.maybeInsertFTL(win);
     this._showElement(document, TOOLBAR_BUTTON_ID, BUTTON_STRING_ID);
-    // The toolbar dropdown panel uses this extra header element that is hidden
-    // in the appmenu subview version of the panel. We only need to set it
-    // when showing the toolbar button.
-    document.l10n.setAttributes(
-      document.querySelector(PANEL_HEADER_SELECTOR),
-      "cfr-whatsnew-panel-header"
-    );
   }
 
   _hideToolbarButton(win) {
@@ -519,6 +533,23 @@ class _ToolbarPanelHub {
       {
         once: true,
       }
+    );
+  }
+
+  /**
+   * @param {object} browser MessageChannel target argument as a response to a user action
+   * @param {object} message Message selected from devtools page
+   */
+  forceShowMessage(browser, message) {
+    const win = browser.browser.ownerGlobal;
+    const doc = browser.browser.ownerDocument;
+    this.removeMessages(win, WHATS_NEW_PANEL_SELECTOR);
+    this.renderMessages(win, doc, WHATS_NEW_PANEL_SELECTOR, {
+      force: true,
+      messages: [message],
+    });
+    win.PanelUI.panel.addEventListener("popuphidden", event =>
+      this.removeMessages(event.target.ownerGlobal, WHATS_NEW_PANEL_SELECTOR)
     );
   }
 }

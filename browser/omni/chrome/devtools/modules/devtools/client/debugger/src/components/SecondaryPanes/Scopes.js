@@ -7,11 +7,14 @@ exports.default = void 0;
 
 var _react = _interopRequireWildcard(require("devtools/client/shared/vendor/react"));
 
+var _devtoolsContextmenu = require("devtools/client/debugger/dist/vendors").vendored["devtools-contextmenu"];
+
 loader.lazyRequireGetter(this, "_connect", "devtools/client/debugger/src/utils/connect");
 
 var _actions = _interopRequireDefault(require("../../actions/index"));
 
 loader.lazyRequireGetter(this, "_firefox", "devtools/client/debugger/src/client/firefox");
+loader.lazyRequireGetter(this, "_prefs", "devtools/client/debugger/src/utils/prefs");
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
 loader.lazyRequireGetter(this, "_scopes", "devtools/client/debugger/src/utils/pause/scopes/index");
 loader.lazyRequireGetter(this, "_utils", "devtools/client/debugger/src/utils/pause/scopes/utils");
@@ -40,6 +43,54 @@ class Scopes extends _react.PureComponent {
 
     _defineProperty(this, "onToggleMapScopes", () => {
       this.props.toggleMapScopes();
+    });
+
+    _defineProperty(this, "onContextMenu", (event, item) => {
+      const {
+        addWatchpoint,
+        removeWatchpoint
+      } = this.props;
+
+      if (!_prefs.features.watchpoints || !item.parent || !item.parent.contents || !item.contents.configurable) {
+        return;
+      }
+
+      if (!item.contents || item.contents.watchpoint) {
+        const removeWatchpointLabel = L10N.getStr("watchpoints.removeWatchpoint");
+        const removeWatchpointItem = {
+          id: "node-menu-remove-watchpoint",
+          label: removeWatchpointLabel,
+          disabled: false,
+          click: () => removeWatchpoint(item)
+        };
+        const menuItems = [removeWatchpointItem];
+        return (0, _devtoolsContextmenu.showMenu)(event, menuItems);
+      }
+
+      const addSetWatchpointLabel = L10N.getStr("watchpoints.setWatchpoint");
+      const addGetWatchpointLabel = L10N.getStr("watchpoints.getWatchpoint");
+      const watchpointsSubmenuLabel = L10N.getStr("watchpoints.submenu");
+      const addSetWatchpointItem = {
+        id: "node-menu-add-set-watchpoint",
+        label: addSetWatchpointLabel,
+        disabled: false,
+        click: () => addWatchpoint(item, "set")
+      };
+      const addGetWatchpointItem = {
+        id: "node-menu-add-get-watchpoint",
+        label: addGetWatchpointLabel,
+        disabled: false,
+        click: () => addWatchpoint(item, "get")
+      };
+      const watchpointsSubmenuItem = {
+        id: "node-menu-watchpoints",
+        label: watchpointsSubmenuLabel,
+        disabled: false,
+        click: () => addWatchpoint(item, "set"),
+        submenu: [addSetWatchpointItem, addGetWatchpointItem]
+      };
+      const menuItems = [watchpointsSubmenuItem];
+      (0, _devtoolsContextmenu.showMenu)(event, menuItems);
     });
 
     this.state = {
@@ -107,6 +158,7 @@ class Scopes extends _react.PureComponent {
         onInspectIconClick: grip => openElementInInspector(grip),
         onDOMNodeMouseOver: grip => highlightDomElement(grip),
         onDOMNodeMouseOut: grip => unHighlightDomElement(grip),
+        onContextMenu: this.onContextMenu,
         setExpanded: (path, expand) => setExpandedScope(cx, path, expand),
         initiallyExpanded: initiallyExpanded
       }));
@@ -173,7 +225,9 @@ var _default = (0, _connect.connect)(mapStateToProps, {
   highlightDomElement: _actions.default.highlightDomElement,
   unHighlightDomElement: _actions.default.unHighlightDomElement,
   toggleMapScopes: _actions.default.toggleMapScopes,
-  setExpandedScope: _actions.default.setExpandedScope
+  setExpandedScope: _actions.default.setExpandedScope,
+  addWatchpoint: _actions.default.addWatchpoint,
+  removeWatchpoint: _actions.default.removeWatchpoint
 })(Scopes);
 
 exports.default = _default;

@@ -99,14 +99,36 @@ class Editor extends _react.PureComponent {
     _defineProperty(this, "onToggleConditionalPanel", (key, e) => {
       e.stopPropagation();
       e.preventDefault();
+      const {
+        conditionalPanelLocation,
+        closeConditionalPanel,
+        openConditionalPanel,
+        selectedSource
+      } = this.props;
       const line = this.getCurrentLine();
+      const {
+        codeMirror
+      } = this.state.editor; // add one to column for correct position in editor.
+
+      const column = (0, _editor2.getCursorColumn)(codeMirror) + 1;
+
+      if (conditionalPanelLocation) {
+        return closeConditionalPanel();
+      }
+
+      if (!selectedSource) {
+        return;
+      }
 
       if (typeof line !== "number") {
         return;
       }
 
-      const isLog = key === L10N.getStr("toggleCondPanel.logPoint.key");
-      this.toggleConditionalPanel(line, isLog);
+      return openConditionalPanel({
+        line,
+        column,
+        sourceId: selectedSource.id
+      }, false);
     });
 
     _defineProperty(this, "onEditorScroll", (0, _lodash.debounce)(this.props.updateViewport, 75));
@@ -175,29 +197,6 @@ class Editor extends _react.PureComponent {
 
     _defineProperty(this, "onGutterContextMenu", event => {
       return this.openMenu(event);
-    });
-
-    _defineProperty(this, "toggleConditionalPanel", (line, log = false) => {
-      const {
-        conditionalPanelLocation,
-        closeConditionalPanel,
-        openConditionalPanel,
-        selectedSource
-      } = this.props;
-
-      if (conditionalPanelLocation) {
-        return closeConditionalPanel();
-      }
-
-      if (!selectedSource) {
-        return;
-      }
-
-      return openConditionalPanel({
-        line: line,
-        sourceId: selectedSource.id,
-        sourceUrl: selectedSource.url
-      }, log);
     });
 
     this.state = {

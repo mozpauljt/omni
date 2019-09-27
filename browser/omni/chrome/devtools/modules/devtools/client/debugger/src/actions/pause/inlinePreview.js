@@ -94,12 +94,7 @@ function generateInlinePreview(cx, frame) {
 
     Object.keys(previews).forEach(line => {
       previews[line] = (0, _lodash.sortBy)(previews[line], ["column"]);
-    }); // Bail if there are no previews to display
-
-    if (Object.keys(previews).length == 0) {
-      return;
-    }
-
+    });
     return dispatch({
       type: "ADD_INLINE_PREVIEW",
       thread,

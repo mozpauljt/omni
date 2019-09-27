@@ -20,13 +20,24 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 class InlinePreviews extends _react.Component {
+  shouldComponentUpdate(nextProps) {
+    const {
+      previews
+    } = nextProps;
+
+    if (!previews) {
+      return false;
+    }
+
+    return true;
+  }
+
   render() {
     const {
       editor,
       selectedFrame,
       selectedSource,
-      previews,
-      columnBreakpoints
+      previews
     } = this.props; // Render only if currently open file is the one where debugger is paused
 
     if (!selectedFrame || selectedFrame.location.sourceId !== selectedSource.id || !previews) {
@@ -37,13 +48,11 @@ class InlinePreviews extends _react.Component {
     editor.codeMirror.operation(() => {
       inlinePreviewRows = Object.keys(previews).map(line => {
         const lineNum = parseInt(line, 10);
-        const numColumnBreakpoints = columnBreakpoints.filter(bp => bp.location.line === lineNum + 1).length;
         return _react.default.createElement(_InlinePreviewRow.default, {
           editor: editor,
           key: line,
           line: lineNum,
-          previews: previews[line],
-          numColumnBreakpoints: numColumnBreakpoints
+          previews: previews[line]
         });
       });
     });
@@ -58,8 +67,7 @@ const mapStateToProps = state => {
   if (!selectedFrame) return {};
   return {
     selectedFrame,
-    previews: (0, _selectors.getInlinePreviews)(state, thread, selectedFrame.id),
-    columnBreakpoints: (0, _selectors.visibleColumnBreakpoints)(state)
+    previews: (0, _selectors.getInlinePreviews)(state, thread, selectedFrame.id)
   };
 };
 

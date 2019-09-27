@@ -176,6 +176,7 @@ class Toolbar extends Component {
     });
 
     this.shortcuts.on(SEARCH_KEY_SHORTCUT, event => {
+      event.preventDefault();
       this.props.toggleSearchPanel();
     });
   }
@@ -289,8 +290,13 @@ class Toolbar extends Component {
   renderSearchButton(toggleSearchPanel) {
     const { searchPanelOpen } = this.props;
 
-    // The search feature is available behind a pref.
-    if (!Services.prefs.getBoolPref("devtools.netmonitor.features.search")) {
+    // The search and request blocking features are available behind a pref.
+    if (
+      !Services.prefs.getBoolPref("devtools.netmonitor.features.search") &&
+      !Services.prefs.getBoolPref(
+        "devtools.netmonitor.features.requestBlocking"
+      )
+    ) {
       return null;
     }
 

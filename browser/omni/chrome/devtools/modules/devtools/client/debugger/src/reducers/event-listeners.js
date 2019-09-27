@@ -7,7 +7,9 @@ exports.initialEventListenerState = initialEventListenerState;
 exports.getActiveEventListeners = getActiveEventListeners;
 exports.getEventListenerBreakpointTypes = getEventListenerBreakpointTypes;
 exports.getEventListenerExpanded = getEventListenerExpanded;
+exports.shouldLogEventBreakpoints = shouldLogEventBreakpoints;
 exports.default = void 0;
+loader.lazyRequireGetter(this, "_prefs", "devtools/client/debugger/src/utils/prefs");
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,7 +18,8 @@ function initialEventListenerState() {
   return {
     active: [],
     categories: [],
-    expanded: []
+    expanded: [],
+    logEventBreakpoints: _prefs.prefs.logEventBreakpoints
   };
 }
 
@@ -37,6 +40,17 @@ function update(state = initialEventListenerState(), action) {
         expanded: action.expanded
       };
 
+    case "TOGGLE_EVENT_LISTENERS":
+      {
+        const {
+          logEventBreakpoints
+        } = action;
+        _prefs.prefs.logEventBreakpoints = logEventBreakpoints;
+        return { ...state,
+          logEventBreakpoints
+        };
+      }
+
     default:
       return state;
   }
@@ -52,6 +66,10 @@ function getEventListenerBreakpointTypes(state) {
 
 function getEventListenerExpanded(state) {
   return state.eventListenerBreakpoints.expanded;
+}
+
+function shouldLogEventBreakpoints(state) {
+  return state.eventListenerBreakpoints.logEventBreakpoints;
 }
 
 var _default = update;

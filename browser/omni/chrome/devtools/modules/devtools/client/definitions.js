@@ -294,8 +294,8 @@ function switchPerformancePanel() {
       // the perf actor yet. Also this function is not async, so we can't initialize
       // the actor yet.
       // We don't display the new performance panel for remote context in the
-      // toolbox, because this has an overhead. Instead we should use WebIDE (or
-      // the coming about:debugging).
+      // toolbox, because this has an overhead. Instead we should use
+      // about:debugging.
       return target.isLocalTab;
     };
   } else {
@@ -556,20 +556,14 @@ exports.ToolboxButtons = [
   {
     id: "command-button-replay",
     description: l10n("toolbox.buttons.replay"),
-    isTargetSupported: target =>
-      Services.prefs.getBoolPref("devtools.recordreplay.mvp.enabled") &&
-      !target.canRewind &&
-      target.isLocalTab,
+    isTargetSupported: target => !target.canRewind && target.isLocalTab,
     onClick: () => reloadAndRecordTab(),
     isChecked: () => false,
   },
   {
     id: "command-button-stop-replay",
     description: l10n("toolbox.buttons.stopReplay"),
-    isTargetSupported: target =>
-      Services.prefs.getBoolPref("devtools.recordreplay.mvp.enabled") &&
-      target.canRewind &&
-      target.isLocalTab,
+    isTargetSupported: target => target.canRewind && target.isLocalTab,
     onClick: () => reloadAndStopRecordingTab(),
     isChecked: () => true,
   },

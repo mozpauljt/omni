@@ -905,6 +905,7 @@ var Scratchpad = {
    *         The promise that indicates when writing the comment completes.
    */
   writeAsErrorComment(error) {
+    // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       const exception = error.exception;
       if (VariablesView.isPrimitive({ value: exception })) {
@@ -933,7 +934,12 @@ var Scratchpad = {
       } else {
         // If there is no preview information, we need to ask the server for more.
         const objectClient = new ObjectClient(this.debuggerClient, exception);
-        const response = await objectClient.getPrototypeAndProperties();
+        let response;
+        try {
+          response = await objectClient.getPrototypeAndProperties();
+        } catch (ex) {
+          reject(ex);
+        }
         if (response.error) {
           reject(response);
           return;
@@ -956,7 +962,12 @@ var Scratchpad = {
         if (typeof error.message == "string") {
           resolve(error.message + stack);
         } else {
-          const response = await objectClient.getDisplayString();
+          let response;
+          try {
+            response = await objectClient.getDisplayString();
+          } catch (ex) {
+            reject(ex);
+          }
           if (response.error) {
             reject(response);
           } else if (typeof response.displayString == "string") {
@@ -1747,14 +1758,21 @@ var Scratchpad = {
 
         // Display the deprecation warning for Scratchpad.
         const deprecationWarning = document.createElement("a");
+        deprecationWarning.append(
+          this.strings.GetStringFromName("scratchpad.deprecated.label")
+        );
         deprecationWarning.setAttribute(
           "href",
           "https://developer.mozilla.org/docs/Tools/Deprecated_tools#Scratchpad"
         );
-        deprecationWarning.setAttribute("target", "_blank");
-        deprecationWarning.append(
-          this.strings.GetStringFromName("scratchpad.deprecated.label")
-        );
+        // We can't link to a content page from Chrome (See Bug 1553804), so we're
+        // handling the link opening with openDocLink.
+        deprecationWarning.addEventListener("click", e => {
+          e.preventDefault();
+          openDocLink(e.target.getAttribute("href"), {
+            relatedToCurrent: true,
+          });
+        });
 
         const deprecationFragment = document.createDocumentFragment();
         deprecationFragment.append(deprecationWarning);
@@ -2174,6 +2192,7 @@ ScratchpadTab.prototype = {
       return this._connector;
     }
 
+    // eslint-disable-next-line no-async-promise-executor
     this._connector = new Promise(async (resolve, reject) => {
       const connectTimer = setTimeout(() => {
         reject({

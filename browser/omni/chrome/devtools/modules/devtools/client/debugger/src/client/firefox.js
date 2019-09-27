@@ -64,31 +64,24 @@ async function onConnect(connection, actions) {
     pauseWorkersUntilAttach: true,
     wasmBinarySource: supportsWasm,
     skipBreakpoints: _prefs.prefs.skipPausing,
-    logEventBreakpoints: _prefs.features.logEventBreakpoints
+    logEventBreakpoints: _prefs.prefs.logEventBreakpoints
   }); // Retrieve possible event listener breakpoints
 
   actions.getEventListenerBreakpointTypes().catch(e => console.error(e)); // Initialize the event breakpoints on the thread up front so that
   // they are active once attached.
 
-  actions.addEventListenerBreakpoints([]).catch(e => console.error(e)); // In Firefox, we need to initially request all of the sources. This
+  actions.addEventListenerBreakpoints([]).catch(e => console.error(e));
+  const traits = tabTarget.traits;
+  await actions.connect(tabTarget.url, threadFront.actor, traits && traits.canRewind, tabTarget.isWebExtension); // Fetch the sources for all the targets
+  //
+  // In Firefox, we need to initially request all of the sources. This
   // usually fires off individual `newSource` notifications as the
   // debugger finds them, but there may be existing sources already in
   // the debugger (if it's paused already, or if loading the page from
   // bfcache) so explicity fire `newSource` events for all returned
   // sources.
 
-  const traits = tabTarget.traits;
-  await actions.connect(tabTarget.url, threadFront.actor, traits && traits.canRewind, tabTarget.isWebExtension);
-
-  const fetched = _commands.clientCommands.fetchSources().then(sources => actions.newGeneratedSources(sources)); // If the threadFront is already paused, make sure to show a
-  // paused state.
-
-
-  const pausedPacket = threadFront.getLastPausePacket();
-
-  if (pausedPacket) {
-    _events.clientEvents.paused(threadFront, pausedPacket);
-  }
-
-  return fetched;
+  const sources = await _commands.clientCommands.fetchSources();
+  await actions.newGeneratedSources(sources);
+  await _commands.clientCommands.checkIfAlreadyPaused();
 }

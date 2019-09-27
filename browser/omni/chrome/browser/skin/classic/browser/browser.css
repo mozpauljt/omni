@@ -343,7 +343,7 @@ menupopup::part(drop-indicator) {
 }
 
 #library-animatable-box[animate] {
-  display: -moz-box;
+  display: block;
 }
 
 /* Back / Forward context menu */
@@ -1269,6 +1269,7 @@ toolbar[brighttext] {
 }
 
 .toolbarbutton-animatable-box {
+  display: block;
   position: absolute;
   overflow: hidden;
   z-index: 2;
@@ -1308,7 +1309,7 @@ toolbar[brighttext] {
   display: none;
 }
 #nav-bar-customization-target > #stop-reload-button > :-moz-any(#reload-button, #stop-button) > .toolbarbutton-animatable-box {
-  display: -moz-box;
+  display: block;
 }
 
 #stop-reload-button[animate] > #reload-button > .toolbarbutton-icon,
@@ -1873,6 +1874,7 @@ toolbarbutton.bookmark-item {
 }
 
 #PanelUI-fxa-menu-sync-prefs-button,
+#PanelUI-fxa-menu-account-devices-button,
 #appMenu-preferences-button {
   list-style-image: url(chrome://browser/skin/settings.svg);
 }
@@ -2110,9 +2112,12 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
 
 .searchbar-textbox {
   -moz-appearance: none;
+  -moz-box-flex: 1;
   background: none;
   color: inherit;
-  margin: 0;
+  border: none;
+  font: inherit;
+  margin: 0 !important; /* override autocomplete.css */
 }
 
 #urlbar:hover,
@@ -2155,6 +2160,7 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
 }
 
 #urlbar[breakout] {
+  display: block;
   position: absolute;
   width: 100%;
   height: var(--urlbar-height);
@@ -2169,8 +2175,8 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
   transition-property: width, padding-inline;
 }
 
-:root[sessionrestored] #urlbar[breakout],
-:root[sessionrestored] #urlbar[breakout] > #urlbar-input-container {
+#urlbar[breakout][breakout-extend-animate],
+#urlbar[breakout][breakout-extend-animate] > #urlbar-input-container {
   transition-duration: 250ms;
   transition-timing-function: var(--animation-easing-function);
 }
@@ -2230,6 +2236,7 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
   color: inherit;
   border: none;
   padding: 0;
+  margin: 0;
 }
 
 #urlbar-container {
@@ -2515,6 +2522,7 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
 }
 
 #star-button-box[animationsenabled] > #star-button[starred][animate] + #star-button-animatable-box {
+  display: block;
   position: absolute;
   overflow: hidden;
   top: calc(50% - 16.5px); /* 16.5px is half the height of the sprite */
@@ -2584,6 +2592,7 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
 }
 
 #pocket-button-box[animate="true"] > #pocket-animatable-box {
+  display: block;
   position: absolute;
   overflow: hidden;
   /* .urlbar-icon has width 28px. Each frame is 20px wide. Set margin-inline-start
@@ -3090,7 +3099,8 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
 #identity-box[pageproxystate="valid"].weakCipher > #identity-icon,
 #identity-box[pageproxystate="valid"].mixedDisplayContent > #identity-icon,
 #identity-box[pageproxystate="valid"].mixedDisplayContentLoadedActiveBlocked > #identity-icon,
-#identity-box[pageproxystate="valid"].certUserOverridden > #identity-icon {
+#identity-box[pageproxystate="valid"].certUserOverridden > #identity-icon,
+#identity-box[pageproxystate="valid"].certErrorPage > #identity-icon {
   list-style-image: url(chrome://browser/skin/connection-mixed-passive-loaded.svg);
   fill: unset;
 }
@@ -3171,6 +3181,7 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
 }
 
 #tracking-protection-icon-box > #tracking-protection-icon-animatable-box {
+  display: block;
   position: absolute;
   overflow: hidden;
   width: 16px;
@@ -3185,16 +3196,6 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
   height: 16px;
   min-height: 16px;
   -moz-context-properties: fill, fill-opacity;
-}
-
-#tracking-protection-icon-box[hasException]::before {
-  background: url(chrome://browser/skin/badge-blue.svg);
-  content: "";
-  position: absolute;
-  bottom: 15px;
-  right: 0;
-  height: 14px;
-  width: 14px;
 }
 
 #tracking-protection-icon-box[hasException]:-moz-locale-dir(rtl)::before {
@@ -3353,14 +3354,6 @@ toolbarpaletteitem[place="palette"] > #bookmarks-menu-button,
 
 .autoplay-media-icon.blocked-permission-icon {
   list-style-image: url(chrome://browser/skin/notification-icons/autoplay-media-blocked.svg);
-}
-
-.image-icon {
-  list-style-image: url(chrome://browser/skin/notification-icons/images.svg);
-}
-
-.image-icon.blocked-permission-icon {
-  list-style-image: url(chrome://browser/skin/notification-icons/images-blocked.svg);
 }
 
 .storage-access-notification-content {
@@ -4008,6 +4001,11 @@ notification[value="translation"] menulist > .menulist-dropmarker {
   fill: GrayText;
 }
 
+#PopupAutoComplete > richlistbox > richlistitem[originaltype~="datalist-first"] {
+  border-top: 1px solid ThreeDShadow;
+}
+
+
 
 :root {
   --autocomplete-popup-background: var(--arrowpanel-background);
@@ -4049,7 +4047,7 @@ notification[value="translation"] menulist > .menulist-dropmarker {
   width: calc(100% - 2 * 8px);
 }
 
-.urlbarView.megabar:not([hidden]) {
+.urlbarView:not([hidden]) {
   display: block;
 }
 
@@ -4060,7 +4058,7 @@ notification[value="translation"] menulist > .menulist-dropmarker {
 
 .urlbarView:not(.megabar) {
   position: fixed;
-  z-index: 1;
+  z-index: 3;
   left: 0;
   right: 0;
   background: var(--autocomplete-popup-background);
@@ -4090,7 +4088,6 @@ notification[value="translation"] menulist > .menulist-dropmarker {
 #urlbar-contextual-tip-button {
   height: 2.3em;
   width: 9.15em;
-  font-size: inherit;
   border: none;
   border-radius: 2px;
   color: white;
@@ -4202,17 +4199,16 @@ notification[value="translation"] menulist > .menulist-dropmarker {
   -moz-context-properties: fill, fill-opacity;
 }
 
+.urlbarView-tip-help[selected] {
+  box-shadow: 0 0 0 1px #0a84ff inset, 0 0 0 1px #0a84ff, 0 0 0 4px rgba(10, 132, 255, 0.3);
+}
+
 .urlbarView-tip-help:hover {
   background-color: var(--in-content-button-background-hover);
 }
 
 .urlbarView-tip-help:hover:active {
   background-color: var(--in-content-button-background-active);
-}
-
-.urlbarView-tip-help:-moz-focusring,
-.urlbarView-tip-button:-moz-focusring {
-  box-shadow: 0 0 0 1px #0a84ff inset, 0 0 0 1px #0a84ff, 0 0 0 4px rgba(10, 132, 255, 0.3);
 }
 
 #urlbar-contextual-tip-icon {
@@ -4262,17 +4258,23 @@ notification[value="translation"] menulist > .menulist-dropmarker {
 /* The tip button is a Photon default button when unfocused and a
    primary button in all other states. */
 .urlbarView-tip-button {
-  min-height: 32px;
+  min-height: 16px;
   padding: 8px;
   border: none;
   border-radius: 2px;
   font-size: 0.93em;
   color: inherit;
   background-color: var(--in-content-button-background);
-  min-width: 10em;
+  min-width: 8.75em;
+  text-align: center;
   flex-shrink: 0;
 }
 
+.urlbarView-tip-button[selected] {
+  color: white;
+  background-color: var(--in-content-primary-button-background);
+  box-shadow: 0 0 0 1px #0a84ff inset, 0 0 0 1px #0a84ff, 0 0 0 4px rgba(10, 132, 255, 0.3);
+}
 .urlbarView-tip-button:hover {
   color: white;
   background-color: var(--in-content-primary-button-background-hover);
@@ -4281,11 +4283,6 @@ notification[value="translation"] menulist > .menulist-dropmarker {
 .urlbarView-tip-button:hover:active {
   color: white;
   background-color: var(--in-content-primary-button-background-active);
-}
-
-.urlbarView-tip-button:-moz-focusring {
- color: white:
- background-color: var(--in-content-primary-button-background);
 }
 
 .urlbarView-tip-button-spacer {
@@ -4376,13 +4373,15 @@ notification[value="translation"] menulist > .menulist-dropmarker {
 }
 
 /* Search one-offs. */
-#urlbar .search-one-offs {
-  -moz-box-orient: horizontal;
+#urlbar .search-one-offs:not([hidden]) {
+  display: flex;
+  align-items: start;
   padding-block: 16px;
 }
 
 .urlbarView.megabar .search-one-offs {
-  padding-inline: calc(55px - 8px);
+  padding-inline-start: 55px;
+  padding-inline-end: calc(55px - 8px);
 }
 
 #urlbar:not(.megabar) .search-one-offs {
@@ -4391,20 +4390,32 @@ notification[value="translation"] menulist > .menulist-dropmarker {
 }
 
 #urlbar .search-panel-one-offs {
-  padding-inline: 12px;
+  padding-inline-start: 12px;
+  /* Make sure we can fit at least three buttons horizontally. */
+  min-width: 120px;
+  box-sizing: content-box;
 }
 
 #urlbar .search-panel-header {
   padding: 0;
+  min-height: 32px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+#urlbar .search-panel-one-offs-header-label {
+  margin: 0;
 }
 
 #urlbar .searchbar-engine-one-off-item {
   min-width: 32px;
   height: 32px;
   margin: 0 4px;
+}
+
+#urlbar .search-one-offs-spacer {
+  flex-grow: 1;
 }
 
 /* search bar popup */
@@ -4420,14 +4431,9 @@ notification[value="translation"] menulist > .menulist-dropmarker {
   color: var(--autocomplete-popup-highlight-color);
 }
 
-
 :root {
   --urlbar-popup-url-color: -moz-nativehyperlinktext;
   --urlbar-popup-action-color: -moz-nativehyperlinktext;
-}
-
-#PopupAutoComplete > richlistbox > richlistitem[originaltype~="datalist-first"] {
-  border-top: 1px solid ThreeDShadow;
 }
 
 .urlbarView {
@@ -6340,6 +6346,7 @@ toolbarpaletteitem[place=toolbar] > toolbarspring {
 #wp-player2,
 #wp-ball,
 #wp-score {
+  display: block;
   position: fixed;
 }
 
@@ -6673,7 +6680,7 @@ toolbarpaletteitem[place=toolbar] > toolbarspring {
   :root[tabsintitlebar] > #navigator-toolbox > #titlebar {
     -moz-appearance: -moz-window-titlebar-maximized;
   }
-  :root[tabsintitlebar][sizemode="normal"] > #navigator-toolbox > #titlebar {
+  :root[tabsintitlebar][sizemode="normal"]:not([gtktiledwindow="true"]) > #navigator-toolbox > #titlebar {
     -moz-appearance: -moz-window-titlebar;
   }
   :root[tabsintitlebar]:not([inDOMFullscreen]) > #navigator-toolbox > #titlebar:-moz-lwtheme {

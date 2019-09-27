@@ -16,52 +16,52 @@ loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selec
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-function isDocumentReady(source, frame) {
-  return frame && source && source.content && (0, _editor.hasDocument)(frame.location.sourceId);
+function isDocumentReady(source, location) {
+  return location && source && source.content && (0, _editor.hasDocument)(location.sourceId);
 }
 
 class DebugLine extends _react.PureComponent {
   componentDidMount() {
     const {
       why,
-      frame,
+      location,
       source
     } = this.props;
-    this.setDebugLine(why, frame, source);
+    this.setDebugLine(why, location, source);
   }
 
   componentWillUnmount() {
     const {
       why,
-      frame,
+      location,
       source
     } = this.props;
-    this.clearDebugLine(why, frame, source);
+    this.clearDebugLine(why, location, source);
   }
 
   componentDidUpdate(prevProps) {
     const {
       why,
-      frame,
+      location,
       source
     } = this.props;
     (0, _editor.startOperation)();
-    this.clearDebugLine(prevProps.why, prevProps.frame, prevProps.source);
-    this.setDebugLine(why, frame, source);
+    this.clearDebugLine(prevProps.why, prevProps.location, prevProps.source);
+    this.setDebugLine(why, location, source);
     (0, _editor.endOperation)();
   }
 
-  setDebugLine(why, frame, source) {
-    if (!isDocumentReady(source, frame)) {
+  setDebugLine(why, location, source) {
+    if (!isDocumentReady(source, location)) {
       return;
     }
 
-    const sourceId = frame.location.sourceId;
+    const sourceId = location.sourceId;
     const doc = (0, _editor.getDocument)(sourceId);
     let {
       line,
       column
-    } = (0, _editor.toEditorPosition)(frame.location);
+    } = (0, _editor.toEditorPosition)(location);
     let {
       markTextClass,
       lineClass
@@ -88,8 +88,8 @@ class DebugLine extends _react.PureComponent {
     });
   }
 
-  clearDebugLine(why, frame, source) {
-    if (!isDocumentReady(source, frame)) {
+  clearDebugLine(why, location, source) {
+    if (!isDocumentReady(source, location)) {
       return;
     }
 
@@ -97,10 +97,10 @@ class DebugLine extends _react.PureComponent {
       this.debugExpression.clear();
     }
 
-    const sourceId = frame.location.sourceId;
+    const sourceId = location.sourceId;
     const {
       line
-    } = (0, _editor.toEditorPosition)(frame.location);
+    } = (0, _editor.toEditorPosition)(location);
     const doc = (0, _editor.getDocument)(sourceId);
     const {
       lineClass
@@ -109,7 +109,7 @@ class DebugLine extends _react.PureComponent {
   }
 
   getTextClasses(why) {
-    if ((0, _pause.isException)(why)) {
+    if (why && (0, _pause.isException)(why)) {
       return {
         markTextClass: "debug-expression-error",
         lineClass: "new-debug-line-error"
@@ -132,9 +132,12 @@ exports.DebugLine = DebugLine;
 
 const mapStateToProps = state => {
   const frame = (0, _selectors.getVisibleSelectedFrame)(state);
+  const previewLocation = (0, _selectors.getPausePreviewLocation)(state);
+  const location = previewLocation || frame && frame.location;
   return {
     frame,
-    source: frame && (0, _selectors.getSourceWithContent)(state, frame.location.sourceId),
+    location,
+    source: location && (0, _selectors.getSourceWithContent)(state, location.sourceId),
     why: (0, _selectors.getPauseReason)(state, (0, _selectors.getCurrentThread)(state))
   };
 };

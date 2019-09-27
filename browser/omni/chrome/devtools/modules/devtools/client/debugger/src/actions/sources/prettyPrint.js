@@ -64,7 +64,7 @@ function createPrettySource(cx, sourceId) {
     sourceMaps
   }) => {
     const source = (0, _selectors.getSourceFromId)(getState(), sourceId);
-    const url = (0, _source.getPrettySourceURL)(source.url);
+    const url = (0, _source.getPrettySourceURL)(source.url || source.id);
     const id = (0, _devtoolsSourceMap.generatedToOriginalId)(sourceId, url);
     const prettySource = {
       id,

@@ -142,7 +142,7 @@ pref("security.webauth.webauthn_enable_softtoken", false);
   pref("security.webauth.webauthn_enable_usbtoken", true);
 //@line 150 "$SRCDIR/modules/libpref/init/all.js"
 
-pref("security.ssl.errorReporting.enabled", true);
+pref("security.ssl.errorReporting.enabled", false);
 pref("security.ssl.errorReporting.url", "https://incoming.telemetry.mozilla.org/submit/sslreports/");
 pref("security.ssl.errorReporting.automatic", false);
 
@@ -195,10 +195,6 @@ pref("security.remote_settings.crlite_filters.signer", "onecrl.content-signature
 
 pref("general.useragent.compatMode.firefox", false);
 
-// This pref exists only for testing purposes. In order to disable all
-// overrides by default, don't initialize UserAgentOverrides.jsm.
-pref("general.useragent.site_specific_overrides", true);
-
 pref("general.config.obscure_value", 13); // for MCD .cfg files
 
 pref("general.warnOnAboutConfig", true);
@@ -221,10 +217,6 @@ pref("browser.cache.offline.insecure.enable",  false);
 // offline cache capacity in kilobytes
 pref("browser.cache.offline.capacity",         512000);
 
-// the user should be warned if offline app disk usage exceeds this amount
-// (in kilobytes)
-pref("offline-apps.quota.warn",        51200);
-
 // Don't show "Open with" option on download dialog if true.
 pref("browser.download.forbid_open_with", false);
 
@@ -246,9 +238,9 @@ pref("dom.indexedDB.logging.profiler-marks", false);
 pref("dom.fileHandle.enabled", true);
 
 // Whether or not selection events on text controls are enabled
-//@line 260 "$SRCDIR/modules/libpref/init/all.js"
+//@line 252 "$SRCDIR/modules/libpref/init/all.js"
   pref("dom.select_events.textcontrols.enabled", true);
-//@line 264 "$SRCDIR/modules/libpref/init/all.js"
+//@line 256 "$SRCDIR/modules/libpref/init/all.js"
 
 // The number of workers per domain allowed to run concurrently.
 // We're going for effectively infinite, while preventing abuse.
@@ -292,13 +284,13 @@ pref("dom.keyboardevent.keypress.hack.use_legacy_keycode_and_charcode.addl", "")
 // explanation for the detail.
 pref("dom.mouseevent.click.hack.use_legacy_non-primary_dispatch", "");
 
-//@line 308 "$SRCDIR/modules/libpref/init/all.js"
+//@line 300 "$SRCDIR/modules/libpref/init/all.js"
   // Until we're satisfied that it works nicely, we're restricting
   // BinAST to a few partner sites:
   // - A subset of Facebook
   // - A subset of Cloudflare
   pref("dom.script_loader.binast_encoding.domain.restrict.list", "*.facebook.com,static.xx.fbcdn.net,*.cloudflare.com,*.cloudflarestream.com,unpkg.com");
-//@line 314 "$SRCDIR/modules/libpref/init/all.js"
+//@line 306 "$SRCDIR/modules/libpref/init/all.js"
 
 // Fastback caching - if this pref is negative, then we calculate the number
 // of content viewers to cache based on the amount of available memory.
@@ -310,8 +302,6 @@ pref("ui.android.mouse_as_touch", 1);
 
 // Duration of timeout of incremental search in menus (ms).  0 means infinite.
 pref("ui.menu.incremental_search.timeout", 1000);
-// If true, all popups won't hide automatically on blur
-pref("ui.popup.disable_autohide", false);
 
 pref("browser.display.force_inline_alttext", false); // true = force ALT text for missing images to be layed out inline
 // 0 = no external leading,
@@ -381,7 +371,7 @@ pref("media.play-stand-alone", true);
 
 pref("media.hardware-video-decoding.enabled", true);
 
-//@line 411 "$SRCDIR/modules/libpref/init/all.js"
+//@line 392 "$SRCDIR/modules/libpref/init/all.js"
 pref("media.gmp.decoder.aac", 0);
 pref("media.gmp.decoder.h264", 0);
 
@@ -394,9 +384,9 @@ pref("media.gmp.storage.version.expected", 1);
 
 // Filter what triggers user notifications.
 // See DecoderDoctorDocumentWatcher::ReportAnalysis for details.
-//@line 424 "$SRCDIR/modules/libpref/init/all.js"
+//@line 405 "$SRCDIR/modules/libpref/init/all.js"
   pref("media.decoder-doctor.notifications-allowed", "MediaWMFNeeded,MediaWidevineNoWMF,MediaCannotInitializePulseAudio,MediaCannotPlayNoDecoders,MediaUnsupportedLibavcodec,MediaDecodeError");
-//@line 428 "$SRCDIR/modules/libpref/init/all.js"
+//@line 409 "$SRCDIR/modules/libpref/init/all.js"
 pref("media.decoder-doctor.decode-errors-allowed", "");
 pref("media.decoder-doctor.decode-warnings-allowed", "");
 // Whether we report partial failures.
@@ -410,7 +400,7 @@ pref("media.videocontrols.picture-in-picture.video-toggle.flyout-enabled", false
 pref("media.videocontrols.picture-in-picture.video-toggle.flyout-wait-ms", 5000);
 pref("media.videocontrols.picture-in-picture.video-toggle.always-show", false);
 
-//@line 442 "$SRCDIR/modules/libpref/init/all.js"
+//@line 423 "$SRCDIR/modules/libpref/init/all.js"
   pref("media.navigator.video.enabled", true);
   pref("media.navigator.video.default_fps",30);
   pref("media.navigator.video.use_remb", true);
@@ -418,10 +408,10 @@ pref("media.videocontrols.picture-in-picture.video-toggle.always-show", false);
   pref("media.navigator.audio.use_fec", true);
   pref("media.navigator.video.red_ulpfec_enabled", false);
 
-//@line 450 "$SRCDIR/modules/libpref/init/all.js"
+//@line 431 "$SRCDIR/modules/libpref/init/all.js"
     pref("media.peerconnection.sdp.rust.enabled", true);
     pref("media.peerconnection.sdp.rust.compare", true);
-//@line 456 "$SRCDIR/modules/libpref/init/all.js"
+//@line 437 "$SRCDIR/modules/libpref/init/all.js"
 
   pref("media.webrtc.debug.trace_mask", 0);
   pref("media.webrtc.debug.multi_log", false);
@@ -440,10 +430,10 @@ pref("media.videocontrols.picture-in-picture.video-toggle.always-show", false);
   pref("media.peerconnection.video.vp9_preferred", false);
   pref("media.getusermedia.browser.enabled", false);
   pref("media.getusermedia.channels", 0);
-//@line 478 "$SRCDIR/modules/libpref/init/all.js"
+//@line 459 "$SRCDIR/modules/libpref/init/all.js"
     pref("media.getusermedia.camera.off_while_disabled.enabled", true);
     pref("media.getusermedia.microphone.off_while_disabled.enabled", true);
-//@line 481 "$SRCDIR/modules/libpref/init/all.js"
+//@line 462 "$SRCDIR/modules/libpref/init/all.js"
   pref("media.getusermedia.camera.off_while_disabled.delay_ms", 3000);
   pref("media.getusermedia.microphone.off_while_disabled.delay_ms", 3000);
   // Desktop is typically VGA capture or more; and qm_select will not drop resolution
@@ -478,10 +468,10 @@ pref("media.videocontrols.picture-in-picture.video-toggle.always-show", false);
 
   // These values (aec, agc, and noise) are from:
   // media/webrtc/trunk/webrtc/modules/audio_processing/include/audio_processing.h
-//@line 519 "$SRCDIR/modules/libpref/init/all.js"
+//@line 500 "$SRCDIR/modules/libpref/init/all.js"
     pref("media.getusermedia.aec_enabled", true);
     pref("media.getusermedia.noise_enabled", true);
-//@line 522 "$SRCDIR/modules/libpref/init/all.js"
+//@line 503 "$SRCDIR/modules/libpref/init/all.js"
   pref("media.getusermedia.use_aec_mobile", false);
   pref("media.getusermedia.aec", 1); // kModerateSuppression
   pref("media.getusermedia.aec_extended_filter", true);
@@ -490,11 +480,11 @@ pref("media.videocontrols.picture-in-picture.video-toggle.always-show", false);
   pref("media.getusermedia.agc", 1); // kAdaptiveDigital
   // full_duplex: enable cubeb full-duplex capture/playback
   pref("media.navigator.audio.full_duplex", true);
-//@line 531 "$SRCDIR/modules/libpref/init/all.js"
+//@line 512 "$SRCDIR/modules/libpref/init/all.js"
 
-//@line 533 "$SRCDIR/modules/libpref/init/all.js"
+//@line 514 "$SRCDIR/modules/libpref/init/all.js"
   pref("media.getusermedia.screensharing.enabled", true);
-//@line 535 "$SRCDIR/modules/libpref/init/all.js"
+//@line 516 "$SRCDIR/modules/libpref/init/all.js"
 
 pref("media.getusermedia.audiocapture.enabled", false);
 
@@ -534,12 +524,12 @@ pref("media.video-queue.send-to-compositor-size", 9999);
 pref("media.cubeb.logging_level", "");
 
 // Cubeb sandbox (remoting) control
-//@line 575 "$SRCDIR/modules/libpref/init/all.js"
+//@line 556 "$SRCDIR/modules/libpref/init/all.js"
   pref("media.cubeb.sandbox", true);
   pref("media.audioipc.pool_size", 1);
   // 64 * 4 kB stack per pool thread.
   pref("media.audioipc.stack_size", 262144);
-//@line 582 "$SRCDIR/modules/libpref/init/all.js"
+//@line 563 "$SRCDIR/modules/libpref/init/all.js"
 
 // GraphRunner (fixed MediaStreamGraph thread) control
 pref("media.audiograph.single_thread.enabled", false);
@@ -549,7 +539,7 @@ pref("media.audiograph.single_thread.enabled", false);
 pref("apz.overscroll.stop_velocity_threshold", "0.01");
 pref("apz.overscroll.stretch_factor", "0.35");
 
-//@line 600 "$SRCDIR/modules/libpref/init/all.js"
+//@line 581 "$SRCDIR/modules/libpref/init/all.js"
 
 pref("gfx.color_management.display_profile", "");
 
@@ -561,17 +551,17 @@ pref("gfx.downloadable_fonts.fallback_delay_short", 100);
 // the uncached load behavior across pages (useful for testing reflow problems)
 pref("gfx.downloadable_fonts.disable_cache", false);
 
-//@line 615 "$SRCDIR/modules/libpref/init/all.js"
+//@line 596 "$SRCDIR/modules/libpref/init/all.js"
 
 // Do we fire a notification about missing fonts, so the front-end can decide
 // whether to try and do something about it (e.g. download additional fonts)?
 pref("gfx.missing_fonts.notify", false);
 
 // prefs controlling the font (name/cmap) loader that runs shortly after startup
-//@line 625 "$SRCDIR/modules/libpref/init/all.js"
+//@line 606 "$SRCDIR/modules/libpref/init/all.js"
   pref("gfx.font_loader.delay", 8000);         // 8 secs after startup
   pref("gfx.font_loader.interval", 50);        // run every 50 ms
-//@line 628 "$SRCDIR/modules/libpref/init/all.js"
+//@line 609 "$SRCDIR/modules/libpref/init/all.js"
 
 // whether to always search all font cmaps during system font fallback
 pref("gfx.font_rendering.fallback.always_use_cmaps", false);
@@ -584,16 +574,16 @@ pref("gfx.font_rendering.wordcache.maxentries", 10000);
 
 pref("gfx.font_rendering.graphite.enabled", true);
 
-//@line 643 "$SRCDIR/modules/libpref/init/all.js"
+//@line 624 "$SRCDIR/modules/libpref/init/all.js"
 
-//@line 653 "$SRCDIR/modules/libpref/init/all.js"
+//@line 634 "$SRCDIR/modules/libpref/init/all.js"
   pref("gfx.canvas.azure.backends", "skia");
   pref("gfx.content.azure.backends", "skia");
-//@line 656 "$SRCDIR/modules/libpref/init/all.js"
+//@line 637 "$SRCDIR/modules/libpref/init/all.js"
 
-//@line 663 "$SRCDIR/modules/libpref/init/all.js"
+//@line 644 "$SRCDIR/modules/libpref/init/all.js"
 
-//@line 667 "$SRCDIR/modules/libpref/init/all.js"
+//@line 648 "$SRCDIR/modules/libpref/init/all.js"
 
 // WebRender debugging utilities.
 pref("gfx.webrender.debug.texture-cache", false);
@@ -615,12 +605,14 @@ pref("gfx.webrender.debug.slow-frame-indicator", false);
 pref("gfx.webrender.debug.picture-caching", false);
 pref("gfx.webrender.debug.primitives", false);
 pref("gfx.webrender.debug.small-screen", false);
+pref("gfx.webrender.debug.obscure-images", false);
+pref("gfx.webrender.debug.log-transactions", false);
 
 pref("accessibility.warn_on_browsewithcaret", true);
 
 pref("accessibility.browsewithcaret_shortcut.enabled", true);
 
-//@line 694 "$SRCDIR/modules/libpref/init/all.js"
+//@line 677 "$SRCDIR/modules/libpref/init/all.js"
   // Tab focus model bit field:
   // 1 focuses text controls, 2 focuses other form elements, 4 adds links.
   // Most users will want 1, 3, or 7.
@@ -628,12 +620,12 @@ pref("accessibility.browsewithcaret_shortcut.enabled", true);
   // unless accessibility.tabfocus is set by the user.
   pref("accessibility.tabfocus", 7);
   pref("accessibility.tabfocus_applies_to_xul", false);
-//@line 706 "$SRCDIR/modules/libpref/init/all.js"
+//@line 689 "$SRCDIR/modules/libpref/init/all.js"
 
 // We follow the "Click in the scrollbar to:" system preference on OS X and
 // "gtk-primary-button-warps-slider" property with GTK (since 2.24 / 3.6),
 // unless this preference is explicitly set.
-//@line 713 "$SRCDIR/modules/libpref/init/all.js"
+//@line 696 "$SRCDIR/modules/libpref/init/all.js"
 
 // We want the ability to forcibly disable platform a11y, because
 // some non-a11y-related components attempt to bring it up.  See bug
@@ -648,7 +640,7 @@ pref("accessibility.browsewithcaret_shortcut.enabled", true);
 // further checks.
 pref("accessibility.force_disabled", 0);
 
-//@line 739 "$SRCDIR/modules/libpref/init/all.js"
+//@line 722 "$SRCDIR/modules/libpref/init/all.js"
 
 pref("focusmanager.testmode", false);
 
@@ -674,9 +666,9 @@ pref("accessibility.typeaheadfind.startlinksonly", false);
 pref("accessibility.typeaheadfind.timeout", 4000);
 pref("accessibility.typeaheadfind.soundURL", "beep");
 pref("accessibility.typeaheadfind.enablesound", true);
-//@line 767 "$SRCDIR/modules/libpref/init/all.js"
+//@line 750 "$SRCDIR/modules/libpref/init/all.js"
   pref("accessibility.typeaheadfind.prefillwithselection", true);
-//@line 769 "$SRCDIR/modules/libpref/init/all.js"
+//@line 752 "$SRCDIR/modules/libpref/init/all.js"
 pref("accessibility.typeaheadfind.matchesCountLimit", 1000);
 pref("findbar.highlightAll", false);
 pref("findbar.entireword", false);
@@ -710,9 +702,9 @@ pref("toolkit.telemetry.debugSlowSql", false);
 // Whether to use the unified telemetry behavior, requires a restart.
 pref("toolkit.telemetry.unified", true);
 // AsyncShutdown delay before crashing in case of shutdown freeze
-//@line 803 "$SRCDIR/modules/libpref/init/all.js"
+//@line 786 "$SRCDIR/modules/libpref/init/all.js"
   pref("toolkit.asyncshutdown.crash_timeout", 60000); // 1 minute
-//@line 809 "$SRCDIR/modules/libpref/init/all.js"
+//@line 792 "$SRCDIR/modules/libpref/init/all.js"
 // Extra logging for AsyncShutdown barriers and phases
 pref("toolkit.asyncshutdown.log", false);
 
@@ -723,10 +715,10 @@ pref("toolkit.content-background-hang-monitor.disabled", false);
 // StaticPrefList.yaml. They are required because MOZILLA_OFFICIAL is false in
 // local full builds but true in artifact builds. Without these definitions
 // here, dumping is disabled in artifact builds (see Bug 1490412).
-//@line 820 "$SRCDIR/modules/libpref/init/all.js"
+//@line 803 "$SRCDIR/modules/libpref/init/all.js"
   pref("browser.dom.window.dump.enabled", false, sticky);
   pref("devtools.console.stdout.chrome", false, sticky);
-//@line 826 "$SRCDIR/modules/libpref/init/all.js"
+//@line 809 "$SRCDIR/modules/libpref/init/all.js"
 
 pref("devtools.console.stdout.content", false, sticky);
 
@@ -734,7 +726,7 @@ pref("devtools.console.stdout.content", false, sticky);
 pref("toolkit.dump.emit", false);
 
 // Enable recording/replaying executions.
-//@line 837 "$SRCDIR/modules/libpref/init/all.js"
+//@line 820 "$SRCDIR/modules/libpref/init/all.js"
 
 pref("devtools.recordreplay.mvp.enabled", false);
 pref("devtools.recordreplay.allowRepaintFailures", true);
@@ -817,9 +809,9 @@ pref("print.print_edge_right", 0);
 pref("print.print_edge_bottom", 0);
 
 // Print via the parent process. This is only used when e10s is enabled.
-//@line 920 "$SRCDIR/modules/libpref/init/all.js"
+//@line 903 "$SRCDIR/modules/libpref/init/all.js"
   pref("print.print_via_parent", true);
-//@line 924 "$SRCDIR/modules/libpref/init/all.js"
+//@line 907 "$SRCDIR/modules/libpref/init/all.js"
 
 // Pref used by the spellchecker extension to control the
 // maximum number of misspelled words that will be underlined
@@ -897,17 +889,17 @@ pref("dom.forms.datetime.timepicker", false);
 pref("dom.forms.selectSearch", false);
 // Allow for webpages to provide custom styling for <select>
 // popups. Disabled on GTK due to bug 1338283.
-//@line 1002 "$SRCDIR/modules/libpref/init/all.js"
+//@line 985 "$SRCDIR/modules/libpref/init/all.js"
   pref("dom.forms.select.customstyling", false);
-//@line 1006 "$SRCDIR/modules/libpref/init/all.js"
+//@line 989 "$SRCDIR/modules/libpref/init/all.js"
 pref("dom.select_popup_in_parent.enabled", false);
 
 pref("dom.cycle_collector.incremental", true);
 
 // Whether to shim a Components object on untrusted windows.
-//@line 1012 "$SRCDIR/modules/libpref/init/all.js"
+//@line 995 "$SRCDIR/modules/libpref/init/all.js"
   pref("dom.use_components_shim", false);
-//@line 1016 "$SRCDIR/modules/libpref/init/all.js"
+//@line 999 "$SRCDIR/modules/libpref/init/all.js"
 
 // Disable popups from plugins by default
 //   0 = openAllowed
@@ -941,7 +933,7 @@ pref("dom.event.coalesce_mouse_move",       true);
 
 pref("javascript.enabled",                  true);
 pref("javascript.options.strict",           false);
-//@line 1052 "$SRCDIR/modules/libpref/init/all.js"
+//@line 1035 "$SRCDIR/modules/libpref/init/all.js"
 pref("javascript.options.blinterp",         true);
 // Duplicated in JitOptions - ensure both match.
 pref("javascript.options.blinterp.threshold", 10);
@@ -959,19 +951,19 @@ pref("javascript.options.wasm",             true);
 pref("javascript.options.wasm_verbose",     false);
 pref("javascript.options.wasm_ionjit",      true);
 pref("javascript.options.wasm_baselinejit", true);
-//@line 1070 "$SRCDIR/modules/libpref/init/all.js"
+//@line 1053 "$SRCDIR/modules/libpref/init/all.js"
   pref("javascript.options.wasm_cranelift",   false);
-//@line 1073 "$SRCDIR/modules/libpref/init/all.js"
+//@line 1056 "$SRCDIR/modules/libpref/init/all.js"
   pref("javascript.options.wasm_gc",          false);
-//@line 1075 "$SRCDIR/modules/libpref/init/all.js"
+//@line 1058 "$SRCDIR/modules/libpref/init/all.js"
 pref("javascript.options.native_regexp",    true);
 pref("javascript.options.parallel_parsing", true);
-//@line 1078 "$SRCDIR/modules/libpref/init/all.js"
+//@line 1061 "$SRCDIR/modules/libpref/init/all.js"
   pref("javascript.options.asyncstack",       true);
-//@line 1082 "$SRCDIR/modules/libpref/init/all.js"
+//@line 1065 "$SRCDIR/modules/libpref/init/all.js"
 pref("javascript.options.throw_on_asmjs_validation_failure", false);
 pref("javascript.options.ion.offthread_compilation", true);
-//@line 1087 "$SRCDIR/modules/libpref/init/all.js"
+//@line 1070 "$SRCDIR/modules/libpref/init/all.js"
 // This preference instructs the JS engine to discard the
 // source of any privileged JS after compilation. This saves
 // memory, but makes things like Function.prototype.toSource()
@@ -988,10 +980,10 @@ pref("javascript.options.discardSystemSource", false);
 pref("javascript.options.mem.max", -1);
 
 // JSGC_MIN_NURSERY_BYTES / JSGC_MAX_NURSERY_BYTES
-//@line 1107 "$SRCDIR/modules/libpref/init/all.js"
+//@line 1090 "$SRCDIR/modules/libpref/init/all.js"
   pref("javascript.options.mem.nursery.min_kb", 256);
   pref("javascript.options.mem.nursery.max_kb", 16384);
-//@line 1110 "$SRCDIR/modules/libpref/init/all.js"
+//@line 1093 "$SRCDIR/modules/libpref/init/all.js"
 
 // JSGC_MODE
 pref("javascript.options.mem.gc_per_zone", true);
@@ -1053,14 +1045,14 @@ pref("javascript.options.throw_on_debuggee_would_run", false);
 pref("javascript.options.dump_stack_on_debuggee_would_run", false);
 
 // Spectre security vulnerability mitigations.
-//@line 1179 "$SRCDIR/modules/libpref/init/all.js"
+//@line 1162 "$SRCDIR/modules/libpref/init/all.js"
   pref("javascript.options.spectre.index_masking", true);
   pref("javascript.options.spectre.object_mitigations.barriers", true);
   pref("javascript.options.spectre.object_mitigations.misc", true);
   pref("javascript.options.spectre.string_mitigations", true);
   pref("javascript.options.spectre.value_masking", true);
   pref("javascript.options.spectre.jit_to_C++_calls", true);
-//@line 1186 "$SRCDIR/modules/libpref/init/all.js"
+//@line 1169 "$SRCDIR/modules/libpref/init/all.js"
 
 // Dynamic module import.
 pref("javascript.options.dynamicImport", true);
@@ -1107,7 +1099,7 @@ pref("network.protocol-handler.external.ms-help", false);
 pref("network.protocol-handler.external.res", false);
 pref("network.protocol-handler.external.shell", false);
 pref("network.protocol-handler.external.vnd.ms.radio", false);
-//@line 1235 "$SRCDIR/modules/libpref/init/all.js"
+//@line 1218 "$SRCDIR/modules/libpref/init/all.js"
 pref("network.protocol-handler.external.disk", false);
 pref("network.protocol-handler.external.disks", false);
 pref("network.protocol-handler.external.afp", false);
@@ -1173,9 +1165,9 @@ pref("network.http.response.timeout", 300);
 // Limit the absolute number of http connections.
 // Note: the socket transport service will clamp the number below this if the OS
 // cannot allocate that many FDs
-//@line 1303 "$SRCDIR/modules/libpref/init/all.js"
+//@line 1286 "$SRCDIR/modules/libpref/init/all.js"
   pref("network.http.max-connections", 900);
-//@line 1305 "$SRCDIR/modules/libpref/init/all.js"
+//@line 1288 "$SRCDIR/modules/libpref/init/all.js"
 
 // If NOT connecting via a proxy, then
 // a new connection will only be attempted if the number of active persistent
@@ -1383,9 +1375,9 @@ pref("network.http.send_window_size", 1024);
 
 // Whether or not we give more priority to active tab.
 // Note that this requires restart for changes to take effect.
-//@line 1516 "$SRCDIR/modules/libpref/init/all.js"
+//@line 1499 "$SRCDIR/modules/libpref/init/all.js"
   pref("network.http.active_tab_priority", true);
-//@line 1518 "$SRCDIR/modules/libpref/init/all.js"
+//@line 1501 "$SRCDIR/modules/libpref/init/all.js"
 
 // default values for FTP
 // in a DSCP environment this should be 40 (0x28, or AF11), per RFC-4594,
@@ -1705,7 +1697,7 @@ pref("network.negotiate-auth.gsslib", "");
 // Specify if the gss lib comes standard with the OS
 pref("network.negotiate-auth.using-native-gsslib", true);
 
-//@line 1841 "$SRCDIR/modules/libpref/init/all.js"
+//@line 1824 "$SRCDIR/modules/libpref/init/all.js"
 
 // Controls which NTLM authentication implementation we default to. True forces
 // the use of our generic (internal) NTLM authentication implementation vs. any
@@ -1753,9 +1745,9 @@ pref("network.auth.private-browsing-sso", false);
 pref("network.http.throttle.enable", false);
 
 // Make HTTP throttling v2 algorithm Nightly-only due to bug 1462906
-//@line 1889 "$SRCDIR/modules/libpref/init/all.js"
+//@line 1872 "$SRCDIR/modules/libpref/init/all.js"
   pref("network.http.throttle.version", 2);
-//@line 1893 "$SRCDIR/modules/libpref/init/all.js"
+//@line 1876 "$SRCDIR/modules/libpref/init/all.js"
 
 // V1 prefs
 pref("network.http.throttle.suspend-for", 900);
@@ -1874,9 +1866,9 @@ pref("font.language.group",                 "chrome://global/locale/intl.propert
 // Android-specific pref to control if keydown and keyup events are fired even
 // in during composition.  Note that those prefs are ignored if
 // "dom.keyboardevent.dispatch_during_composition" is false.
-//@line 2018 "$SRCDIR/modules/libpref/init/all.js"
+//@line 2001 "$SRCDIR/modules/libpref/init/all.js"
   pref("intl.ime.hack.on_ime_unaware_apps.fire_key_events_for_composition", false);
-//@line 2020 "$SRCDIR/modules/libpref/init/all.js"
+//@line 2003 "$SRCDIR/modules/libpref/init/all.js"
 
 // If you use legacy Chinese IME which puts an ideographic space to composition
 // string as placeholder, this pref might be useful.  If this is true and when
@@ -2110,12 +2102,12 @@ pref("security.directory",              "");
 pref("security.dialog_enable_delay", 1000);
 pref("security.notification_enable_delay", 500);
 
-//@line 2262 "$SRCDIR/modules/libpref/init/all.js"
+//@line 2245 "$SRCDIR/modules/libpref/init/all.js"
 
-//@line 2264 "$SRCDIR/modules/libpref/init/all.js"
+//@line 2247 "$SRCDIR/modules/libpref/init/all.js"
   // Disallow web documents loaded with the SystemPrincipal
   pref("security.disallow_non_local_systemprincipal_in_tests", false);
-//@line 2267 "$SRCDIR/modules/libpref/init/all.js"
+//@line 2250 "$SRCDIR/modules/libpref/init/all.js"
 
 // Mixed content blocking
 pref("security.mixed_content.block_active_content", false);
@@ -2146,9 +2138,9 @@ pref("security.cert_pinning.process_headers_from_non_builtin_roots", false);
 
 // If set to true strict checks will happen on the triggering principal for loads.
 // Android is disabled at the moment pending Bug 1504968
-//@line 2298 "$SRCDIR/modules/libpref/init/all.js"
+//@line 2281 "$SRCDIR/modules/libpref/init/all.js"
   pref("security.strict_security_checks.enabled", true);
-//@line 2302 "$SRCDIR/modules/libpref/init/all.js"
+//@line 2285 "$SRCDIR/modules/libpref/init/all.js"
 
 // Remote settings preferences
 pref("services.settings.poll_interval", 86400); // 24H
@@ -2216,7 +2208,7 @@ pref("middlemouse.scrollbarPosition", false);
 // Clipboard only supports text/plain
 pref("clipboard.plainTextOnly", false);
 
-//@line 2376 "$SRCDIR/modules/libpref/init/all.js"
+//@line 2359 "$SRCDIR/modules/libpref/init/all.js"
 
 // mousewheel.*.action can specify the action when you use mosue wheel.
 // When no modifier keys are pressed or two or more modifires are pressed,
@@ -2460,7 +2452,7 @@ pref("plugins.favorfallback.rules", "");
 // Set IPC timeouts for plugins and tabs, except in leak-checking and
 // dynamic analysis builds.  (NS_FREE_PERMANENT_DATA is C++ only, so
 // approximate its definition here.)
-//@line 2620 "$SRCDIR/modules/libpref/init/all.js"
+//@line 2603 "$SRCDIR/modules/libpref/init/all.js"
   // How long a plugin is allowed to process a synchronous IPC message
   // before we consider it "hung".
   pref("dom.ipc.plugins.timeoutSecs", 45);
@@ -2474,13 +2466,13 @@ pref("plugins.favorfallback.rules", "");
   // How long a plugin launch is allowed to take before
   // we consider it failed.
   pref("dom.ipc.plugins.processLaunchTimeoutSecs", 45);
-//@line 2651 "$SRCDIR/modules/libpref/init/all.js"
+//@line 2634 "$SRCDIR/modules/libpref/init/all.js"
 
 // Whether or not to collect a paired minidump when force-killing a
 // content process.
-//@line 2657 "$SRCDIR/modules/libpref/init/all.js"
+//@line 2640 "$SRCDIR/modules/libpref/init/all.js"
   pref("dom.ipc.tabs.createKillHardCrashReports", true);
-//@line 2659 "$SRCDIR/modules/libpref/init/all.js"
+//@line 2642 "$SRCDIR/modules/libpref/init/all.js"
 
 pref("dom.ipc.plugins.flash.disable-protected-mode", false);
 
@@ -2495,9 +2487,9 @@ pref("dom.ipc.plugins.unloadTimeoutSecs", 30);
 pref("dom.ipc.plugins.forcedirect.enabled", true);
 
 // Enable multi by default.
-//@line 2674 "$SRCDIR/modules/libpref/init/all.js"
+//@line 2657 "$SRCDIR/modules/libpref/init/all.js"
   pref("dom.ipc.processCount", 8);
-//@line 2678 "$SRCDIR/modules/libpref/init/all.js"
+//@line 2661 "$SRCDIR/modules/libpref/init/all.js"
 
 // Default to allow only one file:// URL content process.
 pref("dom.ipc.processCount.file", 1);
@@ -2535,9 +2527,9 @@ pref("browser.tabs.remote.autostart", false);
 // Disable fission for Gecko by default. Lock it on release and beta because
 // it is not ready for use and can leak URIs to telemetry until bug 1561653 is
 // fixed.
-//@line 2718 "$SRCDIR/modules/libpref/init/all.js"
+//@line 2701 "$SRCDIR/modules/libpref/init/all.js"
   pref("fission.autostart", false);
-//@line 2720 "$SRCDIR/modules/libpref/init/all.js"
+//@line 2703 "$SRCDIR/modules/libpref/init/all.js"
 
 // Pref to control whether we use separate content processes for top-level load
 // of file:// URIs.
@@ -2565,7 +2557,7 @@ pref("browser.tabs.remote.separatePrivilegedMozillaWebContentProcess", false);
 
 // The domains we will isolate into the Mozilla Content Process. Comma-separated
 // full domains: any subdomains of the domains listed will also be allowed.
-pref("browser.tabs.remote.separatedMozillaDomains", "addons.mozilla.org,accounts.firefox.com");
+pref("browser.tabs.remote.separatedMozillaDomains", "addons.cdn.mozilla.net,addons.mozilla.org,accounts.firefox.com");
 
 // Default font types and sizes by locale
 pref("font.default.ar", "sans-serif");
@@ -2742,13 +2734,13 @@ pref("ui.mouse.radius.visitedWeight", 120);
 // When false, the prefs will be used for all mouse events.
 pref("ui.mouse.radius.inputSource.touchOnly", true);
 
-//@line 3311 "$SRCDIR/modules/libpref/init/all.js"
+//@line 3294 "$SRCDIR/modules/libpref/init/all.js"
 
-//@line 3514 "$SRCDIR/modules/libpref/init/all.js"
+//@line 3497 "$SRCDIR/modules/libpref/init/all.js"
 
-//@line 3557 "$SRCDIR/modules/libpref/init/all.js"
+//@line 3540 "$SRCDIR/modules/libpref/init/all.js"
 
-//@line 3559 "$SRCDIR/modules/libpref/init/all.js"
+//@line 3542 "$SRCDIR/modules/libpref/init/all.js"
   // Handled differently under Mac/Windows
   pref("network.protocol-handler.warn-external.file", false);
   pref("browser.drag_out_of_frame_style", 1);
@@ -2949,18 +2941,18 @@ pref("ui.mouse.radius.inputSource.touchOnly", true);
   // snooper.  So, let's use true for its default value.
   pref("intl.ime.hack.uim.using_key_snooper", true);
 
-//@line 3760 "$SRCDIR/modules/libpref/init/all.js"
+//@line 3743 "$SRCDIR/modules/libpref/init/all.js"
     // maximum number of fonts to substitute for a generic
     pref("gfx.font_rendering.fontconfig.max_generic_substitutions", 3);
-//@line 3763 "$SRCDIR/modules/libpref/init/all.js"
+//@line 3746 "$SRCDIR/modules/libpref/init/all.js"
 
-//@line 3765 "$SRCDIR/modules/libpref/init/all.js"
+//@line 3748 "$SRCDIR/modules/libpref/init/all.js"
 
-//@line 3785 "$SRCDIR/modules/libpref/init/all.js"
+//@line 3768 "$SRCDIR/modules/libpref/init/all.js"
 
-//@line 3888 "$SRCDIR/modules/libpref/init/all.js"
+//@line 3871 "$SRCDIR/modules/libpref/init/all.js"
 
-//@line 3907 "$SRCDIR/modules/libpref/init/all.js"
+//@line 3890 "$SRCDIR/modules/libpref/init/all.js"
 
 // Login Manager prefs
 pref("signon.rememberSignons",              true);
@@ -3029,14 +3021,14 @@ pref("network.tcp.keepalive.enabled", true);
 pref("network.tcp.keepalive.idle_time", 600); // seconds; 10 mins
 // Default timeout for retransmission of unack'd keepalive probes.
 // Win and Linux only; not configurable on Mac.
-//@line 3976 "$SRCDIR/modules/libpref/init/all.js"
+//@line 3959 "$SRCDIR/modules/libpref/init/all.js"
   pref("network.tcp.keepalive.retry_interval", 1); // seconds
-//@line 3978 "$SRCDIR/modules/libpref/init/all.js"
+//@line 3961 "$SRCDIR/modules/libpref/init/all.js"
 // Default maximum probe retransmissions.
 // Linux only; not configurable on Win and Mac; fixed at 10 and 8 respectively.
-//@line 3981 "$SRCDIR/modules/libpref/init/all.js"
+//@line 3964 "$SRCDIR/modules/libpref/init/all.js"
   pref("network.tcp.keepalive.probe_count", 4);
-//@line 3983 "$SRCDIR/modules/libpref/init/all.js"
+//@line 3966 "$SRCDIR/modules/libpref/init/all.js"
 
 pref("network.tcp.tcp_fastopen_enable", false);
 
@@ -3052,12 +3044,12 @@ pref("network.tcp.tcp_fastopen_http_check_for_stalls_only_if_idle_for", 10);
 pref("network.tcp.tcp_fastopen_http_stalls_limit", 3);
 pref("network.tcp.tcp_fastopen_http_stalls_timeout", 20);
 
-//@line 4000 "$SRCDIR/modules/libpref/init/all.js"
+//@line 3983 "$SRCDIR/modules/libpref/init/all.js"
     pref("gfx.xrender.enabled",false);
     pref("widget.content.allow-gtk-dark-theme", false);
-//@line 4005 "$SRCDIR/modules/libpref/init/all.js"
+//@line 3988 "$SRCDIR/modules/libpref/init/all.js"
   pref("widget.wayland_dmabuf_backend.enabled", false);
-//@line 4007 "$SRCDIR/modules/libpref/init/all.js"
+//@line 3990 "$SRCDIR/modules/libpref/init/all.js"
 
 // Timeout for outbound network geolocation provider XHR
 pref("geo.wifi.xhr.timeout", 60000);
@@ -3126,9 +3118,9 @@ pref("extensions.recommendations.themeRecommendationUrl", "");
 // disable it in problematic tests, see disableNonReleaseActions() inside
 // browser/modules/test/browser/head.js
 pref("extensions.webcompat-reporter.newIssueEndpoint", "https://webcompat.com/issues/new");
-//@line 4076 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4059 "$SRCDIR/modules/libpref/init/all.js"
   pref("extensions.webcompat-reporter.enabled", true);
-//@line 4080 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4063 "$SRCDIR/modules/libpref/init/all.js"
 
 pref("network.buffer.cache.count", 24);
 pref("network.buffer.cache.size",  32768);
@@ -3145,20 +3137,20 @@ pref("alerts.showFavicons", false);
 
 // Linux and macOS turn on system level notification as default, but Windows is
 // Nightly only due to unstable yet.
-//@line 4103 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4086 "$SRCDIR/modules/libpref/init/all.js"
   pref("alerts.useSystemBackend", true);
-//@line 4105 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4088 "$SRCDIR/modules/libpref/init/all.js"
 
 // DOM full-screen API.
-//@line 4111 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4094 "$SRCDIR/modules/libpref/init/all.js"
 // whether to prevent the top level widget from going fullscreen
 pref("full-screen-api.ignore-widgets", false);
 pref("full-screen-api.pointer-lock.enabled", true);
 // transition duration of fade-to-black and fade-from-black, unit: ms
-//@line 4119 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4102 "$SRCDIR/modules/libpref/init/all.js"
   pref("full-screen-api.transition-duration.enter", "0 0");
   pref("full-screen-api.transition-duration.leave", "0 0");
-//@line 4122 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4105 "$SRCDIR/modules/libpref/init/all.js"
 // timeout for black screen in fullscreen transition, unit: ms
 pref("full-screen-api.transition.timeout", 1000);
 // time for the warning box stays on the screen before sliding out, unit: ms
@@ -3217,9 +3209,9 @@ pref("dom.push.http2.retryInterval", 5000);
 // W3C touch events
 // 0 - disabled, 1 - enabled, 2 - autodetect
 // Autodetection is currently only supported on Windows and GTK3
-//@line 4183 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4166 "$SRCDIR/modules/libpref/init/all.js"
   pref("dom.w3c_touch_events.enabled", 2);
-//@line 4185 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4168 "$SRCDIR/modules/libpref/init/all.js"
 
 // W3C pointer events draft
 pref("dom.w3c_pointer_events.implicit_capture", false);
@@ -3282,9 +3274,9 @@ pref("network.trr.resolvers", "[{ \"name\": \"Cloudflare\", \"url\": \"https://m
 pref("network.trr.credentials", "");
 pref("network.trr.custom_uri", "");
 // Wait for captive portal confirmation before enabling TRR
-//@line 4251 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4234 "$SRCDIR/modules/libpref/init/all.js"
   pref("network.trr.wait-for-portal", false);
-//@line 4253 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4236 "$SRCDIR/modules/libpref/init/all.js"
 // Allow RFC1918 address in responses?
 pref("network.trr.allow-rfc1918", false);
 // Use GET (rather than POST)
@@ -3322,11 +3314,11 @@ pref("captivedetect.maxRetryCount", 5);
 
 // The tables used for Safebrowsing phishing and malware checks
 pref("urlclassifier.malwareTable", "goog-malware-proto,goog-unwanted-proto,moztest-harmful-simple,moztest-malware-simple,moztest-unwanted-simple");
-//@line 4291 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4274 "$SRCDIR/modules/libpref/init/all.js"
   // In official builds, we are allowed to use Google's private phishing
   // list (see bug 1288840).
   pref("urlclassifier.phishTable", "goog-phish-proto,moztest-phish-simple");
-//@line 4297 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4280 "$SRCDIR/modules/libpref/init/all.js"
 
 // Tables for application reputation
 pref("urlclassifier.downloadAllowTable", "goog-downloadwhite-proto");
@@ -3381,9 +3373,9 @@ pref("browser.safebrowsing.allowOverride", true);
 
 // These names are approved by the Google Safe Browsing team.
 // Any changes must be coordinated with them.
-//@line 4352 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4335 "$SRCDIR/modules/libpref/init/all.js"
   pref("browser.safebrowsing.id", "navclient-auto-ffox");
-//@line 4356 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4339 "$SRCDIR/modules/libpref/init/all.js"
 
 // Download protection
 pref("browser.safebrowsing.downloads.enabled", true);
@@ -3462,7 +3454,7 @@ pref("dom.presentation.discoverable.encrypted", true);
 pref("dom.presentation.discoverable.retry_ms", 5000);
 pref("dom.presentation.session_transport.data_channel.enable", false);
 
-//@line 4442 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4425 "$SRCDIR/modules/libpref/init/all.js"
 
 // Search service settings
 pref("browser.search.log", false);
@@ -3475,7 +3467,7 @@ pref("browser.search.geoip.url", "https://location.services.mozilla.com/v1/count
 pref("browser.search.geoip.timeout", 3000);
 pref("browser.search.separatePrivateDefault", false);
 
-//@line 4458 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4441 "$SRCDIR/modules/libpref/init/all.js"
 
 // GMPInstallManager prefs
 
@@ -3556,9 +3548,9 @@ pref("reader.has_used_toolbar", false);
 // Whether to use a vertical or horizontal toolbar.
 pref("reader.toolbar.vertical", true);
 
-//@line 4539 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4522 "$SRCDIR/modules/libpref/init/all.js"
   pref("narrate.enabled", true);
-//@line 4543 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4526 "$SRCDIR/modules/libpref/init/all.js"
 
 pref("narrate.test", false);
 pref("narrate.rate", 0);
@@ -3606,11 +3598,9 @@ pref("media.default_volume", "1.0");
 pref("dom.maxHardwareConcurrency", 16);
 
 // Shutdown the osfile worker if its no longer needed.
-//@line 4591 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4574 "$SRCDIR/modules/libpref/init/all.js"
   pref("osfile.reset_worker_delay", 30000);
-//@line 4593 "$SRCDIR/modules/libpref/init/all.js"
-
-pref("media.block-autoplay-until-in-foreground", true);
+//@line 4576 "$SRCDIR/modules/libpref/init/all.js"
 
 // TODO: Bug 1324406: Treat 'data:' documents as unique, opaque origins
 // If true, data: URIs will be treated as unique opaque origins, hence will use
@@ -3647,7 +3637,7 @@ pref("dom.payments.defaults.saveCreditCard", false);
 pref("dom.payments.defaults.saveAddress", true);
 pref("dom.payments.request.supportedRegions", "US,CA");
 
-//@line 4636 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4617 "$SRCDIR/modules/libpref/init/all.js"
 
 // Control whether clients.openWindow() opens windows in the same process
 // that called the API vs following our normal multi-process selection
@@ -3656,22 +3646,22 @@ pref("dom.payments.request.supportedRegions", "US,CA");
 // this can be removed.
 pref("dom.clients.openwindow_favors_same_process", true);
 
-//@line 4647 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4628 "$SRCDIR/modules/libpref/init/all.js"
   pref("toolkit.aboutPerformance.showInternals", true);
-//@line 4649 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4630 "$SRCDIR/modules/libpref/init/all.js"
 
 // When a crash happens, whether to include heap regions of the crash context
 // in the minidump. Enabled by default on nightly and aurora.
-//@line 4655 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4636 "$SRCDIR/modules/libpref/init/all.js"
   pref("toolkit.crashreporter.include_context_heap", true);
-//@line 4657 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4638 "$SRCDIR/modules/libpref/init/all.js"
 
 // Open noopener links in a new process
 pref("dom.noopener.newprocess.enabled", true);
 
-//@line 4662 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4643 "$SRCDIR/modules/libpref/init/all.js"
   pref("layers.omtp.enabled", true);
-//@line 4666 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4647 "$SRCDIR/modules/libpref/init/all.js"
 
 // Limits the depth of recursive conversion of data when opening
 // a content to view.  This is mostly intended to prevent infinite
@@ -3688,7 +3678,9 @@ pref("dom.events.testing.asyncClipboard", false);
 // Disable moz* APIs in DataTransfer
 pref("dom.datatransfer.mozAtAPIs", false);
 
-pref("fission.rebuild_frameloaders_on_remoteness_change", true);
+// Bug 1583614: This is on by default for Fission windows, but still
+// causes enough issues to prevent us from turning it on everywhere.
+pref("fission.rebuild_frameloaders_on_remoteness_change", false);
 
 // Support for legacy customizations that rely on checking the
 // user profile directory for these stylesheets:
@@ -3696,7 +3688,7 @@ pref("fission.rebuild_frameloaders_on_remoteness_change", true);
 //  * userChrome.css
 pref("toolkit.legacyUserProfileCustomizations.stylesheets", false);
 
-//@line 4691 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4674 "$SRCDIR/modules/libpref/init/all.js"
   pref("datareporting.policy.dataSubmissionEnabled", true);
   pref("datareporting.policy.dataSubmissionPolicyNotifiedTime", "0");
   pref("datareporting.policy.dataSubmissionPolicyAcceptedVersion", 0);
@@ -3705,20 +3697,20 @@ pref("toolkit.legacyUserProfileCustomizations.stylesheets", false);
   pref("datareporting.policy.minimumPolicyVersion", 1);
   pref("datareporting.policy.minimumPolicyVersion.channel-beta", 2);
   pref("datareporting.policy.firstRunURL", "https://www.mozilla.org/privacy/firefox/");
-//@line 4700 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4683 "$SRCDIR/modules/libpref/init/all.js"
 
-//@line 4703 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4686 "$SRCDIR/modules/libpref/init/all.js"
     pref("datareporting.healthreport.infoURL", "https://www.mozilla.org/legal/privacy/firefox.html#health-report");
 
     // Health Report is enabled by default on all channels.
     pref("datareporting.healthreport.uploadEnabled", true);
-//@line 4709 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4692 "$SRCDIR/modules/libpref/init/all.js"
 
 pref("services.common.log.logger.rest.request", "Debug");
 pref("services.common.log.logger.rest.response", "Debug");
 pref("services.common.log.logger.tokenserverclient", "Debug");
 
-//@line 4715 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4698 "$SRCDIR/modules/libpref/init/all.js"
   pref("services.sync.lastversion", "firstrun");
   pref("services.sync.sendVersionInfo", true);
 
@@ -3737,11 +3729,11 @@ pref("services.common.log.logger.tokenserverclient", "Debug");
   pref("services.sync.engine.addons", true);
   pref("services.sync.engine.addresses", false);
   pref("services.sync.engine.bookmarks", true);
-//@line 4734 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4717 "$SRCDIR/modules/libpref/init/all.js"
     // Enable the new bookmark sync engine through early Beta, but not release
     // candidates or Release.
     pref("services.sync.engine.bookmarks.buffer", true);
-//@line 4740 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4723 "$SRCDIR/modules/libpref/init/all.js"
   pref("services.sync.engine.creditcards", false);
   pref("services.sync.engine.history", true);
   pref("services.sync.engine.passwords", true);
@@ -3765,9 +3757,9 @@ pref("services.common.log.logger.tokenserverclient", "Debug");
   pref("services.sync.log.appender.dump", "Error");
   pref("services.sync.log.appender.file.level", "Trace");
   pref("services.sync.log.appender.file.logOnError", true);
-//@line 4764 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4747 "$SRCDIR/modules/libpref/init/all.js"
     pref("services.sync.log.appender.file.logOnSuccess", true);
-//@line 4768 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4751 "$SRCDIR/modules/libpref/init/all.js"
   pref("services.sync.log.appender.file.maxErrorAge", 864000); // 10 days
 
   // The default log level for all "Sync.*" logs. Adjusting this pref will
@@ -3782,24 +3774,21 @@ pref("services.common.log.logger.tokenserverclient", "Debug");
   pref("services.sync.log.logger.engine", "Debug");
   pref("services.sync.log.cryptoDebug", false);
 
-  pref("services.sync.fxa.termsURL", "https://accounts.firefox.com/legal/terms");
-  pref("services.sync.fxa.privacyURL", "https://accounts.firefox.com/legal/privacy");
-
   pref("services.sync.telemetry.submissionInterval", 43200); // 12 hours in seconds
   pref("services.sync.telemetry.maxPayloadCount", 500);
 
-//@line 4789 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4769 "$SRCDIR/modules/libpref/init/all.js"
     // Enable the (fairly costly) client/server validation through early Beta, but
     // not release candidates or Release.
     pref("services.sync.engine.bookmarks.validation.enabled", true);
     pref("services.sync.engine.passwords.validation.enabled", true);
-//@line 4794 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4774 "$SRCDIR/modules/libpref/init/all.js"
 
-//@line 4796 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4776 "$SRCDIR/modules/libpref/init/all.js"
     // Enable repair of bookmarks on Nightly only - requires validation also be
     // enabled.
     pref("services.sync.engine.bookmarks.repair.enabled", true);
-//@line 4800 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4780 "$SRCDIR/modules/libpref/init/all.js"
 
   // We consider validation this frequently. After considering validation, even
   // if we don't end up validating, we won't try again unless this much time has passed.
@@ -3819,7 +3808,7 @@ pref("services.common.log.logger.tokenserverclient", "Debug");
   // The maximum number of immediate resyncs to trigger for changes made during
   // a sync.
   pref("services.sync.maxResyncs", 5);
-//@line 4820 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4800 "$SRCDIR/modules/libpref/init/all.js"
 
 // Marionette is the remote protocol that lets OOP programs communicate with,
 // instrument, and control Gecko.
@@ -3873,9 +3862,9 @@ pref("remote.log.level", "Info");
 pref("devtools.jsonview.enabled", true);
 
 // Default theme ("dark" or "light").
-//@line 4876 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4856 "$SRCDIR/modules/libpref/init/all.js"
   pref("devtools.theme", "light", sticky);
-//@line 4878 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4858 "$SRCDIR/modules/libpref/init/all.js"
 
 // Completely disable DevTools entry points, as well as all DevTools command
 // line arguments This should be merged with devtools.enabled, see Bug 1440675.
@@ -3884,17 +3873,17 @@ pref("devtools.policy.disabled", false);
 // Enable deprecation warnings.
 pref("devtools.errorconsole.deprecation_warnings", true);
 
-//@line 4887 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4867 "$SRCDIR/modules/libpref/init/all.js"
   // Don't show the Browser Toolbox prompt on local builds / nightly.
   pref("devtools.debugger.prompt-connection", false, sticky);
-//@line 4892 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4872 "$SRCDIR/modules/libpref/init/all.js"
 
-//@line 4894 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4874 "$SRCDIR/modules/libpref/init/all.js"
   // Disable debugging chrome.
   pref("devtools.chrome.enabled", false, sticky);
   // Disable remote debugging connections.
   pref("devtools.debugger.remote-enabled", false, sticky);
-//@line 4903 "$SRCDIR/modules/libpref/init/all.js"
+//@line 4883 "$SRCDIR/modules/libpref/init/all.js"
 
 // Disable remote debugging protocol logging.
 pref("devtools.debugger.log", false);

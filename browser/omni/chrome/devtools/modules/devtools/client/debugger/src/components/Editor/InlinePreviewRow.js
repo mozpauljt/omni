@@ -40,33 +40,15 @@ class InlinePreviewRow extends _react.PureComponent {
     this.updatePreviewWidget(null, this.props);
   }
 
-  getPreviewPosition(editor, line) {
-    const lineStartPos = editor.codeMirror.cursorCoords({
-      line,
-      ch: 0
-    });
-    const lineEndPos = editor.codeMirror.cursorCoords({
-      line,
-      ch: editor.getLine(line).length
-    });
-    return lineEndPos.left - lineStartPos.left;
-  }
-
-  setPreviewPosition(node, left) {
-    if (this.lastLeft !== left) {
-      this.lastLeft = left;
-      node.style.left = `${left}px`;
-    }
-  }
-
   updatePreviewWidget(props, prevProps) {
-    if (this.IPWidget && prevProps && (!props || prevProps.editor !== props.editor || prevProps.line !== props.line)) {
-      this.IPWidget.clear();
-      this.IPWidget = null;
+    if (this.bookmark && prevProps && (!props || prevProps.editor !== props.editor || prevProps.line !== props.line)) {
+      this.bookmark.clear();
+      this.bookmark = null;
+      this.widgetNode = null;
     }
 
     if (!props) {
-      return (0, _assert.default)(!this.IPWidget, "Inline Preview widget shouldn't be present.");
+      return (0, _assert.default)(!this.bookmark, "Inline Preview widget shouldn't be present.");
     }
 
     const {
@@ -77,15 +59,10 @@ class InlinePreviewRow extends _react.PureComponent {
       highlightDomElement,
       unHighlightDomElement
     } = props;
-    const left = this.getPreviewPosition(editor, line);
 
-    if (!this.IPWidget) {
-      const widget = document.createElement("div");
-      widget.classList.add("inline-preview");
-      this.setPreviewPosition(widget, left);
-      this.IPWidget = editor.codeMirror.addLineWidget(line, widget);
-    } else if (!prevProps || this.lastLeft !== left) {
-      this.setPreviewPosition(this.IPWidget.node, left);
+    if (!this.bookmark) {
+      this.widgetNode = document.createElement("div");
+      this.widgetNode.classList.add("inline-preview");
     }
 
     _reactDom.default.render(_react.default.createElement(_react.default.Fragment, null, previews.map(preview => _react.default.createElement(_InlinePreview.default, {
@@ -95,7 +72,12 @@ class InlinePreviewRow extends _react.PureComponent {
       openElementInInspector: openElementInInspector,
       highlightDomElement: highlightDomElement,
       unHighlightDomElement: unHighlightDomElement
-    }))), this.IPWidget.node);
+    }))), this.widgetNode);
+
+    this.bookmark = editor.codeMirror.setBookmark({
+      line,
+      ch: Infinity
+    }, this.widgetNode);
   }
 
   render() {

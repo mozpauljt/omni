@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.getBreakpointAtLocation = getBreakpointAtLocation;
 exports.getBreakpointsAtLine = getBreakpointsAtLine;
+exports.getClosestBreakpoint = getClosestBreakpoint;
 loader.lazyRequireGetter(this, "_sources", "devtools/client/debugger/src/reducers/sources");
 loader.lazyRequireGetter(this, "_breakpoints", "devtools/client/debugger/src/reducers/breakpoints");
 loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
@@ -50,6 +51,24 @@ function findBreakpointAtLocation(breakpoints, selectedSource, {
 
     return location.column === getColumn(column, selectedSource);
   });
+} // returns the closest active column breakpoint to current cursorPosition in editor.
+
+
+function findClosestBreakpointToCursor(lineBreakpoints, cursorPosition) {
+  const closestBreakpoint = lineBreakpoints.reduce((closestBp, currentBp) => {
+    // check that editor is re-rendered and breakpoints are assigned.
+    if (typeof closestBp === "object") {
+      const currentColumn = currentBp.generatedLocation.column;
+      const closestColumn = closestBp.generatedLocation.column; // check that breakpoint has a column.
+
+      if (currentColumn && closestColumn) {
+        const currentDistance = Math.abs(currentColumn - cursorPosition.column);
+        const closestDistance = Math.abs(closestColumn - cursorPosition.column);
+        return currentDistance < closestDistance ? currentBp : closestBp;
+      }
+    }
+  }, lineBreakpoints[0] || {});
+  return closestBreakpoint;
 }
 /*
  * Finds a breakpoint at a location (line, column) of the
@@ -80,4 +99,9 @@ function getBreakpointsAtLine(state, line) {
 
   const breakpoints = getBreakpointsForSource(state, selectedSource);
   return breakpoints.filter(breakpoint => getLocation(breakpoint, selectedSource).line === line);
+}
+
+function getClosestBreakpoint(state, cursorPosition) {
+  const lineBreakpoints = getBreakpointsAtLine(state, cursorPosition.line);
+  return findClosestBreakpointToCursor(lineBreakpoints, cursorPosition);
 }

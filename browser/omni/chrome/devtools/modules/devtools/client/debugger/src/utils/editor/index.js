@@ -24,6 +24,7 @@ var _exportNames = {
   clearLineClass: true,
   getTextForLine: true,
   getCursorLine: true,
+  getCursorColumn: true,
   getTokenEnd: true,
   onMouseOver: true
 };
@@ -47,6 +48,7 @@ exports.removeLineClass = removeLineClass;
 exports.clearLineClass = clearLineClass;
 exports.getTextForLine = getTextForLine;
 exports.getCursorLine = getCursorLine;
+exports.getCursorColumn = getCursorColumn;
 exports.getTokenEnd = getTokenEnd;
 Object.defineProperty(exports, "onMouseOver", {
   enumerable: true,
@@ -339,6 +341,10 @@ function getTextForLine(codeMirror, line) {
 
 function getCursorLine(codeMirror) {
   return codeMirror.getCursor().line;
+}
+
+function getCursorColumn(codeMirror) {
+  return codeMirror.getCursor().ch;
 }
 
 function getTokenEnd(codeMirror, line, column) {

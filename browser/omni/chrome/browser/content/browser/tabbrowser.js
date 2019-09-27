@@ -68,9 +68,6 @@
       }
       messageManager.addMessageListener("RefreshBlocker:Blocked", this);
 
-      // To correctly handle keypresses for potential FindAsYouType, while
-      // the tab's find bar is not yet initialized.
-      messageManager.addMessageListener("Findbar:Keypress", this);
       this._setFindbarData();
 
       XPCOMUtils.defineLazyModuleGetters(this, {
@@ -988,14 +985,25 @@
       // XXX https://bugzilla.mozilla.org/show_bug.cgi?id=22183#c239
       try {
         if (docElement.getAttribute("chromehidden").includes("location")) {
-          var uri = Services.uriFixup.createExposableURI(aBrowser.currentURI);
-          if (uri.scheme == "about") {
-            newTitle = uri.spec + sep + newTitle;
+          const uri = Services.uriFixup.createExposableURI(aBrowser.currentURI);
+          if (uri.scheme === "about") {
+            newTitle = `${uri.spec}${sep}${newTitle}`;
+          } else if (uri.scheme === "moz-extension") {
+            const ext = WebExtensionPolicy.getByHostname(uri.host);
+            if (ext && ext.name) {
+              const prefix = document.querySelector("#urlbar-label-extension")
+                .value;
+              newTitle = `${prefix} (${ext.name})${sep}${newTitle}`;
+            } else {
+              newTitle = `${uri.prePath}${sep}${newTitle}`;
+            }
           } else {
-            newTitle = uri.prePath + sep + newTitle;
+            newTitle = `${uri.prePath}${sep}${newTitle}`;
           }
         }
-      } catch (e) {}
+      } catch (e) {
+        // ignored
+      }
 
       return newTitle;
     },
@@ -1432,6 +1440,7 @@
           tab.setAttribute("sharing", aState.webRTC.sharing);
         }
       } else {
+        tab._sharingState.webRTC = null;
         tab.removeAttribute("sharing");
       }
       this._tabAttrModified(tab, ["sharing"]);
@@ -3320,11 +3329,7 @@
         // Closing the tab and replacing it with a blank one is notably slower
         // than closing the window right away. If the caller opts in, take
         // the fast path.
-        if (
-          closeWindow &&
-          closeWindowFastpath &&
-          this._removingTabs.length == 0
-        ) {
+        if (closeWindow && closeWindowFastpath && !this._removingTabs.length) {
           // This call actually closes the window, unless the user
           // cancels the operation.  We are finished here in both cases.
           this._windowIsClosing = window.closeWindow(
@@ -4043,31 +4048,33 @@
 
     hideTab(aTab, aSource) {
       if (
-        !aTab.hidden &&
-        !aTab.pinned &&
-        !aTab.selected &&
-        !aTab.closing &&
-        !aTab._sharingState
+        aTab.hidden ||
+        aTab.pinned ||
+        aTab.selected ||
+        aTab.closing ||
+        // Tabs that are sharing the screen, microphone or camera cannot be hidden.
+        (aTab._sharingState && aTab._sharingState.webRTC)
       ) {
-        aTab.setAttribute("hidden", "true");
-        this._invalidateCachedTabs();
+        return;
+      }
+      aTab.setAttribute("hidden", "true");
+      this._invalidateCachedTabs();
 
-        this.tabContainer._updateCloseButtons();
-        this.tabContainer._updateHiddenTabsStatus();
+      this.tabContainer._updateCloseButtons();
+      this.tabContainer._updateHiddenTabsStatus();
 
-        this.tabContainer._setPositionalAttributes();
+      this.tabContainer._setPositionalAttributes();
 
-        // Splice this tab out of any lines of succession before any events are
-        // dispatched.
-        this.replaceInSuccession(aTab, aTab.successor);
-        this.setSuccessor(aTab, null);
+      // Splice this tab out of any lines of succession before any events are
+      // dispatched.
+      this.replaceInSuccession(aTab, aTab.successor);
+      this.setSuccessor(aTab, null);
 
-        let event = document.createEvent("Events");
-        event.initEvent("TabHide", true, false);
-        aTab.dispatchEvent(event);
-        if (aSource) {
-          SessionStore.setCustomTabValue(aTab, "hiddenBy", aSource);
-        }
+      let event = document.createEvent("Events");
+      event.initEvent("TabHide", true, false);
+      aTab.dispatchEvent(event);
+      if (aSource) {
+        SessionStore.setCustomTabValue(aTab, "hiddenBy", aSource);
       }
     },
 
@@ -4938,16 +4945,6 @@
             { isAppTab: tab.pinned },
             "BrowserTab"
           );
-          break;
-        }
-        case "Findbar:Keypress": {
-          let tab = this.getTabForBrowser(browser);
-          if (!this.isFindBarInitialized(tab)) {
-            let fakeEvent = data;
-            this.getFindBar(tab).then(findbar => {
-              findbar._onBrowserKeypress(fakeEvent);
-            });
-          }
           break;
         }
         case "RefreshBlocker:Blocked": {
@@ -6279,8 +6276,9 @@ var TabContextMenu = {
 
     // Disable "Close Tabs to the Right" if there are no tabs
     // following it.
-    document.getElementById("context_closeTabsToTheEnd").disabled =
-      gBrowser.getTabsToTheEndFrom(this.contextTab).length == 0;
+    document.getElementById(
+      "context_closeTabsToTheEnd"
+    ).disabled = !gBrowser.getTabsToTheEndFrom(this.contextTab).length;
 
     // Disable "Close other Tabs" if there are no unpinned tabs.
     let unpinnedTabsToClose = multiselectionContext

@@ -33,9 +33,11 @@ exports.getTopFrame = getTopFrame;
 exports.getSkipPausing = getSkipPausing;
 exports.isMapScopesEnabled = isMapScopesEnabled;
 exports.getInlinePreviews = getInlinePreviews;
+exports.getSelectedInlinePreviews = getSelectedInlinePreviews;
 exports.getInlinePreviewExpression = getInlinePreviewExpression;
 exports.getChromeScopes = getChromeScopes;
 exports.getLastExpandedScopes = getLastExpandedScopes;
+exports.getPausePreviewLocation = getPausePreviewLocation;
 exports.default = void 0;
 
 var _devtoolsSourceMap = require("devtools/client/shared/source-map/index.js");
@@ -48,7 +50,7 @@ loader.lazyRequireGetter(this, "_pause", "devtools/client/debugger/src/selectors
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
-/* eslint complexity: ["error", 30]*/
+/* eslint complexity: ["error", 35]*/
 
 /**
  * Pause reducer
@@ -65,6 +67,7 @@ function createPauseState(thread = "UnknownThread") {
       isPaused: false,
       pauseCounter: 0
     },
+    previewLocation: null,
     threads: {},
     canRewind: false,
     skipPausing: _prefs.prefs.skipPausing,
@@ -148,6 +151,7 @@ function update(state = createPauseState(), action) {
           why
         } = action;
         state = { ...state,
+          previewLocation: null,
           threadcx: { ...state.threadcx,
             pauseCounter: state.threadcx.pauseCounter + 1,
             thread,
@@ -162,6 +166,20 @@ function update(state = createPauseState(), action) {
           },
           why
         });
+      }
+
+    case "PREVIEW_PAUSED_LOCATION":
+      {
+        return { ...state,
+          previewLocation: action.location
+        };
+      }
+
+    case "CLEAR_PREVIEW_PAUSED_LOCATION":
+      {
+        return { ...state,
+          previewLocation: null
+        };
       }
 
     case "MAP_FRAMES":
@@ -599,6 +617,17 @@ function getInlinePreviews(state, thread, frameId) {
   return getThreadPauseState(state.pause, thread).inlinePreview[getGeneratedFrameId(frameId)];
 }
 
+function getSelectedInlinePreviews(state) {
+  const thread = getCurrentThread(state);
+  const frameId = getSelectedFrameId(state, thread);
+
+  if (!frameId) {
+    return null;
+  }
+
+  return getInlinePreviews(state, thread, frameId);
+}
+
 function getInlinePreviewExpression(state, thread, frameId, line, expression) {
   const previews = getThreadPauseState(state.pause, thread).inlinePreview[getGeneratedFrameId(frameId)];
   return previews && previews[line] && previews[line][expression];
@@ -612,6 +641,10 @@ function getChromeScopes(state, thread) {
 
 function getLastExpandedScopes(state, thread) {
   return getThreadPauseState(state.pause, thread).lastExpandedScopes;
+}
+
+function getPausePreviewLocation(state) {
+  return state.pause.previewLocation;
 }
 
 var _default = update;

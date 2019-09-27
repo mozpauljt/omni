@@ -43,6 +43,7 @@
 #identity-popup[connection=chrome] [when-connection~=chrome],
 #identity-popup[connection=file] [when-connection~=file],
 #identity-popup[connection=extension] [when-connection~=extension],
+#identity-popup[connection=cert-error-page] [when-connection~=cert-error-page],
 /* Show insecure login forms messages when needed. */
 #identity-popup[loginforms=insecure] [when-loginforms=insecure],
 /* Show weak cipher messages when needed. */
@@ -386,7 +387,8 @@
   -moz-context-properties: fill, fill-opacity;
 }
 
-#identity-popup[connection=secure-cert-user-overridden] .identity-popup-security-connection {
+#identity-popup[connection=secure-cert-user-overridden] .identity-popup-security-connection,
+#identity-popup[connection=cert-error-page] .identity-popup-security-connection {
   background-image: url(chrome://browser/skin/connection-mixed-passive-loaded.svg);
   fill: unset;
   -moz-context-properties: fill;
@@ -460,7 +462,6 @@ description#identity-popup-content-verifier,
 
 #identity-popup-breakageReportView-collection-url,
 #protections-popup-sendReportView-collection-url {
-  font: inherit;
   -moz-appearance: none;
   border: none;
 }
@@ -1069,25 +1070,6 @@ description#identity-popup-content-verifier,
   color: #f9f9fa;
 }
 
-#protections-popup-tp-switch:not([enabled])[showdotindicator]::after {
-  background: #00B3F4;
-  border: 2px rgba(0,144,237,0.5) solid;
-  content: " ";
-  border-radius: 6px;
-  position: absolute;
-  margin: auto;
-  top: 0;
-  bottom: 12px;
-  left: 21px;
-  height: 6px;
-  width: 6px;
-}
-
-#protections-popup-tp-switch:not([enabled])[showdotindicator]:-moz-locale-dir(rtl)::after {
-  left: unset;
-  right: 21px;
-}
-
 .protections-popup-description {
   border-bottom: 1px solid var(--panel-separator-color);
 }
@@ -1115,4 +1097,8 @@ description#identity-popup-content-verifier,
 #protections-popup toolbarbutton:not([disabled="true"]):hover,
 #protections-popup toolbarbutton:not([disabled="true"]):hover:active {
   color: inherit;
+}
+
+.protections-popup-tp-switch:-moz-focusring {
+  outline: 1px dotted;
 }

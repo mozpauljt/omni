@@ -7,6 +7,7 @@ exports.setupCommands = setupCommands;
 exports.clientCommands = void 0;
 loader.lazyRequireGetter(this, "_create", "devtools/client/debugger/src/client/firefox/create");
 loader.lazyRequireGetter(this, "_targets", "devtools/client/debugger/src/client/firefox/targets");
+loader.lazyRequireGetter(this, "_events", "devtools/client/debugger/src/client/firefox/events");
 
 var _devtoolsReps = _interopRequireDefault(require("devtools/client/shared/components/reps/reps.js"));
 
@@ -159,6 +160,20 @@ function setXHRBreakpoint(path, method) {
 
 function removeXHRBreakpoint(path, method) {
   return currentThreadFront.removeXHRBreakpoint(path, method);
+}
+
+function addWatchpoint(object, property, label, watchpointType) {
+  if (currentTarget.traits.watchpoints) {
+    const objectClient = createObjectClient(object);
+    return objectClient.addWatchpoint(property, label, watchpointType);
+  }
+}
+
+function removeWatchpoint(object, property) {
+  if (currentTarget.traits.watchpoints) {
+    const objectClient = createObjectClient(object);
+    return objectClient.removeWatchpoint(property);
+  }
 } // Get the string key to use for a breakpoint location.
 // See also duplicate code in breakpoint-actor-map.js :(
 
@@ -375,8 +390,46 @@ async function getSources(client) {
   return sources.map(source => (0, _create.prepareSourcePayload)(client, source));
 }
 
+async function toggleEventLogging(logEventBreakpoints) {
+  return forEachThread(thread => thread.toggleEventLogging(logEventBreakpoints));
+}
+
+function getAllThreadFronts() {
+  const fronts = [currentThreadFront];
+
+  for (const targetsForType of Object.values(targets)) {
+    for (const {
+      threadFront
+    } of Object.values(targetsForType)) {
+      fronts.push(threadFront);
+    }
+  }
+
+  return fronts;
+} // Fetch the sources for all the targets
+
+
 async function fetchSources() {
-  return getSources(currentThreadFront);
+  let sources = [];
+
+  for (const threadFront of getAllThreadFronts()) {
+    sources = sources.concat((await getSources(threadFront)));
+  }
+
+  return sources;
+} // Check if any of the targets were paused before we opened
+// the debugger. If one is paused. Fake a `pause` RDP event
+// by directly calling the client event listener.
+
+
+async function checkIfAlreadyPaused() {
+  for (const threadFront of getAllThreadFronts()) {
+    const pausedPacket = threadFront.getLastPausePacket();
+
+    if (pausedPacket) {
+      _events.clientEvents.paused(threadFront, pausedPacket);
+    }
+  }
 }
 
 function getSourceForActor(actor) {
@@ -491,6 +544,8 @@ const clientCommands = {
   setBreakpoint,
   setXHRBreakpoint,
   removeXHRBreakpoint,
+  addWatchpoint,
+  removeWatchpoint,
   removeBreakpoint,
   evaluate,
   evaluateInFrame,
@@ -500,7 +555,9 @@ const clientCommands = {
   getProperties,
   getFrameScopes,
   pauseOnExceptions,
+  toggleEventLogging,
   fetchSources,
+  checkIfAlreadyPaused,
   registerSourceActor,
   fetchThreads,
   getMainThread,

@@ -24,7 +24,7 @@
      Additionally we should remove 'unsafe-inline' from style-src, see Bug 1579160 -->
 <page xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
       xmlns:html="http://www.w3.org/1999/xhtml"
-      csp="default-src chrome:; script-src chrome: 'sha512-X8+p/CqXeMdssOoFOf5RV+RpkvnN9pukQ20acGc7LqMgfYLW+lR0WAYT66OtSTpFHE/Qgx/ZCBs2RMc4QrA8FQ=='; img-src chrome: moz-icon:; style-src chrome: data: 'unsafe-inline'"
+      csp="default-src chrome:; script-src chrome: 'sha512-X8+p/CqXeMdssOoFOf5RV+RpkvnN9pukQ20acGc7LqMgfYLW+lR0WAYT66OtSTpFHE/Qgx/ZCBs2RMc4QrA8FQ=='; img-src chrome: moz-icon: https:; style-src chrome: data: 'unsafe-inline'; object-src 'none'"
       role="document"
       data-l10n-id="pref-page"
       data-l10n-attrs="title">
@@ -63,10 +63,6 @@
   <script src="chrome://browser/content/preferences/in-content/findInPage.js"/>
   <script src="chrome://browser/content/preferences/in-content/subdialogs.js"/>
 
-  <stringbundle id="bundleBrand"
-                src="chrome://branding/locale/brand.properties"/>
-  <stringbundle id="bundlePreferences"
-                src="chrome://browser/locale/preferences/preferences.properties"/>
   <stringbundle id="pkiBundle"
                 src="chrome://pippki/locale/pippki.properties"/>
   <stringbundle id="browserBundle"
@@ -185,10 +181,10 @@
                      data-l10n-id="managed-notice"/>
             </hbox>
           </hbox>
-          <textbox
-            is="search-textbox" id="searchInput"
+          <search-textbox
+            id="searchInput"
             data-l10n-id="search-input-box"
-            data-l10n-attrs="style"
+            data-l10n-attrs="placeholder, style"
             hidden="true"/>
         </hbox>
         <vbox id="mainPrefPane">
@@ -228,8 +224,6 @@
   <script src="chrome://browser/content/aboutDialog-appUpdater.js"/>
 
 <script src="chrome://mozapps/content/preferences/fontbuilder.js"/>
-
-<stringbundle id="bundlePreferences" src="chrome://browser/locale/preferences.properties"/>
 
 <html:template id="template-paneGeneral">
 <hbox id="generalCategory"
@@ -584,10 +578,10 @@
 <groupbox id="applicationsGroup" data-category="paneGeneral" hidden="true">
   <label><html:h2 data-l10n-id="applications-header"/></label>
   <description data-l10n-id="applications-description"/>
-  <textbox id="filter" flex="1"
-           is="search-textbox"
-           data-l10n-id="applications-filter"
-           aria-controls="handlersView"/>
+  <search-textbox id="filter" flex="1"
+                  data-l10n-id="applications-filter"
+                  data-l10n-attrs="placeholder"
+                  aria-controls="handlersView"/>
 
   <listheader equalsize="always">
     <treecol id="typeColumn" data-l10n-id="applications-type-column" value="type"
@@ -611,9 +605,6 @@
     <label id="playDRMContentLink" class="learnMore" data-l10n-id="play-drm-content-learn-more" is="text-link"/>
   </hbox>
 </groupbox>
-
-  <stringbundle id="bundleShell" src="chrome://browser/locale/shellservice.properties"/>
-  <stringbundle id="bundleBrand" src="chrome://branding/locale/brand.properties"/>
 
 <hbox id="updatesCategory"
       class="subcategory"
@@ -956,12 +947,23 @@
       </menulist>
 
       <vbox id="customSettings" hidden="true">
-        <textbox id="homePageUrl"
-                class="uri-element check-home-page-controlled"
-                data-preference-related="browser.startup.homepage"
-                type="autocomplete"
-                data-l10n-id="home-homepage-custom-url"
-                autocompletesearch="unifiedcomplete" />
+        <box role="combobox">
+          <html:input id="homePageUrl"
+                      type="text"
+                      is="autocomplete-input"
+                      class="uri-element check-home-page-controlled"
+                      style="-moz-box-flex: 1;"
+                      data-preference-related="browser.startup.homepage"
+                      data-l10n-id="home-homepage-custom-url"
+                      autocompletepopup="homePageUrlAutocomplete"
+                      autocompletesearch="unifiedcomplete" />
+          <popupset>
+            <panel id="homePageUrlAutocomplete"
+                   is="autocomplete-richlistbox-popup"
+                   type="autocomplete-richlistbox"
+                   noautofocus="true"/>
+          </popupset>
+        </box>
         <hbox class="homepage-buttons">
           <button id="useCurrentBtn"
                   is="highlightable-button"
@@ -1106,7 +1108,6 @@
 <!-- Privacy panel -->
 
 <script src="chrome://browser/content/preferences/in-content/privacy.js"/>
-<stringbundle id="bundlePreferences" src="chrome://browser/locale/preferences/preferences.properties"/>
 <stringbundle id="signonBundle" src="chrome://passwordmgr/locale/passwordmgr.properties"/>
 <html:template id="template-panePrivacy">
 <hbox id="browserPrivacyCategory"
@@ -1553,15 +1554,6 @@
                     preference="signon.generation.enabled"
                     flex="1" />
         </hbox>
-        <hbox class="indent" id="breachAlertsBox" flex="1" align="center">
-          <checkbox id="breachAlerts"
-                    class="tail-with-learn-more"
-                    data-l10n-id="forms-breach-alerts"
-                    search-l10n-ids="breach-alerts.label"
-                    preference="signon.management.page.breach-alerts.enabled"/>
-          <label id="breachAlertsLearnMoreLink" class="learnMore" is="text-link"
-              data-l10n-id="forms-breach-alerts-learn-more-link"/>
-        </hbox>
       </vbox>
       <vbox>
         <!-- Please don't remove the wrapping hbox/vbox/box for these elements. It's used to properly compute the search tooltip position. -->
@@ -1588,6 +1580,19 @@
         </hbox>
       </vbox>
     </hbox>
+    <hbox>
+      <vbox flex="1">
+        <hbox class="indent" id="breachAlertsBox" flex="1" align="center">
+          <checkbox id="breachAlerts"
+                    class="tail-with-learn-more"
+                    data-l10n-id="forms-breach-alerts"
+                    search-l10n-ids="breach-alerts.label"
+                    preference="signon.management.page.breach-alerts.enabled"/>
+          <label id="breachAlertsLearnMoreLink" class="learnMore" is="text-link"
+                 data-l10n-id="forms-breach-alerts-learn-more-link"/>
+        </hbox>
+      </vbox>
+    </hbox>
   </vbox>
   <hbox id="masterPasswordRow">
     <checkbox id="useMasterPassword"
@@ -1601,6 +1606,12 @@
               data-l10n-id="forms-master-pw-change"/>
     </hbox>
   </hbox>
+  <!--
+    Those two strings are meant to be invisible and will be used exclusively to provide
+    localization for an alert window.
+  -->
+  <label id="fips-title" hidden="true" data-l10n-id="forms-master-pw-fips-title"></label>
+  <label id="fips-desc" hidden="true" data-l10n-id="forms-master-pw-fips-desc"></label>
 </groupbox>
 
 <!-- The form autofill section is inserted in to this box
@@ -2165,17 +2176,15 @@
         data-l10n-name="android-icon"
         class="androidIcon"/>
       <html:a
-        id="fxaMobilePromo-android"
         data-l10n-name="android-link"
-        class="text-link" target="_blank"/>
+        class="fxaMobilePromo-android text-link" target="_blank"/>
       <html:img
         src="chrome://browser/skin/preferences/in-content/logo-ios.svg"
         data-l10n-name="ios-icon"
         class="iOSIcon"/>
       <html:a
-        id="fxaMobilePromo-ios"
         data-l10n-name="ios-link"
-        class="text-link" target="_blank"/>
+        class="fxaMobilePromo-ios text-link" target="_blank"/>
     </label>
   </groupbox>
 
@@ -2202,7 +2211,7 @@
                   <button id="fxaUnlinkButton"
                           is="highlightable-button"
                           class="accessory-button"
-                          data-l10n-id="sync-disconnect"/>
+                          data-l10n-id="sync-sign-out"/>
                 </hbox>
                 <hbox>
                   <html:a id="verifiedManage" class="openLink"
@@ -2260,63 +2269,121 @@
             </hbox>
           </deck>
         </groupbox>
-        <groupbox id="syncOptions">
-          <label><html:h2 data-l10n-id="sync-signedin-settings-header"/></label>
-          <description data-l10n-id="sync-signedin-settings-desc"/>
-          <hbox id="fxaSyncEngines">
-            <vbox flex="1">
-              <!-- by design, no tooltip for bookmarks or history -->
-              <checkbox data-l10n-id="sync-engine-bookmarks"
-                        preference="services.sync.engine.bookmarks"/>
-              <checkbox data-l10n-id="sync-engine-history"
-                        preference="services.sync.engine.history"/>
-              <checkbox data-l10n-id="sync-engine-tabs"
-                        preference="services.sync.engine.tabs"/>
-              <checkbox data-l10n-id="sync-engine-logins"
-                        preference="services.sync.engine.passwords"/>
-            </vbox>
-            <vbox flex="1">
-              <checkbox data-l10n-id="sync-engine-addresses"
-                        preference="services.sync.engine.addresses"/>
-              <checkbox data-l10n-id="sync-engine-creditcards"
-                        preference="services.sync.engine.creditcards"/>
-              <checkbox data-l10n-id="sync-engine-addons"
-                        preference="services.sync.engine.addons"/>
-              <checkbox data-l10n-id="sync-engine-prefs"
-                        preference="services.sync.engine.prefs"/>
-            </vbox>
-            <spacer/>
+
+        <groupbox>
+          <label control="fxaSyncComputerName">
+            <html:h2 data-l10n-id="sync-device-name-header"/>
+          </label>
+          <hbox id="fxaDeviceName">
+            <html:input id="fxaSyncComputerName" type="text" disabled="true"/>
+            <button id="fxaChangeDeviceName"
+                    is="highlightable-button"
+                    class="needs-account-ready"
+                    data-l10n-id="sync-device-name-change"/>
+            <button id="fxaCancelChangeDeviceName"
+                    is="highlightable-button"
+                    data-l10n-id="sync-device-name-cancel"
+                    hidden="true"/>
+            <button id="fxaSaveChangeDeviceName"
+                    is="highlightable-button"
+                    data-l10n-id="sync-device-name-save"
+                    hidden="true"/>
           </hbox>
+        </groupbox>
+
+        <groupbox>
+          <deck id="syncStatus" flex="1">
+            <!-- sync not yet configured. -->
+            <vbox id="syncNotConfigured">
+              <label>
+                <html:h2 data-l10n-id="prefs-syncing-off"/>
+              </label>
+              <hbox class="sync-group sync-not-configured">
+                <vbox flex="1">
+                  <label data-l10n-id="prefs-sync-offer-setup-label"/>
+                </vbox>
+                <vbox>
+                  <button id="syncSetup"
+                          is="highlightable-button"
+                          class="accessory-button needs-account-ready"
+                          data-l10n-id="prefs-sync-setup"/>
+                </vbox>
+              </hbox>
+            </vbox>
+
+            <vbox id="syncConfigured">
+              <hbox>
+                <html:h2 data-l10n-id="prefs-syncing-on"/>
+                <spacer flex="1"/>
+                <button id="syncNow"
+                        class="accessory-button needs-account-ready"
+                        data-l10n-id="prefs-sync-now"
+                        data-l10n-attrs="labelnotsyncing, accesskeynotsyncing, labelsyncing"/>
+              </hbox>
+              <vbox class="sync-group sync-configured">
+                <label data-l10n-id="sync-currently-syncing-heading"/>
+                <html:div class="sync-engines-list">
+                  <html:div engine_preference="services.sync.engine.bookmarks">
+                    <image class="sync-engine-image sync-engine-bookmarks"/>
+                    <label data-l10n-id="sync-currently-syncing-bookmarks"/>
+                  </html:div>
+                  <html:div engine_preference="services.sync.engine.history">
+                    <image class="sync-engine-image sync-engine-history"/>
+                    <label data-l10n-id="sync-currently-syncing-history"/>
+                  </html:div>
+                  <html:div engine_preference="services.sync.engine.tabs">
+                    <image class="sync-engine-image sync-engine-tabs"/>
+                    <label data-l10n-id="sync-currently-syncing-tabs"/>
+                  </html:div>
+                  <html:div engine_preference="services.sync.engine.passwords">
+                    <image class="sync-engine-image sync-engine-passwords"/>
+                    <label data-l10n-id="sync-currently-syncing-logins-passwords"/>
+                  </html:div>
+                  <html:div engine_preference="services.sync.engine.addresses">
+                    <image class="sync-engine-image sync-engine-addresses"/>
+                    <label data-l10n-id="sync-currently-syncing-addresses"/>
+                  </html:div>
+                  <html:div engine_preference="services.sync.engine.creditcards">
+                    <image class="sync-engine-image sync-engine-creditcards"/>
+                    <label data-l10n-id="sync-currently-syncing-creditcards"/>
+                  </html:div>
+                  <html:div engine_preference="services.sync.engine.addons">
+                    <image class="sync-engine-image sync-engine-addons"/>
+                    <label data-l10n-id="sync-currently-syncing-addons"/>
+                  </html:div>
+                  <html:div engine_preference="services.sync.engine.prefs">
+                    <image class="sync-engine-image sync-engine-prefs"/>
+                    <label data-l10n-id="sync-currently-syncing-prefs"/>
+                  </html:div>
+                </html:div>
+                <hbox>
+                  <button id="syncChangeOptions"
+                          label="Change…"
+                          is="highlightable-button"/>
+                  <spacer flex="1"/>
+                </hbox>
+              </vbox>
+            </vbox>
+          </deck>
         </groupbox>
       </vbox>
     </hbox>
-    <groupbox>
-      <label control="fxaSyncComputerName"><html:h2 data-l10n-id="sync-device-name-header"/></label>
-      <hbox id="fxaDeviceName">
-        <html:input id="fxaSyncComputerName" type="text" disabled="true"/>
-        <button id="fxaChangeDeviceName"
-                is="highlightable-button"
-                data-l10n-id="sync-device-name-change"/>
-        <button id="fxaCancelChangeDeviceName"
-                is="highlightable-button"
-                data-l10n-id="sync-device-name-cancel"
-                hidden="true"/>
-        <button id="fxaSaveChangeDeviceName"
-                is="highlightable-button"
-                data-l10n-id="sync-device-name-save"
-                hidden="true"/>
-      </hbox>
-    </groupbox>
-    <vbox align="start">
-      <label id="connect-another-device" is="text-link"
-             class="fxaMobilePromo" data-l10n-id="sync-connect-another-device"/>
-      <label id="manage-devices" is="text-link"
-             class="fxaMobilePromo" data-l10n-id="sync-manage-devices"/>
-    </vbox>
-    <vbox id="tosPP-small" align="start">
-      <label id="tosPP-small-ToS" is="text-link" data-l10n-id="sync-tos-link"/>
-      <label id="tosPP-small-PP" is="text-link" data-l10n-id="sync-fxa-privacy-notice"/>
-    </vbox>
+    <label class="fxaMobilePromo" data-l10n-id="sync-mobile-promo">
+      <html:img
+        src="chrome://browser/skin/preferences/in-content/logo-android.svg"
+        data-l10n-name="android-icon"
+        class="androidIcon"/>
+      <html:a
+        data-l10n-name="android-link"
+        class="fxaMobilePromo-android text-link" target="_blank"/>
+      <html:img
+        src="chrome://browser/skin/preferences/in-content/logo-ios.svg"
+        data-l10n-name="ios-icon"
+        class="iOSIcon"/>
+      <html:a
+        data-l10n-name="ios-link"
+        class="fxaMobilePromo-ios text-link" target="_blank"/>
+    </label>
   </vbox>
 </deck>
 </html:template>

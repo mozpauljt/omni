@@ -76,6 +76,7 @@
   <html:link rel="localization" href="browser/branding/sync-brand.ftl"/>
   <html:link rel="localization" href="browser/browser.ftl"/>
   <html:link rel="localization" href="browser/menubar.ftl"/>
+  <html:link rel="localization" href="browser/appmenu.ftl"/>
 </linkset>
 
 
@@ -218,6 +219,7 @@ if (AppConstants.platform == "macosx") {
 
     <command id="wrCaptureCmd" oncommand="gGfxUtils.webrenderCapture();"/>
     <command id="windowRecordingCmd" oncommand="gGfxUtils.toggleWindowRecording();"/>
+    <command id="wrTransactionLoggingCmd" oncommand="gGfxUtils.toggleTransactionLogging();"/>
   </commandset>
 
 
@@ -383,6 +385,9 @@ if (AppConstants.platform == "macosx") {
     <key id="key_windowRecordingCmd"
     key="$" modifiers="control"
     command="windowRecordingCmd"/>
+    <key id="key_transactionLoggingCmd"
+    key="%" modifiers="control"
+    command="wrTransactionLoggingCmd"/>
   </keyset>
 
   <popupset id="mainPopupSet">
@@ -550,8 +555,8 @@ if (AppConstants.platform == "macosx") {
       <label value="&editBookmarkOverlay.name.label;"
              accesskey="&editBookmarkOverlay.name.accesskey;"
              control="editBMPanel_namePicker"/>
-      <textbox id="editBMPanel_namePicker"
-               onchange="gEditItemOverlay.onNamePickerChange().catch(Cu.reportError);"/>
+      <html:input id="editBMPanel_namePicker"
+                  onchange="gEditItemOverlay.onNamePickerChange().catch(Cu.reportError);"/>
     </vbox>
 
     <vbox id="editBMPanel_locationRow"
@@ -559,9 +564,9 @@ if (AppConstants.platform == "macosx") {
       <label value="&editBookmarkOverlay.location.label;"
              accesskey="&editBookmarkOverlay.location.accesskey;"
              control="editBMPanel_locationField"/>
-      <textbox id="editBMPanel_locationField"
-               class="uri-element"
-               onchange="gEditItemOverlay.onLocationFieldChange();"/>
+      <html:input id="editBMPanel_locationField"
+                  class="uri-element"
+                  onchange="gEditItemOverlay.onLocationFieldChange();"/>
     </vbox>
 
     <vbox id="editBMPanel_folderRow"
@@ -613,12 +618,12 @@ if (AppConstants.platform == "macosx") {
       <label value="&editBookmarkOverlay.tags.label;"
              accesskey="&editBookmarkOverlay.tags.accesskey;"
              control="editBMPanel_tagsField"/>
-      <hbox flex="1" align="center">
-        <textbox id="editBMPanel_tagsField"
-                 type="autocomplete"
-                 flex="1"
+      <hbox flex="1" align="center" role="combobox">
+        <html:input id="editBMPanel_tagsField"
+                 is="autocomplete-input"
+                 style="-moz-box-flex: 1;"
                  autocompletesearch="places-tag-autocomplete"
-                 autocompletepopup="PopupAutoComplete"
+                 autocompletepopup="editBMPanel_tagsAutocomplete"
                  completedefaultindex="true"
                  completeselectedindex="true"
                  tabscrolling="true"
@@ -630,6 +635,17 @@ if (AppConstants.platform == "macosx") {
                 tooltiptextdown="&editBookmarkOverlay.tagsExpanderDown.tooltip;"
                 tooltiptextup="&editBookmarkOverlay.expanderUp.tooltip;"
                 oncommand="gEditItemOverlay.toggleTagsSelector().catch(Cu.reportError);"/>
+        <popupset>
+          <panel is="autocomplete-richlistbox-popup"
+                 type="autocomplete-richlistbox"
+                 id="editBMPanel_tagsAutocomplete"
+                 role="group"
+                 noautofocus="true"
+                 hidden="true"
+                 overflowpadding="4"
+                 norolluponanchor="true"
+                 nomaxresults="true"/>
+        </popupset>
       </hbox>
     </vbox>
 
@@ -645,8 +661,8 @@ if (AppConstants.platform == "macosx") {
       <label value="&editBookmarkOverlay.keyword.label;"
              accesskey="&editBookmarkOverlay.keyword.accesskey;"
              control="editBMPanel_keywordField"/>
-      <textbox id="editBMPanel_keywordField"
-               onchange="gEditItemOverlay.onKeywordFieldChange();"/>
+      <html:input id="editBMPanel_keywordField"
+                  onchange="gEditItemOverlay.onKeywordFieldChange();"/>
     </vbox>
   </vbox>
 </vbox>
@@ -1513,21 +1529,21 @@ if (AppConstants.platform == "macosx") {
     <menupopup id="pageActionContextMenu"
                onpopupshowing="BrowserPageActions.onContextMenuShowing(event, this);">
       <menuitem class="pageActionContextMenuItem builtInUnpinned"
-                label="&pageAction.addToUrlbar.label;"
-                oncommand="BrowserPageActions.togglePinningForContextAction();"/>
+                oncommand="BrowserPageActions.togglePinningForContextAction();"
+                data-l10n-id="page-action-add-to-urlbar"/>
       <menuitem class="pageActionContextMenuItem builtInPinned"
-                label="&pageAction.removeFromUrlbar.label;"
-                oncommand="BrowserPageActions.togglePinningForContextAction();"/>
+                oncommand="BrowserPageActions.togglePinningForContextAction();"
+                data-l10n-id="page-action-remove-from-urlbar"/>
       <menuitem class="pageActionContextMenuItem extensionUnpinned"
-                label="&pageAction.addToUrlbar.label;"
-                oncommand="BrowserPageActions.togglePinningForContextAction();"/>
+                oncommand="BrowserPageActions.togglePinningForContextAction();"
+                data-l10n-id="page-action-add-to-urlbar"/>
       <menuitem class="pageActionContextMenuItem extensionPinned"
-                label="&pageAction.removeFromUrlbar.label;"
-                oncommand="BrowserPageActions.togglePinningForContextAction();"/>
+                oncommand="BrowserPageActions.togglePinningForContextAction();"
+                data-l10n-id="page-action-remove-from-urlbar"/>
       <menuseparator class="pageActionContextMenuItem extensionPinned extensionUnpinned"/>
       <menuitem class="pageActionContextMenuItem extensionPinned extensionUnpinned"
-                label="&pageAction.manageExtension.label;"
-                oncommand="BrowserPageActions.openAboutAddonsForContextAction();"/>
+                oncommand="BrowserPageActions.openAboutAddonsForContextAction();"
+                data-l10n-id="page-action-manage-extension"/>
     </menupopup>
 
 
@@ -1607,8 +1623,8 @@ if (AppConstants.platform == "macosx") {
 
     <popupnotification id="password-notification" hidden="true">
       <popupnotificationcontent orient="vertical">
-        <textbox id="password-notification-username"/>
-        <textbox id="password-notification-password" type="password" show-content=""/>
+        <html:input id="password-notification-username"/>
+        <html:input id="password-notification-password" type="password"/>
         <checkbox id="password-notification-visibilityToggle" hidden="true"/>
       </popupnotificationcontent>
     </popupnotification>
@@ -1939,9 +1955,13 @@ if (AppConstants.platform == "macosx") {
         <toolbaritem>
           <toolbarbutton id="appMenu-protection-report-button"
                class="subviewbutton subviewbutton-iconic"
-               oncommand="gProtectionsHandler.openProtections();">
+               oncommand="gProtectionsHandler.openProtections();"
+               data-l10n-id="appmenuitem-protection-report-tooltip">
             <image id="appMenu-protection-report-icon" class="toolbarbutton-icon"/>
-            <label id="appMenu-protection-report-text" class="toolbarbutton-text">Privacy Protections</label>
+            <label id="appMenu-protection-report-text"
+                   class="toolbarbutton-text"
+                   data-l10n-id="appmenuitem-protection-report-title">
+            </label>
           </toolbarbutton>
         </toolbaritem>
         <toolbarseparator id="appMenu-tp-separator"/>
@@ -2068,11 +2088,11 @@ if (AppConstants.platform == "macosx") {
                        label="&webDeveloperMenu.label;"
                        closemenu="none"
                        oncommand="PanelUI.showSubView('PanelUI-developer', this)"/>
-       <toolbarbutton id="appMenu-whatsnew-button"
-                      class="subviewbutton subviewbutton-iconic subviewbutton-nav"
-                      hidden="true"
-                      closemenu="none"
-                      oncommand="PanelUI.showSubView('PanelUI-whatsNew', this)"/>
+        <toolbarbutton id="appMenu-whatsnew-button"
+                       class="subviewbutton subviewbutton-iconic subviewbutton-nav"
+                       hidden="true"
+                       closemenu="none"
+                       oncommand="PanelUI.showSubView('PanelUI-whatsNew', this)"/>
         <toolbarbutton id="appMenu-help-button"
                        class="subviewbutton subviewbutton-iconic subviewbutton-nav"
                        label="&appMenuHelp.label;"
@@ -2451,6 +2471,27 @@ if (AppConstants.platform == "macosx") {
                        oncommand="gSync.openSendFromFxaMenu(this);"/>
       </vbox>
     </panelview>
+
+    <panelview id="PanelUI-fxa-menu-account-panel" flex="1" title="&fxa.menu.settings.label;" class="PanelUI-subView" descriptionheightworkaround="true">
+      <vbox class="panel-subview-body">
+        <toolbarbutton id="PanelUI-fxa-menu-account-settings-button"
+                      class="subviewbutton subviewbutton-iconic"
+                      label="&fxa.menu.accountSettings.label;"
+                      type="open-to-new"
+                      oncommand="gSync.openFxAManagePageFromFxaMenu(this)"/>
+        <toolbarseparator/>
+        <label id="fxa-menu-device-name-label" class="subview-subheader"/>
+        <toolbarbutton id="PanelUI-fxa-menu-account-devices-button"
+                       class="subviewbutton subviewbutton-iconic"
+                       label="&fxa.menu.deviceSettings.label;"
+                       oncommand="gSync.openDevicesManagementPage('fxamenu');"/>
+        <toolbarseparator/>
+        <toolbarbutton id="PanelUI-fxa-menu-account-signout-button"
+                class="subviewbutton subviewbutton-iconic"
+                label="&fxa.menu.signOut.label;"
+                oncommand="gSync.disconnect();"/>
+      </vbox>
+    </panelview>
     <!-- This panelview is used to contain the dynamically created buttons for send tab to devices -->
     <panelview id="PanelUI-sendTabToDevice" flex="1" class="PanelUI-subView">
       <vbox class="panel-subview-body">
@@ -2505,14 +2546,9 @@ if (AppConstants.platform == "macosx") {
 
     <panelview id="PanelUI-whatsNew" class="PanelUI-subView">
       <vbox class="panel-subview-body">
-        <box id="PanelUI-whatsNew-title" class="panel-header">
-          <label/>
-        </box>
         <toolbaritem id="PanelUI-whatsNew-content"
                      orient="vertical"
-                     smoothscroll="false"
-                     flatList="true"
-                     tooltip="bhTooltip">
+                     smoothscroll="false">
           <html:div id="PanelUI-whatsNew-message-container" role="document">
             <!-- What's New messages will be rendered here -->
           </html:div>
@@ -2624,7 +2660,7 @@ if (AppConstants.platform == "macosx") {
 
           <vbox class="identity-popup-security-connection">
             <description class="identity-popup-connection-not-secure"
-                         when-connection="not-secure secure-cert-user-overridden secure-custom-root">&identity.connectionNotSecure2;</description>
+                         when-connection="not-secure secure-cert-user-overridden secure-custom-root cert-error-page">&identity.connectionNotSecure2;</description>
             <description class="identity-popup-connection-secure"
                          when-connection="secure secure-ev">&identity.connectionSecure3;</description>
             <description when-connection="chrome">&identity.connectionInternal;</description>
@@ -2652,13 +2688,13 @@ if (AppConstants.platform == "macosx") {
         </vbox>
         <button id="identity-popup-security-expander"
                 class="identity-popup-expander"
-                when-connection="not-secure secure secure-ev secure-cert-user-overridden"
-                oncommand="gIdentityHandler.showSecuritySubView(); gIdentityHandler.recordClick('security_subview_btn');"/>
+                when-connection="not-secure secure secure-ev secure-cert-user-overridden cert-error-page"
+                oncommand="gIdentityHandler.showSecuritySubView();"/>
       </hbox>
 
       <!-- Permissions Section -->
       <hbox class="identity-popup-section"
-            when-connection="not-secure secure secure-ev secure-cert-user-overridden file extension">
+            when-connection="not-secure secure secure-ev secure-cert-user-overridden file extension cert-error-page">
         <vbox id="identity-popup-permissions-content" flex="1" role="group"
               aria-labelledby="identity-popup-permissions-headline">
           <hbox id="identity-popup-permissions-header" align="center">
@@ -2678,7 +2714,7 @@ if (AppConstants.platform == "macosx") {
             class="panel-footer">
         <button id="identity-popup-clear-sitedata-button"
                 label="&identity.clearSiteData;"
-                oncommand="gIdentityHandler.clearSiteData(event); gIdentityHandler.recordClick('clear_sitedata');"/>
+                oncommand="gIdentityHandler.clearSiteData(event);"/>
       </vbox>
     </panelview>
 
@@ -2689,7 +2725,7 @@ if (AppConstants.platform == "macosx") {
       <vbox class="identity-popup-security-content">
         <vbox class="identity-popup-security-connection">
           <description class="identity-popup-connection-not-secure"
-                       when-connection="not-secure secure-cert-user-overridden">&identity.connectionNotSecureSecurityView;</description>
+                       when-connection="not-secure secure-cert-user-overridden cert-error-page">&identity.connectionNotSecureSecurityView;</description>
           <description class="identity-popup-connection-secure"
                        when-connection="secure secure-ev">&identity.connectionVerified3;</description>
         </vbox>
@@ -2718,7 +2754,7 @@ if (AppConstants.platform == "macosx") {
                 oncommand="gIdentityHandler.removeCertException()"/>
 
         <!-- Connection is Not Secure -->
-        <description when-connection="not-secure"
+        <description when-connection="not-secure cert-error-page"
                      and-when-loginforms="secure">&identity.description.insecure;</description>
 
         <!-- Insecure login forms -->
@@ -2846,6 +2882,7 @@ if (AppConstants.platform == "macosx") {
         <tooltip id="protections-popup-not-blocking-why-etp-off-tooltip">&protections.notBlocking.why.etpOff.tooltip;</tooltip>
         <vbox id="protections-popup-content" flex="1">
           <vbox id="protections-popup-category-list">
+            <!-- wrap=true is needed for descriptionheightworkaround, see bug 1564077 -->
             <toolbarbutton id="protections-popup-category-tracking-protection"
                            oncommand="gProtectionsHandler.showTrackersSubview(event); gProtectionsHandler.recordClick('trackers');"
                            class="protections-popup-category" align="center"
@@ -2853,13 +2890,16 @@ if (AppConstants.platform == "macosx") {
               <image class="protections-popup-category-icon tracking-protection-icon"/>
               <label flex="1" class="protections-popup-category-label">&contentBlocking.trackingProtection4.label;</label>
             </toolbarbutton>
+            <!-- wrap=true is needed for descriptionheightworkaround, see bug 1564077 -->
             <toolbarbutton id="protections-popup-category-socialblock"
                            oncommand="gProtectionsHandler.showSocialblockerSubview(event); gProtectionsHandler.recordClick('social');"
-                           class="protections-popup-category" align="center">
+                           class="protections-popup-category" align="center"
+                           wrap="true">
               <image class="protections-popup-category-icon socialblock-icon"/>
               <label flex="1"
               class="protections-popup-category-label">&contentBlocking.socialblock.label;</label>
             </toolbarbutton>
+            <!-- wrap=true is needed for descriptionheightworkaround, see bug 1564077 -->
             <toolbarbutton id="protections-popup-category-cookies"
                            oncommand="gProtectionsHandler.showCookiesSubview(event); gProtectionsHandler.recordClick('cookies');"
                            class="protections-popup-category" align="center"
@@ -2871,6 +2911,7 @@ if (AppConstants.platform == "macosx") {
                      class="protections-popup-category-label"
                      hidden="true"></label>
             </toolbarbutton>
+            <!-- wrap=true is needed for descriptionheightworkaround, see bug 1564077 -->
             <toolbarbutton id="protections-popup-category-cryptominers"
                            oncommand="gProtectionsHandler.showCryptominersSubview(event); gProtectionsHandler.recordClick('cryptominers');"
                            class="protections-popup-category" align="center"
@@ -2878,6 +2919,7 @@ if (AppConstants.platform == "macosx") {
               <image class="protections-popup-category-icon cryptominers-icon"/>
               <label flex="1" class="protections-popup-category-label">&contentBlocking.cryptominers.label;</label>
             </toolbarbutton>
+            <!-- wrap=true is needed for descriptionheightworkaround, see bug 1564077 -->
             <toolbarbutton id="protections-popup-category-fingerprinters"
                            oncommand="gProtectionsHandler.showFingerprintersSubview(event); gProtectionsHandler.recordClick('fingerprinters');"
                            class="protections-popup-category" align="center"
@@ -2905,15 +2947,19 @@ if (AppConstants.platform == "macosx") {
       </vbox>
 
       <vbox id="protections-popup-footer" class="protections-popup-section">
+        <!-- wrap=true is needed for descriptionheightworkaround, see bug 1564077 -->
         <toolbarbutton id="protections-popup-settings-button"
                        class="protections-popup-footer-button"
+                       wrap="true"
                        oncommand="gProtectionsHandler.openPreferences(); gProtectionsHandler.recordClick('settings');">
           <image class="protections-popup-footer-icon protections-popup-settings-icon"/>
           <label class="protections-popup-footer-button-label" flex="1">&protections.settings.label;</label>
         </toolbarbutton>
         <stack id="protections-popup-show-report-stack">
+          <!-- wrap=true is needed for descriptionheightworkaround, see bug 1564077 -->
           <toolbarbutton id="protections-popup-show-report-button"
                          class="protections-popup-footer-button"
+                         wrap="true"
                          oncommand="gProtectionsHandler.openProtections(true); gProtectionsHandler.recordClick('full_report');">
             <image class="protections-popup-footer-icon protections-popup-show-report-icon"/>
             <label class="protections-popup-footer-button-label" flex="1">&protections.showreport.label;</label>
@@ -3756,7 +3802,7 @@ if (AppConstants.platform == "macosx") {
               <menuitem id="sync-setup"
                         class="sync-ui-item"
                         hidden="true"
-                        oncommand="gSync.openPrefs('menubar')" data-l10n-id="menu-tools-sync-sign-in"/>
+                        oncommand="gSync.openPrefs('menubar')" data-l10n-id="menu-tools-fxa-sign-in"/>
               <menuitem id="sync-enable"
                         class="sync-ui-item"
                         hidden="true"
@@ -3764,7 +3810,7 @@ if (AppConstants.platform == "macosx") {
               <menuitem id="sync-unverifieditem"
                         class="sync-ui-item"
                         hidden="true"
-                        oncommand="gSync.openPrefs('menubar')" data-l10n-id="menu-tools-sync-sign-in"/>
+                        oncommand="gSync.openPrefs('menubar')" data-l10n-id="menu-tools-fxa-sign-in"/>
               <menuitem id="sync-syncnowitem"
                         class="sync-ui-item"
                         hidden="true"
@@ -3772,7 +3818,7 @@ if (AppConstants.platform == "macosx") {
               <menuitem id="sync-reauthitem"
                         class="sync-ui-item"
                         hidden="true"
-                        oncommand="gSync.openSignInAgainPage('menubar');" data-l10n-id="menu-tools-sync-re-auth"/>
+                        oncommand="gSync.openSignInAgainPage('menubar');" data-l10n-id="menu-tools-fxa-re-auth"/>
               <menuseparator id="devToolsSeparator"/>
               <menu id="webDeveloperMenu" data-l10n-id="menu-tools-web-developer">
                 <menupopup id="menuWebDeveloperPopup">
@@ -4015,7 +4061,7 @@ if (AppConstants.platform == "macosx") {
               </box>
               <box id="identity-box" role="button"
                    align="center"
-                   data-l10n-id="browser-urlbar-identity-button"
+                   data-l10n-id="urlbar-identity-button"
                    pageproxystate="invalid"
                    onclick="gIdentityHandler.handleIdentityButtonEvent(event);"
                    onkeypress="gIdentityHandler.handleIdentityButtonEvent(event);"
@@ -4059,48 +4105,47 @@ if (AppConstants.platform == "macosx") {
                      onmouseout="document.getElementById('identity-box').classList.remove('no-hover');"
                      align="center">
                   <image id="default-notification-icon" class="notification-anchor-icon" role="button"
-                         tooltiptext="&urlbar.defaultNotificationAnchor.tooltip;"/>
+                         data-l10n-id="urlbar-default-notification-anchor"/>
                   <image id="geo-notification-icon" class="notification-anchor-icon geo-icon" role="button"
-                         tooltiptext="&urlbar.geolocationNotificationAnchor.tooltip;"/>
+                         data-l10n-id="urlbar-geolocation-notification-anchor"/>
                   <image id="autoplay-media-notification-icon" class="notification-anchor-icon autoplay-media-icon" role="button"
-                         tooltiptext="&urlbar.autoplayNotificationAnchor.tooltip;"/>
+                         data-l10n-id="urlbar-autoplay-notification-anchor"/>
                   <image id="addons-notification-icon" class="notification-anchor-icon install-icon" role="button"
-                         tooltiptext="&urlbar.addonsNotificationAnchor.tooltip;"/>
+                         data-l10n-id="urlbar-addons-notification-anchor"/>
                   <image id="canvas-notification-icon" class="notification-anchor-icon" role="button"
-                         tooltiptext="&urlbar.canvasNotificationAnchor.tooltip;"/>
+                         data-l10n-id="urlbar-canvas-notification-anchor"/>
                   <image id="indexedDB-notification-icon" class="notification-anchor-icon indexedDB-icon" role="button"
-                         tooltiptext="&urlbar.indexedDBNotificationAnchor.tooltip;"/>
+                         data-l10n-id="urlbar-indexed-db-notification-anchor"/>
                   <image id="password-notification-icon" class="notification-anchor-icon login-icon" role="button"
-                         tooltiptext="&urlbar.passwordNotificationAnchor.tooltip;"/>
-                  <stack id="plugins-notification-icon" class="notification-anchor-icon" role="button" align="center"
-                         tooltiptext="&urlbar.pluginsNotificationAnchor.tooltip;">
+                         data-l10n-id="urlbar-password-notification-anchor"/>
+                  <stack id="plugins-notification-icon" class="notification-anchor-icon" role="button" align="center" data-l10n-id="urlbar-plugins-notification-anchor">
                     <image class="plugin-icon" />
                     <image id="plugin-icon-badge" />
                   </stack>
                   <image id="web-notifications-notification-icon" class="notification-anchor-icon desktop-notification-icon" role="button"
-                         tooltiptext="&urlbar.webNotificationAnchor.tooltip;"/>
+                         data-l10n-id="urlbar-web-notification-anchor"/>
                   <image id="webRTC-shareDevices-notification-icon" class="notification-anchor-icon camera-icon" role="button"
-                         tooltiptext="&urlbar.webRTCShareDevicesNotificationAnchor.tooltip;"/>
+                         data-l10n-id="urlbar-web-rtc-share-devices-notification-anchor"/>
                   <image id="webRTC-shareMicrophone-notification-icon" class="notification-anchor-icon microphone-icon" role="button"
-                         tooltiptext="&urlbar.webRTCShareMicrophoneNotificationAnchor.tooltip;"/>
+                         data-l10n-id="urlbar-web-rtc-share-microphone-notification-anchor"/>
                   <image id="webRTC-shareScreen-notification-icon" class="notification-anchor-icon screen-icon" role="button"
-                         tooltiptext="&urlbar.webRTCShareScreenNotificationAnchor.tooltip;"/>
+                         data-l10n-id="urlbar-web-rtc-share-screen-notification-anchor"/>
                   <image id="servicesInstall-notification-icon" class="notification-anchor-icon service-icon" role="button"
-                         tooltiptext="&urlbar.servicesNotificationAnchor.tooltip;"/>
+                         data-l10n-id="urlbar-services-notification-anchor"/>
                   <image id="translate-notification-icon" class="notification-anchor-icon translation-icon" role="button"
-                         tooltiptext="&urlbar.translateNotificationAnchor.tooltip;"/>
+                         data-l10n-id="urlbar-translate-notification-anchor"/>
                   <image id="translated-notification-icon" class="notification-anchor-icon translation-icon in-use" role="button"
-                         tooltiptext="&urlbar.translatedNotificationAnchor.tooltip;"/>
+                         data-l10n-id="urlbar-translated-notification-anchor"/>
                   <image id="eme-notification-icon" class="notification-anchor-icon drm-icon" role="button"
-                         tooltiptext="&urlbar.emeNotificationAnchor.tooltip;"/>
+                         data-l10n-id="urlbar-eme-notification-anchor"/>
                   <image id="persistent-storage-notification-icon" class="notification-anchor-icon persistent-storage-icon" role="button"
-                         tooltiptext="&urlbar.persistentStorageNotificationAnchor.tooltip;"/>
+                         data-l10n-id="urlbar-persistent-storage-notification-anchor"/>
                   <image id="midi-notification-icon" class="notification-anchor-icon midi-icon" role="button"
-                         tooltiptext="&urlbar.midiNotificationAnchor.tooltip;"/>
+                         data-l10n-id="urlbar-midi-notification-anchor"/>
                   <image id="webauthn-notification-icon" class="notification-anchor-icon" role="button"
-                         tooltiptext="&urlbar.webAuthnAnchor.tooltip;"/>
+                         data-l10n-id="urlbar-web-authn-anchor"/>
                   <image id="storage-access-notification-icon" class="notification-anchor-icon storage-access-icon" role="button"
-                         tooltiptext="&urlbar.storageAccessAnchor.tooltip;"/>
+                         data-l10n-id="urlbar-storage-access-anchor"/>
                 </box>
                 <image id="remote-control-icon"
                        tooltiptext="&urlbar.remoteControlNotificationAnchor.tooltip;"/>
@@ -4266,13 +4311,12 @@ if (AppConstants.platform == "macosx") {
 
       <toolbaritem id="PanelUI-button"
                    removable="false">
-       <toolbarbutton id="whats-new-menu-button"
-                      class="toolbarbutton-1"
-                      hidden="true"
-                      badged="true"
-                      consumeanchor="PanelUI-button"
-                      onmousedown="PanelUI.showSubView('PanelUI-whatsNew', this, event);"
-                      onkeypress="PanelUI.showSubView('PanelUI-whatsNew', this, event);"/>
+        <toolbarbutton id="whats-new-menu-button"
+                       class="toolbarbutton-1"
+                       hidden="true"
+                       badged="true"
+                       onmousedown="PanelUI.showSubView('PanelUI-whatsNew', this, event);"
+                       onkeypress="PanelUI.showSubView('PanelUI-whatsNew', this, event);"/>
         <toolbarbutton id="PanelUI-menu-button"
                        class="toolbarbutton-1"
                        badged="true"
@@ -4528,7 +4572,7 @@ if (AppConstants.platform == "macosx") {
 <box flex="1" id="customization-palette-container">
   <label id="customization-header" data-l10n-id="customize-mode-menu-and-toolbars-header"></label>
   <vbox id="customization-palette" class="customization-palette" hidden="true"/>
-  <vbox id="customization-pong-arena" hidden="true"/>
+  <html:div id="customization-pong-arena" hidden="true"/>
   <spacer id="customization-spacer"/>
 </box>
 <vbox id="customization-panel-container">

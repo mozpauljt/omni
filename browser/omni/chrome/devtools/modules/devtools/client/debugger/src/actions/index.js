@@ -39,11 +39,14 @@ var toolbox = _interopRequireWildcard(require("./toolbox"));
 
 var preview = _interopRequireWildcard(require("./preview"));
 
+var _devtoolsReps = require("devtools/client/shared/components/reps/reps.js");
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+// eslint-disable-next-line import/named
 var _default = { ...ast,
   ...navigation,
   ...breakpoints,
@@ -55,6 +58,7 @@ var _default = { ...ast,
   ...pause,
   ...ui,
   ...fileSearch,
+  ..._devtoolsReps.objectInspector.actions,
   ...projectTextSearch,
   ...quickOpen,
   ...sourceTree,

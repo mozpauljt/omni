@@ -11,6 +11,7 @@ var _exportNames = {
   getQuickOpenEnabled: true,
   getQuickOpenQuery: true,
   getQuickOpenType: true,
+  getClosestBreakpoint: true,
   getBreakpointAtLocation: true,
   getBreakpointsAtLine: true,
   getVisibleBreakpoints: true,
@@ -66,6 +67,12 @@ Object.defineProperty(exports, "getQuickOpenType", {
   enumerable: true,
   get: function () {
     return _quickOpen.getQuickOpenType;
+  }
+});
+Object.defineProperty(exports, "getClosestBreakpoint", {
+  enumerable: true,
+  get: function () {
+    return _breakpointAtLocation.getClosestBreakpoint;
   }
 });
 Object.defineProperty(exports, "getBreakpointAtLocation", {

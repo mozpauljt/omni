@@ -107,10 +107,12 @@ class ConditionalPanel extends _react.PureComponent {
   setBreakpoint(value) {
     const {
       cx,
-      location,
       log,
       breakpoint
-    } = this.props;
+    } = this.props; // If breakpoint is `pending`, props will not contain a breakpoint.
+    // If source is a URL without location, breakpoint will contain no generatedLocation.
+
+    const location = breakpoint && breakpoint.generatedLocation ? breakpoint.generatedLocation : this.props.location;
     const options = breakpoint ? breakpoint.options : {};
     const type = log ? "logValue" : "condition";
     return this.props.setBreakpointOptions(cx, location, { ...options,
@@ -223,10 +225,12 @@ class ConditionalPanel extends _react.PureComponent {
 exports.ConditionalPanel = ConditionalPanel;
 
 const mapStateToProps = state => {
-  const location = (0, _selectors.getConditionalPanelLocation)(state);
+  const location = (0, _selectors.getConditionalPanelLocation)(state); // location type could be null.
+
+  const breakpoint = location ? (0, _selectors.getClosestBreakpoint)(state, location) : undefined;
   return {
     cx: (0, _selectors.getContext)(state),
-    breakpoint: (0, _selectors.getBreakpoint)(state, location),
+    breakpoint,
     location,
     log: (0, _selectors.getLogPointStatus)(state)
   };

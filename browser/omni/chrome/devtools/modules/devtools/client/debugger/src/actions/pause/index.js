@@ -123,6 +123,18 @@ Object.defineProperty(exports, "generateInlinePreview", {
     return _inlinePreview.generateInlinePreview;
   }
 });
+Object.defineProperty(exports, "previewPausedLocation", {
+  enumerable: true,
+  get: function () {
+    return _previewPausedLocation.previewPausedLocation;
+  }
+});
+Object.defineProperty(exports, "clearPreviewPausedLocation", {
+  enumerable: true,
+  get: function () {
+    return _previewPausedLocation.clearPreviewPausedLocation;
+  }
+});
 loader.lazyRequireGetter(this, "_commands", "devtools/client/debugger/src/actions/pause/commands");
 loader.lazyRequireGetter(this, "_fetchScopes", "devtools/client/debugger/src/actions/pause/fetchScopes");
 loader.lazyRequireGetter(this, "_paused", "devtools/client/debugger/src/actions/pause/paused");
@@ -136,3 +148,4 @@ loader.lazyRequireGetter(this, "_skipPausing", "devtools/client/debugger/src/act
 loader.lazyRequireGetter(this, "_mapScopes", "devtools/client/debugger/src/actions/pause/mapScopes");
 loader.lazyRequireGetter(this, "_expandScopes", "devtools/client/debugger/src/actions/pause/expandScopes");
 loader.lazyRequireGetter(this, "_inlinePreview", "devtools/client/debugger/src/actions/pause/inlinePreview");
+loader.lazyRequireGetter(this, "_previewPausedLocation", "devtools/client/debugger/src/actions/pause/previewPausedLocation");

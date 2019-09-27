@@ -62,6 +62,9 @@ this.schema =
               "type": "boolean"
             }
           }
+        },
+        "Locked": {
+          "type": "boolean"
         }
       }
     },

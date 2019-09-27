@@ -480,7 +480,7 @@ XPCOMUtils.defineLazyPreferenceGetter(
   "identity.fxaccounts.toolbar.enabled",
   false,
   (aPref, aOldVal, aNewVal) => {
-    showFxaToolbarMenu(aNewVal);
+    updateFxaToolbarMenu(aNewVal);
   }
 );
 
@@ -490,7 +490,7 @@ XPCOMUtils.defineLazyPreferenceGetter(
   "identity.fxaccounts.toolbar.accessed",
   false,
   (aPref, aOldVal, aNewVal) => {
-    showFxaToolbarMenu(gFxaToolbarEnabled);
+    updateFxaToolbarMenu(gFxaToolbarEnabled);
   }
 );
 
@@ -500,7 +500,7 @@ XPCOMUtils.defineLazyPreferenceGetter(
   "identity.fxaccounts.service.sendLoginUrl",
   false,
   (aPref, aOldVal, aNewVal) => {
-    showFxaToolbarMenu(gFxaToolbarEnabled);
+    updateFxaToolbarMenu(gFxaToolbarEnabled);
   }
 );
 
@@ -510,7 +510,17 @@ XPCOMUtils.defineLazyPreferenceGetter(
   "identity.fxaccounts.service.monitorLoginUrl",
   false,
   (aPref, aOldVal, aNewVal) => {
-    showFxaToolbarMenu(gFxaToolbarEnabled);
+    updateFxaToolbarMenu(gFxaToolbarEnabled);
+  }
+);
+
+XPCOMUtils.defineLazyPreferenceGetter(
+  this,
+  "gFxaDeviceName",
+  "identity.fxaccounts.account.device.name",
+  false,
+  (aPref, aOldVal, aNewVal) => {
+    updateFxaToolbarMenu(gFxaToolbarEnabled);
   }
 );
 
@@ -520,7 +530,7 @@ XPCOMUtils.defineLazyPreferenceGetter(
   "browser.messaging-system.fxatoolbarbadge.enabled",
   true,
   (aPref, aOldVal, aNewVal) => {
-    showFxaToolbarMenu(gFxaToolbarEnabled);
+    updateFxaToolbarMenu(gFxaToolbarEnabled);
   }
 );
 
@@ -639,7 +649,7 @@ var gNavigatorBundle = {
   },
 };
 
-function showFxaToolbarMenu(enable) {
+function updateFxaToolbarMenu(enable, isInitialUpdate = false) {
   // We only show the Firefox Account toolbar menu if the feature is enabled and
   // if sync is enabled.
   const syncEnabled = Services.prefs.getBoolPref(
@@ -660,7 +670,9 @@ function showFxaToolbarMenu(enable) {
     // We have to manually update the sync state UI when toggling the FxA toolbar
     // because it could show an invalid icon if the user is logged in and no sync
     // event was performed yet.
-    gSync.maybeUpdateUIState();
+    if (!isInitialUpdate) {
+      gSync.maybeUpdateUIState();
+    }
 
     Services.telemetry.setEventRecordingEnabled("fxa_avatar_menu", true);
 
@@ -685,6 +697,10 @@ function showFxaToolbarMenu(enable) {
     ).hidden = !gFxaMonitorLoginUrl;
     document.getElementById("fxa-menu-service-separator").hidden =
       !gFxaSendLoginUrl && !gFxaMonitorLoginUrl;
+
+    document.getElementById(
+      "fxa-menu-device-name-label"
+    ).value = gFxaDeviceName;
   } else {
     mainWindowEl.removeAttribute("fxatoolbarmenu");
   }
@@ -1256,7 +1272,12 @@ XPCOMUtils.defineLazyPreferenceGetter(
 );
 
 function gKeywordURIFixup({ target: browser, data: fixupInfo }) {
-  let deserializeURI = spec => (spec ? makeURI(spec) : null);
+  let deserializeURI = url => {
+    if (url instanceof Ci.nsIURI) {
+      return url;
+    }
+    return url ? makeURI(url) : null;
+  };
 
   // We get called irrespective of whether we did a keyword search, or
   // whether the original input would be vaguely interpretable as a URL,
@@ -1792,7 +1813,7 @@ var gBrowserInit = {
 
     this._setInitialFocus();
 
-    showFxaToolbarMenu(gFxaToolbarEnabled);
+    updateFxaToolbarMenu(gFxaToolbarEnabled, true);
   },
 
   onLoad() {
@@ -1973,10 +1994,6 @@ var gBrowserInit = {
     // Bug 1531854 - The hidden window is force-created here
     // until all of its dependencies are handled.
     Services.appShell.hiddenDOMWindow;
-
-    // We need to set the OfflineApps message listeners up before we
-    // load homepages, which might need them.
-    OfflineApps.init();
 
     gBrowser.addEventListener(
       "InsecureLoginFormsStateChange",
@@ -2877,7 +2894,7 @@ function focusAndSelectUrlBar() {
 function openLocation(event) {
   if (window.location.href == AppConstants.BROWSER_CHROME_URL) {
     focusAndSelectUrlBar();
-    if (gURLBar.openViewOnFocus && !gURLBar.view.isOpen) {
+    if (gURLBar.openViewOnFocusForCurrentTab && !gURLBar.view.isOpen) {
       gURLBar.startQuery({ event });
     }
     return;
@@ -3554,7 +3571,6 @@ var BrowserOnClick = {
     mm.addMessageListener("Browser:SiteBlockedError", this);
     mm.addMessageListener("Browser:SetSSLErrorReportAuto", this);
     mm.addMessageListener("Browser:ResetSSLPreferences", this);
-    mm.addMessageListener("Browser:SSLErrorReportTelemetry", this);
   },
 
   uninit() {
@@ -3563,7 +3579,6 @@ var BrowserOnClick = {
     mm.removeMessageListener("Browser:SiteBlockedError", this);
     mm.removeMessageListener("Browser:SetSSLErrorReportAuto", this);
     mm.removeMessageListener("Browser:ResetSSLPreferences", this);
-    mm.removeMessageListener("Browser:SSLErrorReportTelemetry", this);
   },
 
   receiveMessage(msg) {
@@ -3605,12 +3620,6 @@ var BrowserOnClick = {
         }
         Services.telemetry.getHistogramById("TLS_ERROR_REPORT_UI").add(bin);
         break;
-      case "Browser:SSLErrorReportTelemetry":
-        let reportStatus = msg.data.reportStatus;
-        Services.telemetry
-          .getHistogramById("TLS_ERROR_REPORT_UI")
-          .add(reportStatus);
-        break;
     }
   },
 
@@ -3630,9 +3639,7 @@ var BrowserOnClick = {
           let certsStringURL = certs.map(elem => `cert=${elem}`);
           certsStringURL = certsStringURL.join("&");
           let url = `about:certificate?${certsStringURL}`;
-          openTrustedLinkIn(url, "tab", {
-            triggeringPrincipal: browser.contentPrincipal,
-          });
+          openTrustedLinkIn(url, "tab");
         } else {
           Services.ww.openWindow(
             window,
@@ -3882,7 +3889,7 @@ function BrowserReloadWithFlags(reloadFlags) {
     }
   }
 
-  if (unchangedRemoteness.length == 0) {
+  if (!unchangedRemoteness.length) {
     return;
   }
 
@@ -4687,7 +4694,7 @@ const BrowserSearch = {
     }
 
     var engines = gBrowser.selectedBrowser.engines;
-    if (engines && engines.length > 0) {
+    if (engines && engines.length) {
       searchBar.setAttribute("addengines", "true");
     } else {
       searchBar.removeAttribute("addengines");
@@ -4732,10 +4739,7 @@ const BrowserSearch = {
     }
 
     let focusUrlBarIfSearchFieldIsNotActive = function(aSearchBar) {
-      if (
-        !aSearchBar ||
-        document.activeElement != aSearchBar.textbox.inputField
-      ) {
+      if (!aSearchBar || document.activeElement != aSearchBar.textbox) {
         // Limit the results to search suggestions, like the search bar.
         gURLBar.search(UrlbarTokenizer.RESTRICT.SEARCH);
       }
@@ -7941,115 +7945,6 @@ var BrowserOffline = {
   },
 };
 
-var OfflineApps = {
-  warnUsage(browser, principal, host) {
-    if (!browser) {
-      return;
-    }
-
-    let mainAction = {
-      label: gNavigatorBundle.getString("offlineApps.manageUsage"),
-      accessKey: gNavigatorBundle.getString("offlineApps.manageUsageAccessKey"),
-      callback: this.manage,
-    };
-
-    let warnQuotaKB = Services.prefs.getIntPref("offline-apps.quota.warn");
-    // This message shows the quota in MB, and so we divide the quota (in kb) by 1024.
-    let message = gNavigatorBundle.getFormattedString("offlineApps.usage", [
-      host,
-      warnQuotaKB / 1024,
-    ]);
-
-    let anchorID = "indexedDB-notification-icon";
-    let options = {
-      persistent: true,
-      hideClose: true,
-    };
-    PopupNotifications.show(
-      browser,
-      "offline-app-usage",
-      message,
-      anchorID,
-      mainAction,
-      null,
-      options
-    );
-
-    // Now that we've warned once, prevent the warning from showing up
-    // again.
-    Services.perms.addFromPrincipal(
-      principal,
-      "offline-app",
-      Ci.nsIOfflineCacheUpdateService.ALLOW_NO_WARN
-    );
-  },
-
-  // XXX: duplicated in preferences/advanced.js
-  _getOfflineAppUsage(host, groups) {
-    let cacheService = Cc[
-      "@mozilla.org/network/application-cache-service;1"
-    ].getService(Ci.nsIApplicationCacheService);
-    if (!groups) {
-      try {
-        groups = cacheService.getGroups();
-      } catch (ex) {
-        return 0;
-      }
-    }
-
-    let usage = 0;
-    for (let group of groups) {
-      let uri = Services.io.newURI(group);
-      if (uri.asciiHost == host) {
-        let cache = cacheService.getActiveCache(group);
-        usage += cache.usage;
-      }
-    }
-
-    return usage;
-  },
-
-  _usedMoreThanWarnQuota(principal, asciiHost) {
-    // if the user has already allowed excessive usage, don't bother checking
-    if (
-      Services.perms.testExactPermissionFromPrincipal(
-        principal,
-        "offline-app"
-      ) != Ci.nsIOfflineCacheUpdateService.ALLOW_NO_WARN
-    ) {
-      let usageBytes = this._getOfflineAppUsage(asciiHost);
-      let warnQuotaKB = Services.prefs.getIntPref("offline-apps.quota.warn");
-      // The pref is in kb, the usage we get is in bytes, so multiply the quota
-      // to compare correctly:
-      if (usageBytes >= warnQuotaKB * 1024) {
-        return true;
-      }
-    }
-
-    return false;
-  },
-
-  manage() {
-    openPreferences("panePrivacy");
-  },
-
-  receiveMessage(msg) {
-    if (msg.name !== "OfflineApps:CheckUsage") {
-      return;
-    }
-    let uri = makeURI(msg.data.uri);
-    let principal = E10SUtils.deserializePrincipal(msg.data.principal);
-    if (this._usedMoreThanWarnQuota(principal, uri.asciiHost)) {
-      this.warnUsage(msg.target, principal, uri.host);
-    }
-  },
-
-  init() {
-    let mm = window.messageManager;
-    mm.addMessageListener("OfflineApps:CheckUsage", this);
-  },
-};
-
 var IndexedDBPromptHelper = {
   _permissionsPrompt: "indexedDB-permissions-prompt",
   _permissionsResponse: "indexedDB-permissions-response",
@@ -9283,7 +9178,7 @@ var ToolbarIconColor = {
     window.addEventListener("activate", this);
     window.addEventListener("deactivate", this);
     window.addEventListener("toolbarvisibilitychange", this);
-    Services.obs.addObserver(this, "lightweight-theme-styling-update");
+    window.addEventListener("windowlwthemeupdate", this);
 
     // If the window isn't active now, we assume that it has never been active
     // before and will soon become active such that inferFromText will be
@@ -9299,29 +9194,18 @@ var ToolbarIconColor = {
     window.removeEventListener("activate", this);
     window.removeEventListener("deactivate", this);
     window.removeEventListener("toolbarvisibilitychange", this);
-    Services.obs.removeObserver(this, "lightweight-theme-styling-update");
+    window.removeEventListener("windowlwthemeupdate", this);
   },
 
   handleEvent(event) {
     switch (event.type) {
-      case "activate": // falls through
+      case "activate":
       case "deactivate":
+      case "windowlwthemeupdate":
         this.inferFromText(event.type);
         break;
       case "toolbarvisibilitychange":
         this.inferFromText(event.type, event.visible);
-        break;
-    }
-  },
-
-  observe(aSubject, aTopic, aData) {
-    switch (aTopic) {
-      case "lightweight-theme-styling-update":
-        // inferFromText needs to run after LightweightThemeConsumer.jsm's
-        // lightweight-theme-styling-update observer.
-        setTimeout(() => {
-          this.inferFromText(aTopic);
-        }, 0);
         break;
     }
   },
@@ -9348,7 +9232,7 @@ var ToolbarIconColor = {
       case "fullscreen":
         this._windowState.fullscreen = reasonValue;
         break;
-      case "lightweight-theme-styling-update":
+      case "windowlwthemeupdate":
         // theme change, we'll need to recalculate all color values
         this._toolbarLuminanceCache.clear();
         break;
@@ -9531,10 +9415,10 @@ TabModalPromptBox.prototype = {
   },
 
   appendPrompt(args, onCloseCallback) {
-    let newPrompt = new TabModalPrompt(window);
+    let browser = this.browser;
+    let newPrompt = new TabModalPrompt(browser.ownerGlobal);
     this.prompts.set(newPrompt.element, newPrompt);
 
-    let browser = this.browser;
     browser.parentNode.insertBefore(
       newPrompt.element,
       browser.nextElementSibling

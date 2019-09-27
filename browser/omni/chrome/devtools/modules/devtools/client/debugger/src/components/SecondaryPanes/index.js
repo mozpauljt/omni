@@ -211,6 +211,23 @@ class SecondaryPanes extends _react.Component {
     })))];
   }
 
+  getEventButtons() {
+    const {
+      logEventBreakpoints
+    } = this.props;
+    return [_react.default.createElement("div", {
+      key: "events-buttons"
+    }, _react.default.createElement("label", {
+      className: "events-header",
+      title: L10N.getStr("eventlisteners.log.label"),
+      onClick: e => e.stopPropagation()
+    }, _react.default.createElement("input", {
+      type: "checkbox",
+      checked: logEventBreakpoints ? "checked" : "",
+      onChange: e => this.props.toggleEventLogging()
+    }), L10N.getStr("eventlisteners.log")))];
+  }
+
   getWatchItem() {
     return {
       header: L10N.getStr("watchExpressions.header"),
@@ -293,7 +310,7 @@ class SecondaryPanes extends _react.Component {
     return {
       header: L10N.getStr("eventListenersHeader1"),
       className: "event-listeners-pane",
-      buttons: [],
+      buttons: this.getEventButtons(),
       component: _react.default.createElement(_EventListeners.default, null),
       opened: _prefs.prefs.eventListenersVisible,
       onToggle: opened => {
@@ -466,6 +483,7 @@ const mapStateToProps = state => {
     shouldPauseOnCaughtExceptions: (0, _selectors.getShouldPauseOnCaughtExceptions)(state),
     workers: (0, _selectors.getThreads)(state),
     skipPausing: (0, _selectors.getSkipPausing)(state),
+    logEventBreakpoints: (0, _selectors.shouldLogEventBreakpoints)(state),
     source: selectedFrame && (0, _selectors.getSourceFromId)(state, selectedFrame.location.sourceId)
   };
 };
@@ -475,7 +493,8 @@ var _default = (0, _connect.connect)(mapStateToProps, {
   evaluateExpressions: _actions.default.evaluateExpressions,
   pauseOnExceptions: _actions.default.pauseOnExceptions,
   toggleMapScopes: _actions.default.toggleMapScopes,
-  breakOnNext: _actions.default.breakOnNext
+  breakOnNext: _actions.default.breakOnNext,
+  toggleEventLogging: _actions.default.toggleEventLogging
 })(SecondaryPanes);
 
 exports.default = _default;

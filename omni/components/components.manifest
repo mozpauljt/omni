@@ -18,7 +18,6 @@ resource services-settings resource://gre/modules/services-settings/
 category update-timer RemoteSettingsComponents @mozilla.org/services/settings;1,getService,services-settings-poll-changes,services.settings.poll_interval,86400,259200
 resource services-crypto resource://gre/modules/services-crypto/
 category profile-after-change TelemetryStartup @mozilla.org/base/telemetry-startup;1 process=main
-category app-startup PushServiceParent @mozilla.org/push/Service;1 process=main
 category android-push-service PushServiceParent @mozilla.org/push/Service;1 process=main
 category profile-after-change URLDecorationAnnotationsService @mozilla.org/tracking-url-decoration-service;1 process=main
 category l10n-registry 0-toolkit resource://gre/localization/{locale}/
