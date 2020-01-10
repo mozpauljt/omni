@@ -11,6 +11,7 @@ loader.lazyRequireGetter(this, "_editor", "devtools/client/debugger/src/utils/ed
 var _sourceQueue = _interopRequireDefault(require("../utils/source-queue"));
 
 loader.lazyRequireGetter(this, "_threads", "devtools/client/debugger/src/actions/threads");
+loader.lazyRequireGetter(this, "_expressions", "devtools/client/debugger/src/actions/expressions");
 loader.lazyRequireGetter(this, "_wasm", "devtools/client/debugger/src/utils/wasm");
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
 
@@ -43,7 +44,6 @@ function willNavigate(event) {
     (0, _wasm.clearWasmStates)();
     (0, _editor.clearDocuments)();
     parser.clear();
-    client.detachWorkers();
     const thread = (0, _selectors.getMainThread)(getState());
     dispatch({
       type: "NAVIGATE",
@@ -54,12 +54,13 @@ function willNavigate(event) {
   };
 }
 
-function connect(url, actor, canRewind, isWebExtension) {
+function connect(url, actor, traits, isWebExtension) {
   return async function ({
-    dispatch
+    dispatch,
+    getState
   }) {
     await dispatch((0, _threads.updateThreads)());
-    dispatch({
+    await dispatch({
       type: "CONNECT",
       mainThread: {
         url,
@@ -67,9 +68,11 @@ function connect(url, actor, canRewind, isWebExtension) {
         type: "mainThread",
         name: L10N.getStr("mainThread")
       },
-      canRewind,
+      traits,
       isWebExtension
     });
+    const cx = (0, _selectors.getThreadContext)(getState());
+    dispatch((0, _expressions.evaluateExpressions)(cx));
   };
 }
 /**
@@ -80,8 +83,10 @@ function connect(url, actor, canRewind, isWebExtension) {
 
 function navigated() {
   return async function ({
+    dispatch,
     panel
   }) {
+    await dispatch((0, _threads.updateThreads)());
     panel.emit("reloaded");
   };
 }

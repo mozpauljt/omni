@@ -20,10 +20,9 @@ function createNodeInTree(part, path, tree, index) {
   return node;
 }
 /*
- * Look for the child directory
+ * Look for the child node
  * 1. if it exists return it
  * 2. if it does not exist create it
- * 3. if it is a file, replace it with a directory
  */
 
 
@@ -43,7 +42,7 @@ function findOrCreateNode(parts, subTree, path, part, index, url, debuggeeHost, 
   const child = subTree.contents[childIndex];
   const childIsFile = !(0, _utils.nodeHasChildren)(child); // if we have a naming conflict, we'll create a new node
 
-  if (child.type === "source" || !childIsFile && addedPartIsFile) {
+  if (childIsFile != addedPartIsFile) {
     // pass true to findNodeInContents to sort node by url
     const {
       index: insertIndex
@@ -88,7 +87,7 @@ function traverseTree(url, tree, debuggeeHost, source, thread) {
 function addSourceToNode(node, url, source) {
   const isFile = !(0, _utils.isPathDirectory)(url.path);
 
-  if (node.type == "source") {
+  if (node.type == "source" && !isFile) {
     throw new Error(`Unexpected type "source" at: ${node.name}`);
   } // if we have a file, and the subtree has no elements, overwrite the
   // subtree contents with the source

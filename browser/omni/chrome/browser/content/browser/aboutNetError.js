@@ -6,6 +6,11 @@
 
 const formatter = new Intl.DateTimeFormat("default");
 
+// Values for telemetry bins: see TLS_ERROR_REPORT_UI in Histograms.json
+const TLS_ERROR_REPORT_TELEMETRY_AUTO_CHECKED = 2;
+const TLS_ERROR_REPORT_TELEMETRY_AUTO_UNCHECKED = 3;
+const TLS_ERROR_REPORT_TELEMETRY_UI_SHOWN = 0;
+
 // The following parameters are parsed from the error URL:
 //   e - the error code
 //   s - custom CSS class to allow alternate styling/favicons
@@ -65,13 +70,22 @@ function showPrefChangeContainer() {
   document.getElementById("netErrorButtonContainer").style.display = "none";
   document
     .getElementById("prefResetButton")
-    .addEventListener("click", function resetPreferences(e) {
-      const event = new CustomEvent("AboutNetErrorResetPreferences", {
-        bubbles: true,
-      });
-      document.dispatchEvent(event);
+    .addEventListener("click", function resetPreferences() {
+      RPMSendAsyncMessage("Browser:ResetSSLPreferences");
     });
   addAutofocus("#prefResetButton", "beforeend");
+}
+
+function showTls10Container() {
+  const panel = document.getElementById("enableTls10Container");
+  panel.style.display = "block";
+  document.getElementById("netErrorButtonContainer").style.display = "none";
+  const button = document.getElementById("enableTls10Button");
+  button.addEventListener("click", function enableTls10(e) {
+    RPMSetBoolPref("security.tls.version.enable-deprecated", true);
+    retryThis(button);
+  });
+  addAutofocus("#enableTls10Button", "beforeend");
 }
 
 function setupAdvancedButton() {
@@ -245,15 +259,11 @@ function initPage() {
     document.getElementById("netErrorButtonContainer").style.display = "none";
   }
 
-  if (err == "cspBlocked") {
-    // Remove the "Try again" button for CSP violations, since it's
-    // almost certainly useless. (Bug 553180)
+  if (err == "cspBlocked" || err == "xfoBlocked") {
+    // Remove the "Try again" button for XFO and CSP violations,
+    // since it's almost certainly useless. (Bug 553180)
     document.getElementById("netErrorButtonContainer").style.display = "none";
   }
-
-  // Dispatch this event only for tests.
-  let event = new CustomEvent("AboutNetErrorLoad", { bubbles: true });
-  document.dispatchEvent(event);
 
   setNetErrorMessageFromCode();
   let learnMoreLink = document.getElementById("learnMoreLink");
@@ -264,26 +274,49 @@ function initPage() {
   if (err == "nssFailure2") {
     setupErrorUI();
 
-    RPMAddMessageListener("HasChangedCertPrefs", msg => {
-      let hasChangedCertPrefs = msg.data.hasChangedCertPrefs;
+    const errorCode = document.getNetErrorInfo().errorCodeString;
+    const isTlsVersionError =
+      errorCode == "SSL_ERROR_UNSUPPORTED_VERSION" ||
+      errorCode == "SSL_ERROR_PROTOCOL_VERSION_ALERT";
+    const tls10OverrideEnabled = RPMGetBoolPref(
+      "security.tls.version.enable-deprecated"
+    );
 
-      let errorCode = document.getNetErrorInfo().errorCodeString;
-      let hasPrefStyleError = [
+    if (isTlsVersionError && !tls10OverrideEnabled) {
+      // security.tls.* prefs may be reset by the user when they
+      // encounter an error, so it's important that this has a
+      // different pref branch.
+      const showOverride = RPMGetBoolPref(
+        "security.certerrors.tls.version.show-override",
+        true
+      );
+
+      // This is probably a TLS 1.0 server; offer to re-enable.
+      if (showOverride) {
+        showTls10Container();
+      }
+    } else {
+      const hasPrefStyleError = [
         "interrupted", // This happens with subresources that are above the max tls
-        "SSL_ERROR_PROTOCOL_VERSION_ALERT",
-        "SSL_ERROR_UNSUPPORTED_VERSION",
-        "SSL_ERROR_NO_CYPHER_OVERLAP",
         "SSL_ERROR_NO_CIPHERS_SUPPORTED",
+        "SSL_ERROR_NO_CYPHER_OVERLAP",
+        "SSL_ERROR_PROTOCOL_VERSION_ALERT",
+        "SSL_ERROR_SSL_DISABLED",
+        "SSL_ERROR_UNSUPPORTED_VERSION",
       ].some(substring => {
         return substring == errorCode;
       });
 
-      // If it looks like an error that is user config based
-      if (hasPrefStyleError && hasChangedCertPrefs) {
-        showPrefChangeContainer();
+      if (hasPrefStyleError) {
+        RPMAddMessageListener("HasChangedCertPrefs", msg => {
+          if (msg.data.hasChangedCertPrefs) {
+            // Configuration overrides might have caused this; offer to reset.
+            showPrefChangeContainer();
+          }
+        });
+        RPMSendAsyncMessage("GetChangedCertPrefs");
       }
-    });
-    RPMSendAsyncMessage("GetChangedCertPrefs");
+    }
   }
 
   if (err == "sslv3Used") {
@@ -301,6 +334,11 @@ function initPage() {
       span.textContent = document.location.hostname;
     }
   }
+
+  // Dispatch this event only for tests. This should only be sent after we're
+  // done initializing the error page.
+  let event = new CustomEvent("AboutNetErrorLoad", { bubbles: true });
+  document.dispatchEvent(event);
 }
 
 function setupErrorUI() {
@@ -308,12 +346,7 @@ function setupErrorUI() {
 
   let checkbox = document.getElementById("automaticallyReportInFuture");
   checkbox.addEventListener("change", function({ target: { checked } }) {
-    document.dispatchEvent(
-      new CustomEvent("AboutNetErrorSetAutomatic", {
-        detail: checked,
-        bubbles: true,
-      })
-    );
+    onSetAutomatic(checked);
   });
 
   let errorReportingEnabled = RPMGetBoolPref(
@@ -321,17 +354,32 @@ function setupErrorUI() {
   );
   if (errorReportingEnabled) {
     showCertificateErrorReporting();
+    RPMAddToHistogram(
+      "TLS_ERROR_REPORT_UI",
+      TLS_ERROR_REPORT_TELEMETRY_UI_SHOWN
+    );
     let errorReportingAutomatic = RPMGetBoolPref(
       "security.ssl.errorReporting.automatic"
     );
     checkbox.checked = !!errorReportingAutomatic;
   }
+}
 
-  // Values for telemtery bins: see TLS_ERROR_REPORT_UI in Histograms.json
-  const TLS_ERROR_REPORT_TELEMETRY_UI_SHOWN = 0;
-  RPMSendAsyncMessage("Browser:SSLErrorReportTelemetry", {
-    reportStatus: TLS_ERROR_REPORT_TELEMETRY_UI_SHOWN,
-  });
+function onSetAutomatic(checked) {
+  let bin = TLS_ERROR_REPORT_TELEMETRY_AUTO_UNCHECKED;
+  if (checked) {
+    bin = TLS_ERROR_REPORT_TELEMETRY_AUTO_CHECKED;
+  }
+  RPMAddToHistogram("TLS_ERROR_REPORT_UI", bin);
+
+  RPMSetBoolPref("security.ssl.errorReporting.automatic", checked);
+  // If we're enabling reports, send a report for this failure.
+  if (checked) {
+    RPMSendAsyncMessage("ReportTLSError", {
+      host: document.location.host,
+      port: parseInt(document.location.port) || -1,
+    });
+  }
 }
 
 async function setNetErrorMessageFromCode() {
@@ -350,31 +398,34 @@ async function setNetErrorMessageFromCode() {
   }
 
   let desc = document.getElementById("errorShortDescText");
-  let errorCodeStr = securityInfo.errorCodeString;
-  try {
-    let [errorCodeMsg] = await document.l10n.formatValues([
-      {
-        id: errorCodeStr
-          .split("_")
-          .join("-")
-          .toLowerCase(),
-      },
-    ]);
-    document.l10n.setAttributes(desc, "ssl-connection-error", {
-      errorMessage: errorCodeMsg,
-      hostname: hostString,
-    });
-    let desc2 = document.getElementById("errorShortDescText2");
-    document.l10n.setAttributes(desc2, "cert-error-code-prefix", {
-      error: errorCodeStr,
-    });
-  } catch (e) {
+  let errorCodeStr = securityInfo.errorCodeString || "";
+
+  let [errorCodeMsg] = await document.l10n.formatValues([
+    {
+      id: errorCodeStr
+        .split("_")
+        .join("-")
+        .toLowerCase(),
+    },
+  ]);
+
+  if (!errorCodeMsg) {
     console.error("No strings exist for this error type");
     document.l10n.setAttributes(desc, "ssl-connection-error", {
-      errorMsg: errorCodeStr,
+      errorMessage: errorCodeStr,
       hostname: hostString,
     });
+    return;
   }
+
+  document.l10n.setAttributes(desc, "ssl-connection-error", {
+    errorMessage: errorCodeMsg,
+    hostname: hostString,
+  });
+  let desc2 = document.getElementById("errorShortDescText2");
+  document.l10n.setAttributes(desc2, "cert-error-code-prefix", {
+    error: errorCodeStr,
+  });
 }
 
 // This function centers the error container after its content updates.
@@ -447,6 +498,9 @@ function initPageCertError() {
   document
     .getElementById("copyToClipboardBottom")
     .addEventListener("click", copyPEMToClipboard);
+  document
+    .getElementById("exceptionDialogButton")
+    .addEventListener("click", addCertException);
 
   setCertErrorDetails();
   setTechnicalDetailsOnCertError();
@@ -454,6 +508,18 @@ function initPageCertError() {
   // Dispatch this event only for tests.
   let event = new CustomEvent("AboutNetErrorLoad", { bubbles: true });
   document.dispatchEvent(event);
+}
+
+function addCertException() {
+  const isPermanent =
+    !RPMIsWindowPrivate() &&
+    RPMGetBoolPref("security.certerrors.permanentOverride");
+  document.addCertException(!isPermanent).then(
+    () => {
+      location.reload();
+    },
+    err => {}
+  );
 }
 
 function onReturnButtonClick(e) {
@@ -769,7 +835,7 @@ async function setCertErrorDetails(event) {
     // Also don't bother if it's just the user's clock being off...
     !clockSkew &&
     // Symantec distrust is likely harmless as well.
-    failedCertInfo.erroCodeString !=
+    failedCertInfo.errorCodeString !=
       "MOZILLA_PKIX_ERROR_ADDITIONAL_POLICY_CONSTRAINT_FAILED"
   ) {
     document.body.classList.add("caution");

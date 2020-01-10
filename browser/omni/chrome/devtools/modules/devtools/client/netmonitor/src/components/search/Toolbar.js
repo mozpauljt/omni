@@ -11,7 +11,9 @@ const {
 const {
   connect,
 } = require("devtools/client/shared/redux/visibility-handler-connect");
-const { FILTER_SEARCH_DELAY } = require("../../constants");
+const {
+  FILTER_SEARCH_DELAY,
+} = require("devtools/client/netmonitor/src/constants");
 const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
 const Actions = require("devtools/client/netmonitor/src/actions/index");
 const dom = require("devtools/client/shared/vendor/react-dom-factories");
@@ -40,6 +42,7 @@ class Toolbar extends Component {
       caseSensitive: PropTypes.bool.isRequired,
       toggleCaseSensitiveSearch: PropTypes.func.isRequired,
       connector: PropTypes.object.isRequired,
+      query: PropTypes.string,
     };
   }
 
@@ -124,6 +127,7 @@ class Toolbar extends Component {
       addSearchQuery,
       clearSearchResultAndCancel,
       connector,
+      query,
     } = this.props;
     return SearchBox({
       keyShortcut: "CmdOrCtrl+Shift+F",
@@ -131,8 +135,9 @@ class Toolbar extends Component {
       type: "search",
       delay: FILTER_SEARCH_DELAY,
       ref: this.props.searchboxRef,
+      value: query,
       onClearButtonClick: () => clearSearchResultAndCancel(),
-      onChange: query => addSearchQuery(query),
+      onChange: newQuery => addSearchQuery(newQuery),
       onKeyDown: event => this.onKeyDown(event, connector),
     });
   }
@@ -153,6 +158,7 @@ class Toolbar extends Component {
 module.exports = connect(
   state => ({
     caseSensitive: state.search.caseSensitive,
+    query: state.search.query,
   }),
   dispatch => ({
     closeSearch: () => dispatch(Actions.closeSearch()),

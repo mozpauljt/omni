@@ -96,13 +96,14 @@ class Frames extends _react.Component {
     const {
       cx,
       selectFrame,
+      selectLocation,
       selectedFrame,
       toggleBlackBox,
       frameworkGroupingOn,
       displayFullUrl,
       getFrameTitle,
       disableContextMenu,
-      selectable = false
+      panel
     } = this.props;
     const framesOrGroups = this.truncateFrames(this.collapseFrames(frames));
     // We're not using a <ul> because it adds new lines before and after when
@@ -117,13 +118,14 @@ class Frames extends _react.Component {
       copyStackTrace: this.copyStackTrace,
       frameworkGroupingOn: frameworkGroupingOn,
       selectFrame: selectFrame,
+      selectLocation: selectLocation,
       selectedFrame: selectedFrame,
       toggleBlackBox: toggleBlackBox,
       key: String(frameOrGroup.id),
       displayFullUrl: displayFullUrl,
       getFrameTitle: getFrameTitle,
       disableContextMenu: disableContextMenu,
-      selectable: selectable
+      panel: panel
     }) : _react.default.createElement(_Group.default, {
       cx: cx,
       group: frameOrGroup,
@@ -131,13 +133,14 @@ class Frames extends _react.Component {
       copyStackTrace: this.copyStackTrace,
       frameworkGroupingOn: frameworkGroupingOn,
       selectFrame: selectFrame,
+      selectLocation: selectLocation,
       selectedFrame: selectedFrame,
       toggleBlackBox: toggleBlackBox,
       key: frameOrGroup[0].id,
       displayFullUrl: displayFullUrl,
       getFrameTitle: getFrameTitle,
       disableContextMenu: disableContextMenu,
-      selectable: selectable
+      panel: panel
     })));
   }
 
@@ -190,16 +193,17 @@ const mapStateToProps = state => ({
   cx: (0, _selectors.getThreadContext)(state),
   frames: (0, _selectors.getCallStackFrames)(state),
   frameworkGroupingOn: (0, _selectors.getFrameworkGroupingState)(state),
-  selectedFrame: (0, _selectors.getSelectedFrame)(state, (0, _selectors.getCurrentThread)(state))
+  selectedFrame: (0, _selectors.getSelectedFrame)(state, (0, _selectors.getCurrentThread)(state)),
+  disableFrameTruncate: false,
+  disableContextMenu: false,
+  displayFullUrl: false
 });
 
 var _default = (0, _connect.connect)(mapStateToProps, {
   selectFrame: _actions.default.selectFrame,
+  selectLocation: _actions.default.selectLocation,
   toggleBlackBox: _actions.default.toggleBlackBox,
-  toggleFrameworkGrouping: _actions.default.toggleFrameworkGrouping,
-  disableFrameTruncate: false,
-  disableContextMenu: false,
-  displayFullUrl: false
+  toggleFrameworkGrouping: _actions.default.toggleFrameworkGrouping
 })(Frames); // Export the non-connected component in order to use it outside of the debugger
 // panel (e.g. console, netmonitor, …).
 

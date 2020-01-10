@@ -38,13 +38,17 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 const updateResultsThrottle = 100;
 const maxResults = 100;
+const SIZE_BIG = {
+  size: "big"
+};
+const SIZE_DEFAULT = {};
 
 function filter(values, query) {
   const preparedQuery = _fuzzaldrinPlus.default.prepareQuery(query);
 
   return _fuzzaldrinPlus.default.filter(values, query, {
     key: "value",
-    maxResults: maxResults,
+    maxResults,
     preparedQuery
   });
 }
@@ -58,7 +62,8 @@ class QuickOpenModal extends _react.Component {
     });
 
     _defineProperty(this, "dropGoto", query => {
-      return query.split(":")[0];
+      const index = query.indexOf(":");
+      return index !== -1 ? query.slice(0, index) : query;
     });
 
     _defineProperty(this, "formatSources", (0, _memoizeLast.memoizeLast)((displayedSources, tabs) => {
@@ -177,7 +182,7 @@ class QuickOpenModal extends _react.Component {
         highlightLineRange
       } = this.props;
 
-      if (!this.isSymbolSearch() || selectedSource == null) {
+      if (selectedSource == null || !this.isSymbolSearch()) {
         return;
       }
 
@@ -215,9 +220,9 @@ class QuickOpenModal extends _react.Component {
         selectSpecificLocation,
         selectedSource
       } = this.props;
-      const selectedSourceId = selectedSource ? selectedSource.id : "";
 
       if (location != null) {
+        const selectedSourceId = selectedSource ? selectedSource.id : "";
         const sourceId = location.sourceId ? location.sourceId : selectedSourceId;
         selectSpecificLocation(cx, {
           sourceId,
@@ -237,7 +242,7 @@ class QuickOpenModal extends _react.Component {
       setQuickOpenQuery(e.target.value);
       const noSource = !selectedSource || !selectedContentLoaded;
 
-      if (this.isSymbolSearch() && noSource || this.isGotoQuery()) {
+      if (noSource && this.isSymbolSearch() || this.isGotoQuery()) {
         return;
       }
 
@@ -253,13 +258,14 @@ class QuickOpenModal extends _react.Component {
         results,
         selectedIndex
       } = this.state;
+      const isGoToQuery = this.isGotoQuery();
 
-      if (!this.isGotoQuery() && (!enabled || !results)) {
+      if ((!enabled || !results) && !isGoToQuery) {
         return;
       }
 
       if (e.key === "Enter") {
-        if (this.isGotoQuery()) {
+        if (isGoToQuery) {
           const location = (0, _quickOpen.parseLineColumn)(query);
           return this.gotoLocation(location);
         }
@@ -386,7 +392,7 @@ class QuickOpenModal extends _react.Component {
       return !/^:\d*$/.test(query);
     }
 
-    return !this.getResultCount() && !!query;
+    return !!query && !this.getResultCount();
   }
 
   getSummaryMessage() {
@@ -434,18 +440,14 @@ class QuickOpenModal extends _react.Component {
       expanded: expanded,
       showClose: false,
       selectedItemId: expanded && items[selectedIndex] ? items[selectedIndex].id : ""
-    }, this.isSourceSearch() ? {
-      size: "big"
-    } : {})), results && _react.default.createElement(_ResultList.default, _extends({
+    }, this.isSourceSearch() ? SIZE_BIG : SIZE_DEFAULT)), results && _react.default.createElement(_ResultList.default, _extends({
       key: "results",
       items: items,
       selected: selectedIndex,
       selectItem: this.selectResultItem,
       ref: "resultList",
       expanded: expanded
-    }, this.isSourceSearch() ? {
-      size: "big"
-    } : {})));
+    }, this.isSourceSearch() ? SIZE_BIG : SIZE_DEFAULT)));
   }
 
 }

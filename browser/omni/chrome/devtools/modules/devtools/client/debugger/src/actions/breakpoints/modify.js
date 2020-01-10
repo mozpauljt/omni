@@ -12,6 +12,7 @@ exports.setBreakpointOptions = setBreakpointOptions;
 loader.lazyRequireGetter(this, "_breakpoint", "devtools/client/debugger/src/utils/breakpoint/index");
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
 loader.lazyRequireGetter(this, "_breakpointPositions", "devtools/client/debugger/src/actions/breakpoints/breakpointPositions");
+loader.lazyRequireGetter(this, "_skipPausing", "devtools/client/debugger/src/actions/pause/skipPausing");
 loader.lazyRequireGetter(this, "_promise", "devtools/client/debugger/src/actions/utils/middleware/promise");
 loader.lazyRequireGetter(this, "_telemetry", "devtools/client/debugger/src/utils/telemetry");
 loader.lazyRequireGetter(this, "_location", "devtools/client/debugger/src/utils/location");
@@ -54,7 +55,7 @@ function clientRemoveBreakpoint(client, state, generatedLocation) {
 }
 
 function enableBreakpoint(cx, initialBreakpoint) {
-  return async ({
+  return ({
     dispatch,
     getState,
     client,
@@ -66,6 +67,7 @@ function enableBreakpoint(cx, initialBreakpoint) {
       return;
     }
 
+    dispatch((0, _skipPausing.setSkipPausing)(false));
     return dispatch({
       type: "SET_BREAKPOINT",
       cx,
@@ -134,6 +136,7 @@ function addBreakpoint(cx, initialLocation, options = {}, disabled = false, shou
       return;
     }
 
+    dispatch((0, _skipPausing.setSkipPausing)(false));
     return dispatch({
       type: "SET_BREAKPOINT",
       cx,
@@ -165,6 +168,7 @@ function removeBreakpoint(cx, initialBreakpoint) {
       return;
     }
 
+    dispatch((0, _skipPausing.setSkipPausing)(false));
     return dispatch({
       type: "REMOVE_BREAKPOINT",
       cx,
@@ -247,6 +251,7 @@ function disableBreakpoint(cx, initialBreakpoint) {
       return;
     }
 
+    dispatch((0, _skipPausing.setSkipPausing)(false));
     return dispatch({
       type: "SET_BREAKPOINT",
       cx,

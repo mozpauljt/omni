@@ -14,20 +14,30 @@ const {
   UPDATE_SEARCH_STATUS,
   SEARCH_STATUS,
   SET_TARGET_SEARCH_RESULT,
+  SELECT_ACTION_BAR_TAB,
   TOGGLE_SEARCH_CASE_SENSITIVE_SEARCH,
-} = require("../constants");
+  PANELS,
+} = require("devtools/client/netmonitor/src/constants");
 
 const {
   getDisplayedRequests,
   getOngoingSearch,
   getSearchStatus,
   getRequestById,
-} = require("../selectors/index");
+} = require("devtools/client/netmonitor/src/selectors/index");
 
-const { selectRequest } = require("./selection");
-const { selectDetailsPanelTab } = require("./ui");
-const { fetchNetworkUpdatePacket } = require("../utils/request-utils");
-const { searchInResource } = require("../workers/search/index");
+const {
+  selectRequest,
+} = require("devtools/client/netmonitor/src/actions/selection");
+const {
+  selectDetailsPanelTab,
+} = require("devtools/client/netmonitor/src/actions/ui");
+const {
+  fetchNetworkUpdatePacket,
+} = require("devtools/client/netmonitor/src/utils/request-utils");
+const {
+  searchInResource,
+} = require("devtools/client/netmonitor/src/workers/search/index");
 
 /**
  * Search through all resources. This is the main action exported
@@ -219,9 +229,15 @@ function toggleCaseSensitiveSearch() {
 function toggleSearchPanel() {
   return (dispatch, getState) => {
     const state = getState();
-    state.search.panelOpen
+
+    state.search.panelOpen && state.ui.selectedActionBarTabId === PANELS.SEARCH
       ? dispatch({ type: CLOSE_SEARCH })
       : dispatch({ type: OPEN_SEARCH });
+
+    dispatch({
+      type: SELECT_ACTION_BAR_TAB,
+      id: PANELS.SEARCH,
+    });
   };
 }
 
@@ -291,4 +307,5 @@ module.exports = {
   setTargetSearchResult,
   toggleCaseSensitiveSearch,
   clearSearchResultAndCancel,
+  stopOngoingSearch,
 };

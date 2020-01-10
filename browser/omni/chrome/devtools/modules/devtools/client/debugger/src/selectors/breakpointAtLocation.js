@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.getBreakpointAtLocation = getBreakpointAtLocation;
 exports.getBreakpointsAtLine = getBreakpointsAtLine;
 exports.getClosestBreakpoint = getClosestBreakpoint;
+exports.getClosestBreakpointPosition = getClosestBreakpointPosition;
 loader.lazyRequireGetter(this, "_sources", "devtools/client/debugger/src/reducers/sources");
 loader.lazyRequireGetter(this, "_breakpoints", "devtools/client/debugger/src/reducers/breakpoints");
 loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
@@ -51,24 +52,27 @@ function findBreakpointAtLocation(breakpoints, selectedSource, {
 
     return location.column === getColumn(column, selectedSource);
   });
-} // returns the closest active column breakpoint to current cursorPosition in editor.
+} // returns the closest active column breakpoint
 
 
-function findClosestBreakpointToCursor(lineBreakpoints, cursorPosition) {
-  const closestBreakpoint = lineBreakpoints.reduce((closestBp, currentBp) => {
-    // check that editor is re-rendered and breakpoints are assigned.
-    if (typeof closestBp === "object") {
-      const currentColumn = currentBp.generatedLocation.column;
-      const closestColumn = closestBp.generatedLocation.column; // check that breakpoint has a column.
+function findClosestBreakpoint(breakpoints, column) {
+  if (!breakpoints || breakpoints.length == 0) {
+    return null;
+  }
 
-      if (currentColumn && closestColumn) {
-        const currentDistance = Math.abs(currentColumn - cursorPosition.column);
-        const closestDistance = Math.abs(closestColumn - cursorPosition.column);
-        return currentDistance < closestDistance ? currentBp : closestBp;
-      }
+  const firstBreakpoint = breakpoints[0];
+  return breakpoints.reduce((closestBp, currentBp) => {
+    const currentColumn = currentBp.generatedLocation.column;
+    const closestColumn = closestBp.generatedLocation.column; // check that breakpoint has a column.
+
+    if (column && currentColumn && closestColumn) {
+      const currentDistance = Math.abs(currentColumn - column);
+      const closestDistance = Math.abs(closestColumn - column);
+      return currentDistance < closestDistance ? currentBp : closestBp;
     }
-  }, lineBreakpoints[0] || {});
-  return closestBreakpoint;
+
+    return closestBp;
+  }, firstBreakpoint);
 }
 /*
  * Finds a breakpoint at a location (line, column) of the
@@ -101,7 +105,19 @@ function getBreakpointsAtLine(state, line) {
   return breakpoints.filter(breakpoint => getLocation(breakpoint, selectedSource).line === line);
 }
 
-function getClosestBreakpoint(state, cursorPosition) {
-  const lineBreakpoints = getBreakpointsAtLine(state, cursorPosition.line);
-  return findClosestBreakpointToCursor(lineBreakpoints, cursorPosition);
+function getClosestBreakpoint(state, position) {
+  const columnBreakpoints = getBreakpointsAtLine(state, position.line);
+  const breakpoint = findClosestBreakpoint(columnBreakpoints, position.column);
+  return breakpoint;
+}
+
+function getClosestBreakpointPosition(state, position) {
+  const selectedSource = (0, _sources.getSelectedSource)(state);
+
+  if (!selectedSource) {
+    throw new Error("no selectedSource");
+  }
+
+  const columnBreakpoints = (0, _sources.getBreakpointPositionsForLine)(state, selectedSource.id, position.line);
+  return findClosestBreakpoint(columnBreakpoints, position.column);
 }

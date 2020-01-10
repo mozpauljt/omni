@@ -7,7 +7,9 @@
 const { Ci } = require("chrome");
 const Services = require("Services");
 const EventEmitter = require("devtools/shared/event-emitter");
-const { getOrientation } = require("./utils/orientation");
+const {
+  getOrientation,
+} = require("devtools/client/responsive/utils/orientation");
 
 loader.lazyRequireGetter(
   this,
@@ -45,6 +47,11 @@ loader.lazyRequireGetter(
 );
 loader.lazyRequireGetter(this, "l10n", "devtools/client/responsive/utils/l10n");
 loader.lazyRequireGetter(this, "asyncStorage", "devtools/shared/async-storage");
+loader.lazyRequireGetter(
+  this,
+  "saveScreenshot",
+  "devtools/shared/screenshot/save"
+);
 
 const TOOL_URL = "chrome://devtools/content/responsive/index.xhtml";
 
@@ -88,6 +95,8 @@ class ResponsiveUI {
      * as the tool UI is always loaded in the parent process.  The web content
      * contained *within* the tool UI on the other hand is loaded in the child
      * process.
+     *
+     * TODO: we should remove this as part of Bug 1585096
      */
     this.toolWindow = null;
     // The iframe containing the RDM UI.
@@ -178,13 +187,15 @@ class ResponsiveUI {
     const fullZoom = rdmContent.fullZoom;
     const textZoom = rdmContent.textZoom;
 
-    if (!this.isBrowserUIEnabled) {
+    // Listen to FullZoomChange events coming from the browser window,
+    // so that we can zoom the size of the viewport by the same amount.
+    if (this.isBrowserUIEnabled) {
+      this.browserWindow.addEventListener("FullZoomChange", this);
+    } else {
       this.docShell.contentViewer.fullZoom = 1;
       this.docShell.contentViewer.textZoom = 1;
 
-      // Listen to FullZoomChange events coming from the linkedBrowser,
-      // so that we can zoom the size of the viewport by the same amount.
-      rdmContent.addEventListener("FullZoomChange", this);
+      this.tab.linkedBrowser.addEventListener("FullZoomChange", this);
     }
 
     this.tab.addEventListener("BeforeTabRemotenessChange", this);
@@ -195,14 +206,25 @@ class ResponsiveUI {
       await message.request(this.toolWindow, "start-frame-script");
     }
 
-    // Get the protocol ready to speak with emulation actor
+    // Get the protocol ready to speak with responsive emulation actor
     debug("Wait until RDP server connect");
     await this.connectToServer();
 
     // Restore the previous state of RDM.
     await this.restoreState();
 
+    if (this.isBrowserUIEnabled) {
+      await this.responsiveFront.setDocumentInRDMPane(true);
+    }
+
     if (!this.isBrowserUIEnabled) {
+      // Force the newly created Zoom actor to cache its 1.0 zoom level. This
+      // prevents it from sending out FullZoomChange events when the content
+      // full zoom level is changed the first time.
+      const bc = this.toolWindow.docShell.browsingContext;
+      const zoomActor = bc.currentWindowGlobal.getActor("Zoom");
+      zoomActor.sendAsyncMessage("FullZoom", { value: 1.0 });
+
       // Re-apply our cached zoom levels. Other Zoom UI update events have finished
       // by now.
       rdmContent.fullZoom = fullZoom;
@@ -226,13 +248,19 @@ class ResponsiveUI {
     const { document: doc, gBrowser } = this.browserWindow;
     const rdmFrame = doc.createElement("iframe");
     rdmFrame.src = "chrome://devtools/content/responsive/toolbar.xhtml";
-    rdmFrame.style.height = rdmFrame.style.minHeight = "30px";
-    rdmFrame.style.borderStyle = "none";
+    rdmFrame.classList.add("rdm-toolbar");
 
-    // Prepend the RDM iframe inside of the current tab's browser container.
-    gBrowser
-      .getBrowserContainer(gBrowser.getBrowserForTab(this.tab))
-      .prepend(rdmFrame);
+    this.browserContainerEl = gBrowser.getBrowserContainer(
+      gBrowser.getBrowserForTab(this.tab)
+    );
+    this.browserStackEl = this.browserContainerEl.querySelector(
+      ".browserStack"
+    );
+
+    this.browserContainerEl.classList.add("responsive-mode");
+
+    // Prepend the RDM iframe inside of the current tab's browser stack.
+    this.browserStackEl.prepend(rdmFrame);
 
     // Wait for the frame script to be loaded.
     message.wait(rdmFrame.contentWindow, "script-init").then(async () => {
@@ -282,6 +310,13 @@ class ResponsiveUI {
     // Ensure init has finished before starting destroy
     if (!isTabContentDestroying) {
       await this.inited;
+
+      // Restore screen orientation of physical device.
+      await this.updateScreenOrientation("landscape-primary", 0);
+    }
+
+    if (this.isBrowserUIEnabled) {
+      await this.responsiveFront.setDocumentInRDMPane(false);
     }
 
     this.tab.removeEventListener("TabClose", this);
@@ -292,8 +327,13 @@ class ResponsiveUI {
       this.tab.linkedBrowser.removeEventListener("FullZoomChange", this);
       this.toolWindow.removeEventListener("message", this);
     } else {
+      this.browserWindow.removeEventListener("FullZoomChange", this);
       this.rdmFrame.contentWindow.removeEventListener("message", this);
       this.rdmFrame.remove();
+
+      this.browserContainerEl.classList.remove("responsive-mode");
+      this.browserStackEl.style.removeProperty("--rdm-width");
+      this.browserStackEl.style.removeProperty("--rdm-height");
     }
 
     if (!this.isBrowserUIEnabled && !isTabContentDestroying) {
@@ -319,6 +359,8 @@ class ResponsiveUI {
 
     // Destroy local state
     const swap = this.swap;
+    this.browserContainerEl = null;
+    this.browserStackEl = null;
     this.browserWindow = null;
     this.tab = null;
     this.inited = null;
@@ -326,14 +368,14 @@ class ResponsiveUI {
     this.toolWindow = null;
     this.swap = null;
 
-    // Close the debugger client used to speak with emulation actor.
+    // Close the debugger client used to speak with responsive emulation actor.
     // The actor handles clearing any overrides itself, so it's not necessary to clear
     // anything on shutdown client side.
     const clientClosed = this.client.close();
     if (!isTabContentDestroying) {
       await clientClosed;
     }
-    this.client = this.emulationFront = null;
+    this.client = this.responsiveFront = null;
 
     if (!this.isBrowserUIEnabled && !isWindowClosing) {
       // Undo the swap and return the content back to a normal tab
@@ -353,11 +395,11 @@ class ResponsiveUI {
     this.client = new DebuggerClient(DebuggerServer.connectPipe());
     await this.client.connect();
     const targetFront = await this.client.mainRoot.getTab();
-    this.emulationFront = await targetFront.getFront("emulation");
+    this.responsiveFront = await targetFront.getFront("responsive");
   }
 
   /**
-   * Show one-time notification about reloads for emulation.
+   * Show one-time notification about reloads for responsive emulation.
    */
   showReloadNotification() {
     if (Services.prefs.getBoolPref(RELOAD_NOTIFICATION_PREF, false)) {
@@ -382,8 +424,18 @@ class ResponsiveUI {
         this.handleMessage(event);
         break;
       case "FullZoomChange":
-        const zoom = tab.linkedBrowser.fullZoom;
-        toolWindow.setViewportZoom(zoom);
+        if (this.isBrowserUIEnabled) {
+          // Get the current device size and update to that size, which
+          // will pick up changes to the zoom.
+          const {
+            width,
+            height,
+          } = this.rdmFrame.contentWindow.getViewportSize();
+          this.updateViewportSize(width, height);
+        } else {
+          const zoom = tab.linkedBrowser.fullZoom;
+          toolWindow.setViewportZoom(zoom);
+        }
         break;
       case "BeforeTabRemotenessChange":
       case "TabClose":
@@ -431,6 +483,14 @@ class ResponsiveUI {
       case "viewport-resize":
         this.onResizeViewport(event);
         break;
+      case "screenshot":
+        this.onScreenshot();
+        break;
+      case "toggle-left-alignment":
+        this.onToggleLeftAlignment(event);
+        break;
+      case "update-device-modal":
+        this.onUpdateDeviceModal(event);
     }
   }
 
@@ -522,6 +582,7 @@ class ResponsiveUI {
 
   onResizeViewport(event) {
     const { width, height } = event.data;
+    this.updateViewportSize(width, height);
     this.emit("viewport-resize", {
       width,
       height,
@@ -533,10 +594,46 @@ class ResponsiveUI {
     await this.updateScreenOrientation(type, angle, isViewportRotated);
   }
 
+  async onScreenshot() {
+    const targetFront = await this.client.mainRoot.getTab();
+    const captureScreenshotSupported = await targetFront.actorHasMethod(
+      "responsive",
+      "captureScreenshot"
+    );
+
+    if (captureScreenshotSupported) {
+      const data = await this.responsiveFront.captureScreenshot();
+      await saveScreenshot(this.browserWindow, {}, data);
+
+      message.post(this.rdmFrame.contentWindow, "screenshot-captured");
+    }
+  }
+
+  onToggleLeftAlignment(event) {
+    this.updateUIAlignment(event.data.leftAlignmentEnabled);
+  }
+
+  onUpdateDeviceModal(event) {
+    this.browserStackEl.classList.toggle(
+      "device-modal-opened",
+      event.data.isOpen
+    );
+  }
+
   /**
    * Restores the previous state of RDM.
    */
   async restoreState() {
+    // Restore UI alignment.
+    if (this.isBrowserUIEnabled) {
+      const leftAlignmentEnabled = Services.prefs.getBoolPref(
+        "devtools.responsive.leftAlignViewport.enabled",
+        false
+      );
+
+      this.updateUIAlignment(leftAlignmentEnabled);
+    }
+
     const deviceState = await asyncStorage.getItem(
       "devtools.responsive.deviceState"
     );
@@ -573,6 +670,7 @@ class ResponsiveUI {
       height,
     });
 
+    this.updateViewportSize(width, height);
     await this.updateDPPX(pixelRatio);
     await this.updateScreenOrientation(type, angle);
 
@@ -600,10 +698,10 @@ class ResponsiveUI {
    */
   async updateDPPX(dppx) {
     if (!dppx) {
-      await this.emulationFront.clearDPPXOverride();
+      await this.responsiveFront.clearDPPXOverride();
       return false;
     }
-    await this.emulationFront.setDPPXOverride(dppx);
+    await this.responsiveFront.setDPPXOverride(dppx);
     return false;
   }
 
@@ -616,12 +714,12 @@ class ResponsiveUI {
    */
   async updateNetworkThrottling(enabled, profile) {
     if (!enabled) {
-      await this.emulationFront.clearNetworkThrottling();
+      await this.responsiveFront.clearNetworkThrottling();
       return false;
     }
     const data = throttlingProfiles.find(({ id }) => id == profile);
     const { download, upload, latency } = data;
-    await this.emulationFront.setNetworkThrottling({
+    await this.responsiveFront.setNetworkThrottling({
       downloadThroughput: download,
       uploadThroughput: upload,
       latency,
@@ -637,9 +735,9 @@ class ResponsiveUI {
    */
   updateUserAgent(userAgent) {
     if (!userAgent) {
-      return this.emulationFront.clearUserAgentOverride();
+      return this.responsiveFront.clearUserAgentOverride();
     }
-    return this.emulationFront.setUserAgentOverride(userAgent);
+    return this.responsiveFront.setUserAgentOverride(userAgent);
   }
 
   /**
@@ -660,18 +758,18 @@ class ResponsiveUI {
         false
       );
 
-      reloadNeeded = await this.emulationFront.setTouchEventsOverride(
+      reloadNeeded = await this.responsiveFront.setTouchEventsOverride(
         Ci.nsIDocShell.TOUCHEVENTS_OVERRIDE_ENABLED
       );
 
       if (metaViewportEnabled) {
-        reloadNeeded |= await this.emulationFront.setMetaViewportOverride(
+        reloadNeeded |= await this.responsiveFront.setMetaViewportOverride(
           Ci.nsIDocShell.META_VIEWPORT_OVERRIDE_ENABLED
         );
       }
     } else {
-      reloadNeeded = await this.emulationFront.clearTouchEventsOverride();
-      reloadNeeded |= await this.emulationFront.clearMetaViewportOverride();
+      reloadNeeded = await this.responsiveFront.clearTouchEventsOverride();
+      reloadNeeded |= await this.responsiveFront.clearMetaViewportOverride();
     }
     return reloadNeeded;
   }
@@ -693,13 +791,13 @@ class ResponsiveUI {
   async updateScreenOrientation(type, angle, isViewportRotated = false) {
     const targetFront = await this.client.mainRoot.getTab();
     const simulateOrientationChangeSupported = await targetFront.actorHasMethod(
-      "emulation",
+      "responsive",
       "simulateScreenOrientationChange"
     );
 
     // Ensure that simulateScreenOrientationChange is supported.
     if (simulateOrientationChangeSupported) {
-      await this.emulationFront.simulateScreenOrientationChange(
+      await this.responsiveFront.simulateScreenOrientationChange(
         type,
         angle,
         isViewportRotated
@@ -713,10 +811,51 @@ class ResponsiveUI {
   }
 
   /**
+   * Sets whether or not the RDM UI should be left-aligned.
+   *
+   * @param {Boolean} leftAlignmentEnabled
+   *        Whether or not the UI is left-aligned.
+   */
+  updateUIAlignment(leftAlignmentEnabled) {
+    this.browserContainerEl.classList.toggle(
+      "left-aligned",
+      leftAlignmentEnabled
+    );
+  }
+
+  /**
+   * Sets the browser element to be the given width and height.
+   *
+   * @param {Number} width
+   *        The viewport's width.
+   * @param {Number} height
+   *        The viewport's height.
+   */
+  updateViewportSize(width, height) {
+    if (!this.isBrowserUIEnabled) {
+      return;
+    }
+
+    const zoom = this.tab.linkedBrowser.fullZoom;
+
+    const scaledWidth = width * zoom;
+    const scaledHeight = height * zoom;
+
+    // Setting this with a variable on the stack instead of directly as width/height
+    // on the <browser> because we'll need to use this for the alert dialog as well.
+    this.browserStackEl.style.setProperty("--rdm-width", `${scaledWidth}px`);
+    this.browserStackEl.style.setProperty("--rdm-height", `${scaledHeight}px`);
+  }
+
+  /**
    * Helper for tests. Assumes a single viewport for now.
    */
   getViewportSize() {
-    return this.toolWindow.getViewportSize();
+    if (!this.isBrowserUIEnabled) {
+      return this.toolWindow.getViewportSize();
+    }
+
+    return this.rdmFrame.contentWindow.getViewportSize();
   }
 
   /**
@@ -724,14 +863,24 @@ class ResponsiveUI {
    */
   async setViewportSize(size) {
     await this.inited;
-    this.toolWindow.setViewportSize(size);
+    if (!this.isBrowserUIEnabled) {
+      this.toolWindow.setViewportSize(size);
+      return;
+    }
+
+    const { width, height } = size;
+    this.updateViewportSize(width, height);
   }
 
   /**
    * Helper for tests/reloading the viewport. Assumes a single viewport for now.
    */
   getViewportBrowser() {
-    return this.toolWindow.getViewportBrowser();
+    if (!this.isBrowserUIEnabled) {
+      return this.toolWindow.getViewportBrowser();
+    }
+
+    return this.tab.linkedBrowser;
   }
 
   /**

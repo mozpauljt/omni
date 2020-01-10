@@ -21,8 +21,6 @@ var _Popover = _interopRequireDefault(require("../../shared/Popover"));
 
 var _PreviewFunction = _interopRequireDefault(require("../../shared/PreviewFunction"));
 
-loader.lazyRequireGetter(this, "_firefox", "devtools/client/debugger/src/client/firefox");
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
@@ -114,16 +112,24 @@ class Popup extends _react.Component {
       cx,
       selectSourceURL,
       preview: {
-        result
+        resultGrip
       }
     } = this.props;
+
+    if (!resultGrip) {
+      return null;
+    }
+
+    const {
+      location
+    } = resultGrip;
     return _react.default.createElement("div", {
       className: "preview-popup",
-      onClick: () => selectSourceURL(cx, result.location.url, {
-        line: result.location.line
+      onClick: () => selectSourceURL(cx, location.url, {
+        line: location.line
       })
     }, _react.default.createElement(_PreviewFunction.default, {
-      func: result
+      func: resultGrip
     }));
   }
 
@@ -137,6 +143,15 @@ class Popup extends _react.Component {
       highlightDomElement,
       unHighlightDomElement
     } = this.props;
+
+    if (properties.length == 0) {
+      return _react.default.createElement("div", {
+        className: "preview-popup"
+      }, _react.default.createElement("span", {
+        className: "label"
+      }, L10N.getStr("preview.noProperties")));
+    }
+
     return _react.default.createElement("div", {
       className: "preview-popup",
       style: {
@@ -148,7 +163,6 @@ class Popup extends _react.Component {
       disableWrap: true,
       focusable: false,
       openLink: openLink,
-      createObjectClient: grip => (0, _firefox.createObjectClient)(grip),
       onDOMNodeClick: grip => openElementInInspector(grip),
       onInspectIconClick: grip => openElementInInspector(grip),
       onDOMNodeMouseOver: grip => highlightDomElement(grip),
@@ -160,13 +174,13 @@ class Popup extends _react.Component {
     const {
       openLink,
       preview: {
-        result
+        resultGrip
       }
     } = this.props;
     return _react.default.createElement("div", {
       className: "preview-popup"
     }, Rep({
-      object: result,
+      object: resultGrip,
       mode: MODE.LONG,
       openLink
     }));
@@ -197,11 +211,12 @@ class Popup extends _react.Component {
   getPreviewType() {
     const {
       preview: {
-        root
+        root,
+        properties
       }
     } = this.props;
 
-    if (nodeIsPrimitive(root) || nodeIsFunction(root)) {
+    if (nodeIsPrimitive(root) || nodeIsFunction(root) || !Array.isArray(properties) || properties.length === 0) {
       return "tooltip";
     }
 
@@ -212,16 +227,16 @@ class Popup extends _react.Component {
     const {
       preview: {
         cursorPos,
-        result
+        resultGrip
       },
       editorRef
     } = this.props;
-    const type = this.getPreviewType();
 
-    if (typeof result == "undefined" || result.optimizedOut) {
+    if (typeof resultGrip == "undefined" || resultGrip && resultGrip.optimizedOut) {
       return null;
     }
 
+    const type = this.getPreviewType();
     return _react.default.createElement(_Popover.default, {
       targetPosition: cursorPos,
       type: type,
@@ -289,8 +304,7 @@ function removeHighlightForTargetSiblings(target) {
 }
 
 const mapStateToProps = state => ({
-  cx: (0, _selectors.getThreadContext)(state),
-  preview: (0, _selectors.getPreview)(state)
+  cx: (0, _selectors.getThreadContext)(state)
 });
 
 const {

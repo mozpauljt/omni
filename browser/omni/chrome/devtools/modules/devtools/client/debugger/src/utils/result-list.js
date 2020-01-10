@@ -19,9 +19,15 @@ function scrollList(resultList, index) {
 
   const scroll = () => {
     if ((0, _devtoolsEnvironment.isFirefox)()) {
-      resultEl.scrollIntoView({
-        block: "nearest",
-        behavior: "auto"
+      // Avoid expensive DOM computations involved in scrollIntoView
+      // https://nolanlawson.com/2018/09/25/accurately-measuring-layout-on-the-web/
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          resultEl.scrollIntoView({
+            block: "nearest",
+            behavior: "auto"
+          });
+        });
       });
     } else {
       chromeScrollList(resultEl, index);

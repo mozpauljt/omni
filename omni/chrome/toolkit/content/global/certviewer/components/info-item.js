@@ -62,10 +62,14 @@ export class InfoItem extends HTMLElement {
 
     this.classList.add(labelId);
 
-    if (this.item.label === "modulus") {
+    if (labelId === "modulus" || labelId === "public-value") {
       info.classList.add("long-hex");
-      this.addEventListener("click", () => {
-        info.classList.toggle("long-hex-open");
+      this.addEventListener("mouseup", () => {
+        // If a range of text is selected, don't toggle the class that
+        // hides/shows additional text.
+        if (window.getSelection().type !== "Range") {
+          info.classList.toggle("long-hex-open");
+        }
       });
     }
 

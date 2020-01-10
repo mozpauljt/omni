@@ -92,8 +92,9 @@ function buildGeneratedBindingList(scopes, generatedAstScopes, thisBinding) {
               name,
               loc,
               desc: async () => {
-                const objectClient = (0, _firefox.createObjectClient)(globalGrip);
-                return (await objectClient.getProperty(name)).descriptor;
+                const objectFront = _firefox.clientCommands.createObjectFront(globalGrip);
+
+                return (await objectFront.getProperty(name)).descriptor;
               }
             });
           }

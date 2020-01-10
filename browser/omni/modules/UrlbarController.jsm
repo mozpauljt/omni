@@ -54,51 +54,45 @@ class UrlbarController {
    *
    * @param {object} options
    *   The initial options for UrlbarController.
-   * @param {object} options.browserWindow
-   *   The browser window this controller is operating within.
+   * @param {UrlbarInput} options.input
+   *   The input this controller is operating with.
    * @param {object} [options.manager]
    *   Optional fake providers manager to override the built-in providers manager.
    *   Intended for use in unit tests only.
    */
   constructor(options = {}) {
-    if (!options.browserWindow) {
-      throw new Error("Missing options: browserWindow");
+    if (!options.input) {
+      throw new Error("Missing options: input");
+    }
+    if (!options.input.window) {
+      throw new Error("input is missing 'window' property.");
     }
     if (
-      !options.browserWindow.location ||
-      options.browserWindow.location.href != AppConstants.BROWSER_CHROME_URL
+      !options.input.window.location ||
+      options.input.window.location.href != AppConstants.BROWSER_CHROME_URL
     ) {
-      throw new Error("browserWindow should be an actual browser window.");
+      throw new Error("input.window should be an actual browser window.");
+    }
+    if (!("isPrivate" in options.input)) {
+      throw new Error("input.isPrivate must be set.");
     }
 
+    this.input = options.input;
+    this.browserWindow = options.input.window;
+
     this.manager = options.manager || UrlbarProvidersManager;
-    this.browserWindow = options.browserWindow;
 
     this._listeners = new Set();
     this._userSelectionBehavior = "none";
 
-    this.engagementEvent = new TelemetryEvent(options.eventTelemetryCategory);
-  }
-
-  uninit() {
-    this.browserWindow = null;
-    this.input = null;
-    this.view = null;
-    this._listeners.clear();
+    this.engagementEvent = new TelemetryEvent(
+      this,
+      options.eventTelemetryCategory
+    );
   }
 
   get NOTIFICATIONS() {
     return NOTIFICATIONS;
-  }
-
-  /**
-   * Hooks up the controller with an input.
-   *
-   * @param {UrlbarInput} input
-   *   The UrlbarInput instance associated with this controller.
-   */
-  setInput(input) {
-    this.input = input;
   }
 
   /**
@@ -309,7 +303,6 @@ class UrlbarController {
             this.view.close();
           } else {
             this.input.handleRevert();
-            this.input.endLayoutExtend(true);
           }
         }
         event.preventDefault();
@@ -412,7 +405,7 @@ class UrlbarController {
       case "resultsadded": {
         // We should connect to an heuristic result, if it exists.
         if (
-          (result == context.results[0] && context.preselected) ||
+          (result == context.results[0] && result.heuristic) ||
           result.autofill
         ) {
           if (result.type == UrlbarUtils.RESULT_TYPE.SEARCH) {
@@ -421,7 +414,9 @@ class UrlbarController {
               UrlbarPrefs.get("suggest.searches") &&
               UrlbarPrefs.get("browser.search.suggest.enabled")
             ) {
-              let engine = Services.search.defaultEngine;
+              let engine = Services.search.getEngineByName(
+                result.payload.engine
+              );
               UrlbarUtils.setupSpeculativeConnection(
                 engine,
                 this.browserWindow
@@ -625,8 +620,10 @@ class UrlbarController {
  * @see Events.yaml
  */
 class TelemetryEvent {
-  constructor(category) {
+  constructor(controller, category) {
+    this._controller = controller;
     this._category = category;
+    this._isPrivate = controller.input.isPrivate;
   }
 
   /**
@@ -685,6 +682,8 @@ class TelemetryEvent {
       timeStamp: event.timeStamp || Cu.now(),
       interactionType,
     };
+
+    this._controller.manager.notifyEngagementChange(this._isPrivate, "start");
   }
 
   /**
@@ -712,11 +711,18 @@ class TelemetryEvent {
       Cu.reportError("Could not record event: " + ex);
     } finally {
       this._startEventInfo = null;
+      this._discarded = false;
     }
   }
 
   _internalRecord(event, details) {
     if (!this._category || !this._startEventInfo) {
+      if (this._discarded && this._category) {
+        this._controller.manager.notifyEngagementChange(
+          this._isPrivate,
+          "discard"
+        );
+      }
       return;
     }
     if (
@@ -778,6 +784,8 @@ class TelemetryEvent {
       value,
       extra
     );
+
+    this._controller.manager.notifyEngagementChange(this._isPrivate, method);
   }
 
   /**
@@ -786,7 +794,10 @@ class TelemetryEvent {
    * no-op.
    */
   discard() {
-    this._startEventInfo = null;
+    if (this._startEventInfo) {
+      this._startEventInfo = null;
+      this._discarded = true;
+    }
   }
 
   /**

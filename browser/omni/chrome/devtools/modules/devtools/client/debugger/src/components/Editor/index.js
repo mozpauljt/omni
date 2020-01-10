@@ -21,6 +21,7 @@ var _lodash = require("devtools/client/shared/vendor/lodash");
 
 var _devtoolsEnvironment = require("devtools/client/debugger/dist/vendors").vendored["devtools-environment"];
 
+loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
 loader.lazyRequireGetter(this, "_prefs", "devtools/client/debugger/src/utils/prefs");
 loader.lazyRequireGetter(this, "_indentation", "devtools/client/debugger/src/utils/indentation");
 
@@ -390,7 +391,8 @@ class Editor extends _react.PureComponent {
     };
 
     if (target.classList.contains("CodeMirror-linenumber")) {
-      return (0, _devtoolsContextmenu.showMenu)(event, [...(0, _breakpoints.createBreakpointItems)(cx, location, breakpointActions), {
+      const lineText = (0, _source.getLineText)(sourceId, selectedSource.content, line).trim();
+      return (0, _devtoolsContextmenu.showMenu)(event, [...(0, _breakpoints.createBreakpointItems)(cx, location, breakpointActions, lineText), {
         type: "separator"
       }, (0, _editor.continueToHereItem)(cx, location, isPaused, editorActions)]);
     }
@@ -408,12 +410,18 @@ class Editor extends _react.PureComponent {
     const {
       cx,
       selectedSource,
+      updateCursorPosition,
       jumpToMappedLocation
     } = this.props;
 
-    if (selectedSource && e.metaKey && e.altKey) {
+    if (selectedSource) {
       const sourceLocation = (0, _editor2.getSourceLocationFromMouseEvent)(this.state.editor, selectedSource, e);
-      jumpToMappedLocation(cx, sourceLocation);
+
+      if (e.metaKey && e.altKey) {
+        jumpToMappedLocation(cx, sourceLocation);
+      }
+
+      updateCursorPosition(sourceLocation);
     }
   }
 
@@ -556,9 +564,7 @@ class Editor extends _react.PureComponent {
       return null;
     }
 
-    return _react.default.createElement("div", null, _react.default.createElement(_DebugLine.default, {
-      editor: editor
-    }), _react.default.createElement(_HighlightLine.default, null), _react.default.createElement(_EmptyLines.default, {
+    return _react.default.createElement("div", null, _react.default.createElement(_DebugLine.default, null), _react.default.createElement(_HighlightLine.default, null), _react.default.createElement(_EmptyLines.default, {
       editor: editor
     }), _react.default.createElement(_Breakpoints.default, {
       editor: editor,
@@ -644,6 +650,7 @@ const mapDispatchToProps = dispatch => ({ ...(0, _redux.bindActionCreators)({
     jumpToMappedLocation: _actions.default.jumpToMappedLocation,
     traverseResults: _actions.default.traverseResults,
     updateViewport: _actions.default.updateViewport,
+    updateCursorPosition: _actions.default.updateCursorPosition,
     closeTab: _actions.default.closeTab,
     toggleBlackBox: _actions.default.toggleBlackBox
   }, dispatch),

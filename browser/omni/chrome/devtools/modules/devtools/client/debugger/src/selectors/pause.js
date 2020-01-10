@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.getSelectedFrame = getSelectedFrame;
+exports.getFramePositions = getFramePositions;
 exports.getVisibleSelectedFrame = exports.getSelectedFrames = void 0;
 loader.lazyRequireGetter(this, "_pause", "devtools/client/debugger/src/reducers/pause");
 loader.lazyRequireGetter(this, "_sources", "devtools/client/debugger/src/reducers/sources");
@@ -57,3 +58,15 @@ const getVisibleSelectedFrame = (0, _reselect.createSelector)(_sources.getSelect
   };
 });
 exports.getVisibleSelectedFrame = getVisibleSelectedFrame;
+
+function getFramePositions(state) {
+  const threadId = (0, _pause.getCurrentThread)(state);
+  const currentThread = state.pause.threads[threadId];
+
+  if (!currentThread || !currentThread.selectedFrameId || !currentThread.replayFramePositions) {
+    return null;
+  }
+
+  const currentFrameId = currentThread.selectedFrameId;
+  return currentThread.replayFramePositions[currentFrameId];
+}

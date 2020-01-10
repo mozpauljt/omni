@@ -4,7 +4,6 @@
 
 "use strict";
 
-const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
 const {
   createFactory,
   PureComponent,
@@ -18,29 +17,39 @@ const {
 
 const FluentReact = require("devtools/client/shared/vendor/fluent-react");
 const Localized = createFactory(FluentReact.Localized);
-const { l10n } = require("../../modules/l10n");
+const { l10n } = require("devtools/client/application/src/modules/l10n");
 
-const ManifestColorItem = createFactory(require("./ManifestColorItem"));
-const ManifestItem = createFactory(require("./ManifestItem"));
-const ManifestIssueList = createFactory(require("./ManifestIssueList"));
-const ManifestSection = createFactory(require("./ManifestSection"));
-const ManifestJsonLink = createFactory(require("./ManifestJsonLink"));
+const ManifestColorItem = createFactory(
+  require("devtools/client/application/src/components/manifest/ManifestColorItem")
+);
+const ManifestIconItem = createFactory(
+  require("devtools/client/application/src/components/manifest/ManifestIconItem")
+);
+const ManifestItem = createFactory(
+  require("devtools/client/application/src/components/manifest/ManifestItem")
+);
+const ManifestIssueList = createFactory(
+  require("devtools/client/application/src/components/manifest/ManifestIssueList")
+);
+const ManifestSection = createFactory(
+  require("devtools/client/application/src/components/manifest/ManifestSection")
+);
+const ManifestJsonLink = createFactory(
+  require("devtools/client/application/src/components/manifest/ManifestJsonLink")
+);
 
-const { MANIFEST_MEMBER_VALUE_TYPES } = require("../../constants");
+const {
+  MANIFEST_MEMBER_VALUE_TYPES,
+} = require("devtools/client/application/src/constants");
+const Types = require("devtools/client/application/src/types/index");
 
 /**
  * A canonical manifest, splitted in different sections
  */
 class Manifest extends PureComponent {
   static get propTypes() {
-    // TODO: Use well-defined types
-    //       See https://bugzilla.mozilla.org/show_bug.cgi?id=1576881
     return {
-      icons: PropTypes.array.isRequired,
-      identity: PropTypes.array.isRequired,
-      presentation: PropTypes.array.isRequired,
-      validation: PropTypes.array.isRequired,
-      url: PropTypes.string.isRequired,
+      ...Types.manifest, // { identity, presentation, icons, validation, url }
     };
   }
 
@@ -59,13 +68,19 @@ class Manifest extends PureComponent {
       : null;
   }
 
-  renderMember({ key, value, type }) {
+  renderMember({ key, value, type }, index) {
+    let domKey = key;
     switch (type) {
       case MANIFEST_MEMBER_VALUE_TYPES.COLOR:
-        return ManifestColorItem({ label: key, key, value });
+        return ManifestColorItem({ label: key, key: domKey, value });
+      case MANIFEST_MEMBER_VALUE_TYPES.ICON:
+        // since the manifest may have keys with empty size/contentType,
+        // we cannot use them as unique IDs
+        domKey = index;
+        return ManifestIconItem({ label: key, key: domKey, value });
       case MANIFEST_MEMBER_VALUE_TYPES.STRING:
       default:
-        return ManifestItem({ label: key, key }, value);
+        return ManifestItem({ label: key, key: domKey }, value);
     }
   }
 

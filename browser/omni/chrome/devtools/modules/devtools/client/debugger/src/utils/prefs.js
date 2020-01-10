@@ -84,7 +84,7 @@ if ((0, _devtoolsEnvironment.isDevelopment)()) {
   pref("devtools.debugger.features.log-points", true);
   pref("devtools.debugger.features.inline-preview", true);
   pref("devtools.debugger.features.overlay-step-buttons", true);
-  pref("devtools.debugger.features.watchpoints", false);
+  pref("devtools.debugger.features.watchpoints", true);
 }
 
 const prefs = new _devtoolsModules.PrefsHelper("devtools", {
@@ -94,7 +94,7 @@ const prefs = new _devtoolsModules.PrefsHelper("devtools", {
   alphabetizeOutline: ["Bool", "debugger.alphabetize-outline"],
   autoPrettyPrint: ["Bool", "debugger.auto-pretty-print"],
   clientSourceMapsEnabled: ["Bool", "source-map.client-service.enabled"],
-  chromeAndExtenstionsEnabled: ["Bool", "chrome.enabled"],
+  chromeAndExtensionsEnabled: ["Bool", "chrome.enabled"],
   pauseOnExceptions: ["Bool", "debugger.pause-on-exceptions"],
   pauseOnCaughtExceptions: ["Bool", "debugger.pause-on-caught-exceptions"],
   ignoreCaughtExceptions: ["Bool", "debugger.ignore-caught-exceptions"],
@@ -150,7 +150,8 @@ const features = new _devtoolsModules.PrefsHelper("devtools.debugger.features", 
   logPoints: ["Bool", "log-points"],
   showOverlay: ["Bool", "overlay"],
   inlinePreview: ["Bool", "inline-preview"],
-  watchpoints: ["Bool", "watchpoints"]
+  watchpoints: ["Bool", "watchpoints"],
+  windowlessServiceWorkers: ["Bool", "windowless-service-workers"]
 });
 exports.features = features;
 const asyncStore = (0, _asyncStoreHelper.default)("debugger", {

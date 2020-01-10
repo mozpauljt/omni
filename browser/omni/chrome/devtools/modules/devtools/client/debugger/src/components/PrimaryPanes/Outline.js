@@ -13,6 +13,7 @@ loader.lazyRequireGetter(this, "_connect", "devtools/client/debugger/src/utils/c
 
 var _fuzzaldrinPlus = require("devtools/client/debugger/dist/vendors").vendored["fuzzaldrin-plus"];
 
+loader.lazyRequireGetter(this, "_ast", "devtools/client/debugger/src/utils/ast");
 loader.lazyRequireGetter(this, "_clipboard", "devtools/client/debugger/src/utils/clipboard");
 loader.lazyRequireGetter(this, "_function", "devtools/client/debugger/src/utils/function");
 
@@ -30,9 +31,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+const classnames = require("devtools/client/debugger/dist/vendors").vendored["classnames"];
 
 /**
  * Check whether the name argument matches the fuzzy filter argument
@@ -51,32 +52,96 @@ const filterOutlineItem = (name, filter) => {
   }
 
   return (0, _fuzzaldrinPlus.score)(name, filter) > FUZZALDRIN_FILTER_THRESHOLD;
-};
+}; // Checks if an element is visible inside its parent element
+
+
+function isVisible(element, parent) {
+  const parentTop = parent.getBoundingClientRect().top;
+  const parentBottom = parent.getBoundingClientRect().bottom;
+  const elTop = element.getBoundingClientRect().top;
+  const elBottom = element.getBoundingClientRect().bottom;
+  return parentTop < elTop && parentBottom > elBottom;
+}
 
 class Outline extends _react.Component {
   constructor(props) {
     super(props);
-    this.updateFilter = this.updateFilter.bind(this);
+
+    _defineProperty(this, "updateFilter", filter => {
+      this.setState({
+        filter: filter.trim()
+      });
+    });
+
+    this.focusedElRef = null;
     this.state = {
-      filter: ""
+      filter: "",
+      focusedItem: null
     };
   }
 
-  selectItem(location) {
+  componentDidUpdate(prevProps) {
+    if (this.props.cursorPosition && this.props.symbols && this.props.cursorPosition !== prevProps.cursorPosition) {
+      this.setFocus(this.props.cursorPosition);
+    }
+
+    if (this.focusedElRef) {
+      if (!isVisible(this.focusedElRef, this.refs.outlineList)) {
+        this.focusedElRef.scrollIntoView({
+          block: "center"
+        });
+      }
+    }
+  }
+
+  setFocus(cursorPosition) {
+    const {
+      symbols
+    } = this.props;
+    let classes = [];
+    let functions = [];
+
+    if (symbols && !symbols.loading) {
+      ({
+        classes,
+        functions
+      } = symbols);
+    } // Find items that enclose the selected location
+
+
+    const enclosedItems = [...functions, ...classes].filter(item => item.name != "anonymous" && (0, _ast.containsPosition)(item.location, cursorPosition));
+
+    if (enclosedItems.length == 0) {
+      return this.setState({
+        focusedItem: null
+      });
+    } // Find the closest item to the selected location to focus
+
+
+    const closestItem = enclosedItems.reduce((item, closest) => (0, _ast.positionAfter)(item.location, closest.location) ? item : closest);
+    this.setState({
+      focusedItem: closestItem
+    });
+  }
+
+  selectItem(selectedItem) {
     const {
       cx,
       selectedSource,
       selectLocation
     } = this.props;
 
-    if (!selectedSource) {
+    if (!selectedSource || !selectedItem) {
       return;
     }
 
     selectLocation(cx, {
       sourceId: selectedSource.id,
-      line: location.start.line,
-      column: location.start.column
+      line: selectedItem.location.start.line,
+      column: selectedItem.location.start.column
+    });
+    this.setState({
+      focusedItem: selectedItem
     });
   }
 
@@ -86,8 +151,7 @@ class Outline extends _react.Component {
     const {
       selectedSource,
       getFunctionText,
-      flashLineRange,
-      selectedLocation
+      flashLineRange
     } = this.props;
     const copyFunctionKey = L10N.getStr("copyFunction.accesskey");
     const copyFunctionLabel = L10N.getStr("copyFunction.label");
@@ -107,19 +171,13 @@ class Outline extends _react.Component {
         flashLineRange({
           start: func.location.start.line,
           end: func.location.end.line,
-          sourceId: selectedLocation.sourceId
+          sourceId: selectedSource.id
         });
         return (0, _clipboard.copyToTheClipboard)(functionText);
       }
     };
     const menuOptions = [copyFunctionItem];
     (0, _devtoolsContextmenu.showMenu)(event, menuOptions);
-  }
-
-  updateFilter(filter) {
-    this.setState({
-      filter: filter.trim()
-    });
   }
 
   renderPlaceholder() {
@@ -137,14 +195,25 @@ class Outline extends _react.Component {
 
   renderFunction(func) {
     const {
+      focusedItem
+    } = this.state;
+    const {
       name,
       location,
       parameterNames
     } = func;
+    const isFocused = focusedItem === func;
     return _react.default.createElement("li", {
       key: `${name}:${location.start.line}:${location.start.column}`,
-      className: "outline-list__element",
-      onClick: () => this.selectItem(location),
+      className: classnames("outline-list__element", {
+        focused: isFocused
+      }),
+      ref: el => {
+        if (isFocused) {
+          this.focusedElRef = el;
+        }
+      },
+      onClick: () => this.selectItem(func),
       onContextMenu: e => this.onContextMenu(e, func)
     }, _react.default.createElement("span", {
       className: "outline-list__element-icon"
@@ -156,23 +225,43 @@ class Outline extends _react.Component {
     }));
   }
 
+  renderClassHeader(klass) {
+    return _react.default.createElement("div", null, _react.default.createElement("span", {
+      className: "keyword"
+    }, "class"), " ", klass);
+  }
+
   renderClassFunctions(klass, functions) {
-    if (klass == null || functions.length == 0) {
+    const {
+      symbols
+    } = this.props;
+
+    if (!symbols || symbols.loading || klass == null || functions.length == 0) {
       return null;
     }
 
+    const {
+      focusedItem
+    } = this.state;
     const classFunc = functions.find(func => func.name === klass);
     const classFunctions = functions.filter(func => func.klass === klass);
-    const classInfo = this.props.symbols.classes.find(c => c.name === klass);
-    const heading = classFunc ? _react.default.createElement("h2", null, this.renderFunction(classFunc)) : _react.default.createElement("h2", {
-      onClick: classInfo ? () => this.selectItem(classInfo.location) : null
-    }, _react.default.createElement("span", {
-      className: "keyword"
-    }, "class"), " ", klass);
+    const classInfo = symbols.classes.find(c => c.name === klass);
+    const item = classFunc || classInfo;
+    const isFocused = focusedItem === item;
     return _react.default.createElement("li", {
       className: "outline-list__class",
+      ref: el => {
+        if (isFocused) {
+          this.focusedElRef = el;
+        }
+      },
       key: klass
-    }, heading, _react.default.createElement("ul", {
+    }, _react.default.createElement("h2", {
+      className: classnames("", {
+        focused: isFocused
+      }),
+      onClick: () => this.selectItem(item)
+    }, classFunc ? this.renderFunction(classFunc) : this.renderClassHeader(klass)), _react.default.createElement("ul", {
       className: "outline-list__class-list"
     }, classFunctions.map(func => this.renderFunction(func))));
   }
@@ -192,6 +281,7 @@ class Outline extends _react.Component {
     }
 
     return _react.default.createElement("ul", {
+      ref: "outlineList",
       className: "outline-list devtools-monospace",
       dir: "ltr"
     }, namedFunctions.map(func => this.renderFunction(func)), classes.map(klass => this.renderClassFunctions(klass, classFunctions)));
@@ -248,7 +338,7 @@ const mapStateToProps = state => {
     cx: (0, _selectors.getContext)(state),
     symbols,
     selectedSource: selectedSource,
-    selectedLocation: (0, _selectors.getSelectedLocation)(state),
+    cursorPosition: (0, _selectors.getCursorPosition)(state),
     getFunctionText: line => {
       if (selectedSource) {
         return (0, _function.findFunctionText)(line, selectedSource, symbols);

@@ -27,6 +27,7 @@ loader.lazyRequireGetter(this, "_sourcesTree", "devtools/client/debugger/src/uti
 loader.lazyRequireGetter(this, "_clipboard", "devtools/client/debugger/src/utils/clipboard");
 loader.lazyRequireGetter(this, "_prefs", "devtools/client/debugger/src/utils/prefs");
 loader.lazyRequireGetter(this, "_utils", "devtools/client/debugger/src/utils/utils");
+loader.lazyRequireGetter(this, "_asyncValue", "devtools/client/debugger/src/utils/async-value");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -135,7 +136,9 @@ class SourceTreeItem extends _react.Component {
     });
 
     _defineProperty(this, "handleDownloadFile", async (cx, source, item) => {
-      const name = item.name;
+      if (!source) {
+        return;
+      }
 
       if (!this.props.sourceContent) {
         await this.props.loadSourceText({
@@ -145,7 +148,12 @@ class SourceTreeItem extends _react.Component {
       }
 
       const data = this.props.sourceContent;
-      (0, _utils.downloadFile)(data, name);
+
+      if (!data) {
+        return;
+      }
+
+      (0, _utils.downloadFile)(data, item.name);
     });
 
     _defineProperty(this, "addCollapseExpandAllOptions", (menuOptions, item) => {
@@ -209,7 +217,7 @@ class SourceTreeItem extends _react.Component {
       return _react.default.createElement(_AccessibleImage.default, {
         className: "angular"
       });
-    } else if ((0, _source.isUrlExtension)(item.path) && depth === 1) {
+    } else if ((0, _source.isExtensionDirectoryPath)(item.path)) {
       return _react.default.createElement(_AccessibleImage.default, {
         className: "extension"
       });
@@ -231,7 +239,7 @@ class SourceTreeItem extends _react.Component {
 
     if ((0, _sourcesTree.isDirectory)(item)) {
       // Domain level
-      if (depth === 1 && projectRoot === "") {
+      if (depth === 1 && projectRoot === "" || depth === 0 && threads.find(thrd => thrd.actor === projectRoot)) {
         return _react.default.createElement(_AccessibleImage.default, {
           className: "globe-small"
         });
@@ -277,7 +285,7 @@ class SourceTreeItem extends _react.Component {
       }) => actor == item.name);
 
       if (thread) {
-        return thread.name;
+        return thread.name + (thread.serviceWorkerStatus ? ` (${thread.serviceWorkerStatus})` : "");
       }
     }
 
@@ -357,11 +365,11 @@ function getHasMatchingGeneratedSource(state, source) {
 
 function getSourceContentValue(state, source) {
   const content = (0, _selectors.getSourceContent)(state, source.id);
-  return content !== null ? content.value : false;
+  return content && (0, _asyncValue.isFulfilled)(content) ? content.value : null;
 }
 
 function isExtensionDirectory(depth, extensionName) {
-  return extensionName && depth === 1;
+  return extensionName && (depth === 1 || depth === 0);
 }
 
 const mapStateToProps = (state, props) => {
@@ -375,7 +383,7 @@ const mapStateToProps = (state, props) => {
     hasMatchingGeneratedSource: getHasMatchingGeneratedSource(state, source),
     hasSiblingOfSameName: (0, _selectors.getHasSiblingOfSameName)(state, source),
     hasPrettySource: source ? (0, _selectors.hasPrettySource)(state, source.id) : false,
-    sourceContent: source ? getSourceContentValue(state, source) : false,
+    sourceContent: source ? getSourceContentValue(state, source) : null,
     extensionName: (0, _source.isUrlExtension)(item.name) && (0, _selectors.getExtensionNameBySourceUrl)(state, item.name) || null
   };
 };

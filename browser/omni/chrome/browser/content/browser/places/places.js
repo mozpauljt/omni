@@ -377,7 +377,11 @@ var PlacesOrganizer = {
     // At this point, resetSearchBox is true, because the left pane selection
     // has changed; otherwise we would have returned earlier.
 
-    PlacesSearchBox.searchFilter.reset();
+    let input = PlacesSearchBox.searchFilter;
+    input.value = "";
+    try {
+      input.editor.transactionManager.clear();
+    } catch (e) {}
     this._setSearchScopeForNode(node);
     this.updateDetailsPane();
   },
@@ -724,7 +728,7 @@ var PlacesOrganizer = {
     infoBox.hidden = false;
     let selectedNode = aNodeList.length == 1 ? aNodeList[0] : null;
 
-    // If a textbox within a panel is focused, force-blur it so its contents
+    // If an input within a panel is focused, force-blur it so its contents
     // are saved
     if (gEditItemOverlay.itemId != -1) {
       var focusedElement = document.commandDispatcher.focusedElement;

@@ -73,13 +73,13 @@ function makeResourceNoArgsMapper(map) {
 }
 
 function getCachedResource(state, id, context, map) {
-  const pair = (0, _core.getResourcePair)(state, id);
+  const validatedState = (0, _core.getValidatedResource)(state, id);
 
-  if (!pair) {
+  if (!validatedState) {
     throw new Error(`Resource ${id} does not exist`);
   }
 
-  return map(pair.value, pair.identity, context);
+  return map(validatedState.values[id], validatedState.identity[id], context);
 }
 
 function getIdentity(identMap, identity) {

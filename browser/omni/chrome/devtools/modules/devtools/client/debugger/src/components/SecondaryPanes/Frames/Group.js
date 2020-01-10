@@ -73,6 +73,10 @@ class Group extends _react.Component {
     };
   }
 
+  get isSelectable() {
+    return this.props.panel == "webconsole";
+  }
+
   onContextMenu(event) {
     const {
       group,
@@ -95,6 +99,7 @@ class Group extends _react.Component {
       cx,
       group,
       selectFrame,
+      selectLocation,
       selectedFrame,
       toggleFrameworkGrouping,
       frameworkGroupingOn,
@@ -103,7 +108,7 @@ class Group extends _react.Component {
       displayFullUrl,
       getFrameTitle,
       disableContextMenu,
-      selectable
+      panel
     } = this.props;
     const {
       expanded
@@ -116,7 +121,7 @@ class Group extends _react.Component {
     return _react.default.createElement("div", {
       className: "frames-list"
     }, group.reduce((acc, frame, i) => {
-      if (selectable) {
+      if (this.isSelectable) {
         acc.push(_react.default.createElement(_FrameIndent.default, {
           key: `frame-indent-${i}`
         }));
@@ -131,13 +136,14 @@ class Group extends _react.Component {
         key: frame.id,
         selectedFrame: selectedFrame,
         selectFrame: selectFrame,
+        selectLocation: selectLocation,
         shouldMapDisplayName: false,
         toggleBlackBox: toggleBlackBox,
         toggleFrameworkGrouping: toggleFrameworkGrouping,
         displayFullUrl: displayFullUrl,
         getFrameTitle: getFrameTitle,
         disableContextMenu: disableContextMenu,
-        selectable: selectable
+        panel: panel
       }));
     }, []));
   }
@@ -147,7 +153,6 @@ class Group extends _react.Component {
       l10n
     } = this.context;
     const {
-      selectable,
       group
     } = this.props;
     const frame = group[0];
@@ -161,12 +166,12 @@ class Group extends _react.Component {
       onClick: this.toggleFrames,
       tabIndex: 0,
       title: title
-    }, selectable && _react.default.createElement(_FrameIndent.default, null), _react.default.createElement(FrameLocation, {
+    }, this.isSelectable && _react.default.createElement(_FrameIndent.default, null), _react.default.createElement(FrameLocation, {
       frame: frame,
       expanded: expanded
-    }), selectable && _react.default.createElement("span", {
+    }), this.isSelectable && _react.default.createElement("span", {
       className: "clipboard-only"
-    }, " "), _react.default.createElement(_Badge.default, null, this.props.group.length), selectable && _react.default.createElement("br", {
+    }, " "), _react.default.createElement(_Badge.default, null, this.props.group.length), this.isSelectable && _react.default.createElement("br", {
       className: "clipboard-only"
     }));
   }

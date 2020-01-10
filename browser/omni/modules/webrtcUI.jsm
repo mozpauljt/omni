@@ -298,7 +298,14 @@ var webrtcUI = {
         break;
       }
       case "webrtc:Request":
-        prompt(aMessage.target, aMessage.data);
+        if (aMessage.target.fxrPermissionPrompt) {
+          // For Firefox Reality on Desktop, switch to a different mechanism to
+          // prompt the user since fewer permissions are available and since many
+          // UI dependencies are not availabe.
+          aMessage.target.fxrPermissionPrompt(aMessage.data);
+        } else {
+          prompt(aMessage.target, aMessage.data);
+        }
         break;
       case "webrtc:StopRecording":
         stopRecording(aMessage.target, aMessage.data);
@@ -372,21 +379,26 @@ function denyRequestNoPermission(aBrowser, aRequest) {
 }
 
 //
-// Check if we have permission to access the camera and or microphone at the
-// OS level. Triggers a request to access the device if access is needed and
-// the permission state has not yet been determined.
+// Check if we have permission to access the camera or screen-sharing and/or
+// microphone at the OS level. Triggers a request to access the device if access
+// is needed and the permission state has not yet been determined.
 //
-async function checkOSPermission(camNeeded, micNeeded) {
+async function checkOSPermission(camNeeded, micNeeded, scrNeeded) {
   // Don't trigger OS permission requests for fake devices. Fake devices don't
   // require OS permission and the dialogs are problematic in automated testing
   // (where fake devices are used) because they require user interaction.
-  if (Services.prefs.getBoolPref("media.navigator.streams.fake", false)) {
+  if (
+    !scrNeeded &&
+    Services.prefs.getBoolPref("media.navigator.streams.fake", false)
+  ) {
     return true;
   }
 
   let camStatus = {},
     micStatus = {};
-  OSPermissions.getMediaCapturePermissionState(camStatus, micStatus);
+  if (camNeeded || micNeeded) {
+    OSPermissions.getMediaCapturePermissionState(camStatus, micStatus);
+  }
   if (camNeeded) {
     let camPermission = camStatus.value;
     let camAccessible = await checkAndGetOSPermission(
@@ -404,6 +416,14 @@ async function checkOSPermission(camNeeded, micNeeded) {
       OSPermissions.requestAudioCapturePermission
     );
     if (!micAccessible) {
+      return false;
+    }
+  }
+  let scrStatus = {};
+  if (scrNeeded) {
+    OSPermissions.getScreenCapturePermissionState(scrStatus);
+    if (scrStatus.value == OSPermissions.PERMISSION_STATE_DENIED) {
+      OSPermissions.maybeRequestScreenCapturePermission();
       return false;
     }
   }
@@ -509,7 +529,7 @@ function checkRequestAllowed(aRequest, aPrincipal, aBrowser) {
   if (videoDevices.length && sharingScreen) {
     camAllowed = false;
   }
-  if (aRequest.isThirdPartyOrigin) {
+  if (aRequest.isThirdPartyOrigin && !aRequest.shouldDelegatePermission) {
     camAllowed = false;
     micAllowed = false;
   }
@@ -561,9 +581,11 @@ function checkRequestAllowed(aRequest, aPrincipal, aBrowser) {
     let browser = aBrowser;
     browser.getDevicePermissionOrigins("webrtc").add(aPrincipal.origin);
 
-    let camNeeded = !!videoDevices.length;
+    // If sharingScreen, we're requesting screen-sharing, otherwise camera
+    let camNeeded = !!videoDevices.length && !sharingScreen;
+    let scrNeeded = !!videoDevices.length && sharingScreen;
     let micNeeded = !!audioDevices.length;
-    checkOSPermission(camNeeded, micNeeded).then(havePermission => {
+    checkOSPermission(camNeeded, micNeeded, scrNeeded).then(havePermission => {
       if (havePermission) {
         let mm = browser.messageManager;
         mm.sendAsyncMessage("webrtc:Allow", {
@@ -621,7 +643,10 @@ function prompt(aBrowser, aRequest) {
     // If the request comes from a popup, we don't want to show the prompt,
     // but we do want to allow the request if the user previously gave permission.
     if (isPopup) {
-      if (!checkRequestAllowed(aRequest, principal, aBrowser)) {
+      if (
+        aRequest.secondOrigin ||
+        !checkRequestAllowed(aRequest, principal, aBrowser)
+      ) {
         denyRequest(aBrowser, aRequest);
       }
       return;
@@ -658,20 +683,39 @@ function prompt(aBrowser, aRequest) {
   // "includes()". This allows the rotation of string identifiers. We list the
   // full identifiers here so they can be cross-referenced more easily.
   let joinedRequestTypes = requestTypes.join("And");
-  let stringId = [
-    // Individual request types first.
-    "getUserMedia.shareCamera2.message",
-    "getUserMedia.shareMicrophone2.message",
-    "getUserMedia.shareScreen3.message",
-    "getUserMedia.shareAudioCapture2.message",
-    // Combinations of the above request types last.
-    "getUserMedia.shareCameraAndMicrophone2.message",
-    "getUserMedia.shareCameraAndAudioCapture2.message",
-    "getUserMedia.shareScreenAndMicrophone3.message",
-    "getUserMedia.shareScreenAndAudioCapture3.message",
-  ].find(id => id.includes(joinedRequestTypes));
+  let requestMessages;
+  if (aRequest.secondOrigin) {
+    requestMessages = [
+      // Individual request types first.
+      "getUserMedia.shareCameraUnsafeDelegation.message",
+      "getUserMedia.shareMicrophoneUnsafeDelegation.message",
+      "getUserMedia.shareScreenUnsafeDelegation.message",
+      "getUserMedia.shareAudioCaptureUnsafeDelegation.message",
+      // Combinations of the above request types last.
+      "getUserMedia.shareCameraAndMicrophoneUnsafeDelegation.message",
+      "getUserMedia.shareCameraAndAudioCaptureUnsafeDelegation.message",
+      "getUserMedia.shareScreenAndMicrophoneUnsafeDelegation.message",
+      "getUserMedia.shareScreenAndAudioCaptureUnsafeDelegation.message",
+    ];
+  } else {
+    requestMessages = [
+      // Individual request types first.
+      "getUserMedia.shareCamera2.message",
+      "getUserMedia.shareMicrophone2.message",
+      "getUserMedia.shareScreen3.message",
+      "getUserMedia.shareAudioCapture2.message",
+      // Combinations of the above request types last.
+      "getUserMedia.shareCameraAndMicrophone2.message",
+      "getUserMedia.shareCameraAndAudioCapture2.me ssage",
+      "getUserMedia.shareScreenAndMicrophone3.message",
+      "getUserMedia.shareScreenAndAudioCapture3.message",
+    ];
+  }
 
-  let message = stringBundle.getFormattedString(stringId, ["<>"], 1);
+  let stringId = requestMessages.find(id => id.includes(joinedRequestTypes));
+  let message = aRequest.secondOrigin
+    ? stringBundle.getFormattedString(stringId, ["<>", "{}"])
+    : stringBundle.getFormattedString(stringId, ["<>"]);
 
   let notification; // Used by action callbacks.
   let mainAction = {
@@ -765,7 +809,12 @@ function prompt(aBrowser, aRequest) {
       // it is handled synchronously before we add the notification.
       // Handling of ALLOW is delayed until the popupshowing event,
       // to avoid granting permissions automatically to background tabs.
-      if (checkRequestAllowed(aRequest, principal, aBrowser)) {
+      // If we have a secondOrigin, it means this request is lacking explicit
+      // trust, and we should always prompt even in with persistent permission.
+      if (
+        !aRequest.secondOrigin &&
+        checkRequestAllowed(aRequest, principal, aBrowser)
+      ) {
         this.remove();
         return true;
       }
@@ -938,6 +987,23 @@ function prompt(aBrowser, aRequest) {
             warning.textContent = pre;
             warning.appendChild(learnMore);
             warning.appendChild(chromeWin.document.createTextNode(post));
+
+            // On Catalina, we don't want to blow our chance to show the
+            // OS-level helper prompt to enable screen recording if the user
+            // intends to reject anyway. OTOH showing it when they click Allow
+            // is too late. A happy middle is to show it when the user makes a
+            // choice in the picker. This already happens implicitly if the
+            // user chooses "Entire desktop", as a side-effect of our preview,
+            // we just need to also do it if they choose "Firefox". These are
+            // the lone two options when permission is absent on Catalina.
+            // Ironically, these are the two sources marked "scary" from a
+            // web-sharing perspective, which is why this code resides here.
+            // A restart doesn't appear to be necessary in spite of OS wording.
+            let scrStatus = {};
+            OSPermissions.getScreenCapturePermissionState(scrStatus);
+            if (scrStatus.value == OSPermissions.PERMISSION_STATE_DENIED) {
+              OSPermissions.maybeRequestScreenCapturePermission();
+            }
           }
 
           let perms = Services.perms;
@@ -1116,9 +1182,14 @@ function prompt(aBrowser, aRequest) {
           aBrowser.getDevicePermissionOrigins("webrtc").add(principal.origin);
         }
 
-        let camNeeded = !!videoDevices.length;
+        let camNeeded = !!videoDevices.length && !sharingScreen;
+        let scrNeeded = !!videoDevices.length && sharingScreen;
         let micNeeded = !!audioDevices.length;
-        let havePermission = await checkOSPermission(camNeeded, micNeeded);
+        let havePermission = await checkOSPermission(
+          camNeeded,
+          micNeeded,
+          scrNeeded
+        );
         if (!havePermission) {
           denyRequestNoPermission(notification.browser, aRequest);
           return;
@@ -1137,11 +1208,28 @@ function prompt(aBrowser, aRequest) {
     },
   };
 
-  // Don't offer "always remember" action in PB mode or from third party
-  if (
-    !PrivateBrowsingUtils.isBrowserPrivate(aBrowser) &&
-    !aRequest.isThirdPartyOrigin
-  ) {
+  function shouldShowAlwaysRemember() {
+    // Don't offer "always remember" action in PB mode
+    if (PrivateBrowsingUtils.isBrowserPrivate(aBrowser)) {
+      return false;
+    }
+
+    // Don't offer "always remember" action in third party with no permission
+    // delegation
+    if (aRequest.isThirdPartyOrigin && !aRequest.shouldDelegatePermission) {
+      return false;
+    }
+
+    // Don't offer "always remember" action in maybe unsafe permission
+    // delegation
+    if (aRequest.shouldDelegatePermission && aRequest.secondOrigin) {
+      return false;
+    }
+
+    return true;
+  }
+
+  if (shouldShowAlwaysRemember()) {
     // Disable the permanent 'Allow' action if the connection isn't secure, or for
     // screen/audio sharing (because we can't guess which window the user wants to
     // share without prompting).
@@ -1189,6 +1277,10 @@ function prompt(aBrowser, aRequest) {
     iconClass = "camera";
   }
   options.popupIconClass = iconClass + "-icon";
+
+  if (aRequest.secondOrigin) {
+    options.secondName = getHostOrExtensionName(null, aRequest.secondOrigin);
+  }
 
   notification = chromeDoc.defaultView.PopupNotifications.show(
     aBrowser,
@@ -1240,7 +1332,8 @@ function removePrompt(aBrowser, aCallId) {
 
 function getGlobalIndicator() {
   if (AppConstants.platform != "macosx") {
-    const INDICATOR_CHROME_URI = "chrome://browser/content/webrtcIndicator.xul";
+    const INDICATOR_CHROME_URI =
+      "chrome://browser/content/webrtcIndicator.xhtml";
     const features = "chrome,dialog=yes,titlebar=no,popup=yes";
 
     return Services.ww.openWindow(

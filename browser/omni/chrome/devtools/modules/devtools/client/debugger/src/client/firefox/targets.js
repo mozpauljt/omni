@@ -3,18 +3,30 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.updateWorkerTargets = updateWorkerTargets;
-exports.updateProcessTargets = updateProcessTargets;
 exports.updateTargets = updateTargets;
 loader.lazyRequireGetter(this, "_events", "devtools/client/debugger/src/client/firefox/events");
 loader.lazyRequireGetter(this, "_prefs", "devtools/client/debugger/src/utils/prefs");
+loader.lazyRequireGetter(this, "_url", "devtools/client/debugger/src/utils/url");
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-async function attachTargets(type, targetLists, args) {
-  const newTargets = {};
-  const targets = args.targets[type] || {};
+// $FlowIgnore
+const {
+  defaultThreadOptions
+} = require("devtools/client/shared/thread-utils");
+
+async function attachTargets(targetLists, args) {
+  const {
+    targets
+  } = args;
+  targetLists = targetLists.filter(target => !!target);
+
+  for (const actor of Object.keys(targets)) {
+    if (!targetLists.some(target => target.targetForm.threadActor == actor)) {
+      delete targets[actor];
+    }
+  }
 
   for (const targetFront of targetLists) {
     try {
@@ -22,72 +34,143 @@ async function attachTargets(type, targetLists, args) {
       const threadActorID = targetFront.targetForm.threadActor;
 
       if (targets[threadActorID]) {
-        newTargets[threadActorID] = targets[threadActorID];
-      } else {
-        // Content process targets have already been attached by the toolbox.
-        // And the thread front has been initialized from there.
-        // So we only need to retrieve it here.
-        let threadFront = targetFront.threadFront; // But workers targets are still only managed by the debugger codebase
-        // and so we have to attach their thread actor
-
-        if (!threadFront) {
-          [, threadFront] = await targetFront.attachThread(args.options); // NOTE: resume is not necessary for ProcessDescriptors and can be removed
-          // once we switch to WorkerDescriptors
-
-          threadFront.resume();
-        }
-
-        (0, _events.addThreadEventListeners)(threadFront);
-        newTargets[threadFront.actor] = targetFront;
+        continue;
       }
+
+      targets[threadActorID] = targetFront; // Content process targets have already been attached by the toolbox.
+      // And the thread front has been initialized from there.
+      // So we only need to retrieve it here.
+
+      let threadFront = targetFront.threadFront; // But workers targets are still only managed by the debugger codebase
+      // and so we have to attach their thread actor
+
+      if (!threadFront) {
+        [, threadFront] = await targetFront.attachThread({ ...defaultThreadOptions(),
+          ...args.options
+        }); // NOTE: resume is not necessary for ProcessDescriptors and can be removed
+        // once we switch to WorkerDescriptors
+
+        threadFront.resume();
+      }
+
+      (0, _events.addThreadEventListeners)(threadFront);
     } catch (e) {// If any of the workers have terminated since the list command initiated
       // then we will get errors. Ignore these.
     }
   }
-
-  return newTargets;
 }
 
-async function updateWorkerTargets(type, args) {
-  const {
-    currentTarget
-  } = args;
-
-  if (!currentTarget.isBrowsingContext || currentTarget.isContentProcess) {
-    return {};
-  }
-
-  const {
-    workers
-  } = await currentTarget.listWorkers();
-  return attachTargets(type, workers, args);
-}
-
-async function updateProcessTargets(type, args) {
+async function listWorkerTargets(args) {
   const {
     currentTarget,
     debuggerClient
   } = args;
 
-  if (!_prefs.prefs.fission || !currentTarget.chrome || currentTarget.isAddon) {
-    return Promise.resolve({});
+  if (!currentTarget.isBrowsingContext || currentTarget.isContentProcess) {
+    return [];
   }
 
+  let workers = [];
+  let allWorkers;
+  let serviceWorkerRegistrations = [];
+
+  if ((0, _events.attachAllTargets)(currentTarget)) {
+    workers = await debuggerClient.mainRoot.listAllWorkerTargets(); // subprocess workers are ignored because they take several seconds to
+    // attach to when opening the browser toolbox. See bug 1594597.
+
+    workers = workers.filter(({
+      url
+    }) => !url.includes("subprocess_worker"));
+    allWorkers = workers;
+    const {
+      registrations
+    } = await debuggerClient.mainRoot.listServiceWorkerRegistrations();
+    serviceWorkerRegistrations = registrations;
+  } else {
+    workers = (await currentTarget.listWorkers()).workers;
+
+    if (currentTarget.url && _prefs.features.windowlessServiceWorkers) {
+      allWorkers = await debuggerClient.mainRoot.listAllWorkerTargets();
+      const {
+        registrations
+      } = await debuggerClient.mainRoot.listServiceWorkerRegistrations();
+      serviceWorkerRegistrations = registrations.filter(front => (0, _url.sameOrigin)(front.url, currentTarget.url));
+    }
+  }
+
+  for (const front of serviceWorkerRegistrations) {
+    const {
+      activeWorker,
+      waitingWorker,
+      installingWorker,
+      evaluatingWorker
+    } = front;
+    await maybeMarkServiceWorker(activeWorker);
+    await maybeMarkServiceWorker(waitingWorker);
+    await maybeMarkServiceWorker(installingWorker);
+    await maybeMarkServiceWorker(evaluatingWorker);
+  }
+
+  async function maybeMarkServiceWorker(info) {
+    if (!info) {
+      return;
+    }
+
+    const worker = allWorkers.find(front => front && front.id == info.id);
+
+    if (!worker) {
+      return;
+    }
+
+    worker.debuggerServiceWorkerStatus = info.stateText;
+
+    if (!workers.includes(worker)) {
+      workers.push(worker);
+    }
+  }
+
+  return workers;
+}
+
+async function getAllProcessTargets(args) {
+  const {
+    debuggerClient
+  } = args;
   const {
     processes
   } = await debuggerClient.mainRoot.listProcesses();
-  const targets = await Promise.all(processes.filter(descriptor => !descriptor.isParent).map(descriptor => descriptor.getTarget()));
-  return attachTargets(type, targets, args);
+  return Promise.all(processes.filter(descriptor => !descriptor.isParent).map(descriptor => descriptor.getTarget()));
 }
 
-async function updateTargets(type, args) {
-  if (type == "worker") {
-    return updateWorkerTargets(type, args);
+async function listProcessTargets(args) {
+  const {
+    currentTarget
+  } = args;
+
+  if (!(0, _events.attachAllTargets)(currentTarget)) {
+    if (currentTarget.url && _prefs.features.windowlessServiceWorkers) {
+      // Service workers associated with our target's origin need to pause until
+      // we attach, regardless of which process they are running in.
+      const origin = new URL(currentTarget.url).origin;
+      const targets = await getAllProcessTargets(args);
+
+      try {
+        await Promise.all(targets.map(t => t.pauseMatchingServiceWorkers({
+          origin
+        })));
+      } catch (e) {// Old servers without pauseMatchingServiceWorkers will throw.
+        // @backward-compatibility: remove in Firefox 75
+      }
+    }
+
+    return [];
   }
 
-  if (type == "contentProcess") {
-    return updateProcessTargets(type, args);
-  }
+  return getAllProcessTargets(args);
+}
 
-  throw new Error(`Unable to fetch targts for ${type}`);
+async function updateTargets(args) {
+  const workers = await listWorkerTargets(args);
+  const processes = await listProcessTargets(args);
+  await attachTargets([...workers, ...processes], args);
 }

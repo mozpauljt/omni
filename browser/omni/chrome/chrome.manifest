@@ -1,5 +1,6 @@
 content branding browser/content/branding/ contentaccessible=yes
 content browser browser/content/browser/ contentaccessible=yes
+content fxr browser/content/browser/fxr/
 content payments browser/content/payments/
 content pocket browser/content/pocket/ contentaccessible=yes
 skin browser classic/1.0 browser/skin/classic/browser/

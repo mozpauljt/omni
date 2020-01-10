@@ -36,20 +36,19 @@ function paused(pauseInfo) {
   }) {
     const {
       thread,
-      frames,
+      frame,
       why
     } = pauseInfo;
-    const topFrame = frames.length > 0 ? frames[0] : null;
     dispatch({
       type: "PAUSED",
       thread,
       why,
-      frames,
-      selectedFrameId: topFrame ? topFrame.id : undefined
+      frame
     }); // Get a context capturing the newly paused and selected thread.
 
     const cx = (0, _selectors.getThreadContext)(getState());
     (0, _assert.default)(cx.thread == thread, "Thread mismatch");
+    await dispatch((0, _.fetchFrames)(cx));
     const hiddenBreakpoint = (0, _selectors.getHiddenBreakpoint)(getState());
 
     if (hiddenBreakpoint) {

@@ -225,9 +225,13 @@ class ConditionalPanel extends _react.PureComponent {
 exports.ConditionalPanel = ConditionalPanel;
 
 const mapStateToProps = state => {
-  const location = (0, _selectors.getConditionalPanelLocation)(state); // location type could be null.
+  const location = (0, _selectors.getConditionalPanelLocation)(state);
 
-  const breakpoint = location ? (0, _selectors.getClosestBreakpoint)(state, location) : undefined;
+  if (!location) {
+    throw new Error("Conditional panel location needed.");
+  }
+
+  const breakpoint = (0, _selectors.getClosestBreakpoint)(state, location);
   return {
     cx: (0, _selectors.getContext)(state),
     breakpoint,

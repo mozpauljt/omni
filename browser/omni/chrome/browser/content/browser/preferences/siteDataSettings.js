@@ -61,7 +61,10 @@ let gSiteDataSettings = {
     }
 
     // Add "Host" column.
-    addColumnItem({ raw: site.host }, "4");
+    let hostData = site.host
+      ? { raw: site.host }
+      : { id: "site-data-local-file-host" };
+    addColumnItem(hostData, "4");
 
     // Add "Cookies" column.
     addColumnItem({ raw: site.cookies.length }, "1");
@@ -279,6 +282,8 @@ let gSiteDataSettings = {
           }
         }
       }
+    } else {
+      allowed = true;
     }
 
     // If the user cancelled the confirm dialog keep the site data window open,

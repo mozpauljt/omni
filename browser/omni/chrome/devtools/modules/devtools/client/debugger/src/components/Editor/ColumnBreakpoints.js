@@ -31,7 +31,7 @@ class ColumnBreakpoints extends _react.Component {
       breakpointActions
     } = this.props;
 
-    if (!selectedSource || selectedSource.isBlackBoxed) {
+    if (!selectedSource || selectedSource.isBlackBoxed || columnBreakpoints.length === 0) {
       return null;
     }
 

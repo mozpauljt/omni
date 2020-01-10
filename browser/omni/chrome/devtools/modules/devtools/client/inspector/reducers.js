@@ -11,6 +11,7 @@ exports.animations = require("devtools/client/inspector/animation/reducers/anima
 exports.boxModel = require("devtools/client/inspector/boxmodel/reducers/box-model");
 exports.changes = require("devtools/client/inspector/changes/reducers/changes");
 exports.classList = require("devtools/client/inspector/rules/reducers/class-list");
+exports.compatibility = require("devtools/client/inspector/compatibility/reducers/compatibility");
 exports.extensionsSidebar = require("devtools/client/inspector/extensions/reducers/sidebar");
 exports.flexbox = require("devtools/client/inspector/flexbox/reducers/flexbox");
 exports.fontOptions = require("devtools/client/inspector/fonts/reducers/font-options");
@@ -23,6 +24,6 @@ exports.rules = require("devtools/client/inspector/rules/reducers/rules");
 
 // This ObjectInspector reducer is needed for the Extension Sidebar.
 const {
-  objectInspector,
-} = require("devtools/client/shared/components/reps/reps");
-exports.objectInspector = objectInspector.reducer.default;
+  default: objectInspector,
+} = require("devtools/client/debugger/packages/devtools-reps/src/object-inspector/reducer");
+exports.objectInspector = objectInspector;

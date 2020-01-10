@@ -310,7 +310,7 @@ function toggleBreakpointAtLine(cx, line) {
     return dispatch((0, _modify.addBreakpoint)(cx, {
       sourceId: selectedSource.id,
       sourceUrl: selectedSource.url,
-      line: line
+      line
     }));
   };
 }

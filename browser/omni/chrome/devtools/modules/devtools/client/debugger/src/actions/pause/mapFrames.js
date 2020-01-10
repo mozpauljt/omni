@@ -132,6 +132,7 @@ async function expandFrames(frames, sourceMaps, getState) {
         id,
         displayName: originalFrame.displayName,
         location: originalFrame.location,
+        index: frame.index,
         source: null,
         thread: frame.thread,
         scope: frame.scope,
@@ -141,7 +142,8 @@ async function expandFrames(frames, sourceMaps, getState) {
         // updateFrameLocation.
         generatedLocation: frame.generatedLocation,
         originalDisplayName: originalFrame.displayName,
-        originalVariables: originalFrame.variables
+        originalVariables: originalFrame.variables,
+        asyncCause: null
       });
     });
   }

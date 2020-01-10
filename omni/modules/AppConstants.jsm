@@ -111,11 +111,19 @@ this.AppConstants = Object.freeze({
   true,
 //@line 153 "$SRCDIR/toolkit/modules/AppConstants.jsm"
 
-//@line 156 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+// NOTE! XP_LINUX has to go after MOZ_WIDGET_ANDROID otherwise Android
+// builds will be misidentified as linux.
   platform:
 //@line 158 "$SRCDIR/toolkit/modules/AppConstants.jsm"
   "linux",
 //@line 170 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+
+// Most of our frontend code assumes that any desktop Unix platform
+// is "linux". Add the distinction for code that needs it.
+  unixstyle:
+//@line 175 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+    "linux",
+//@line 187 "$SRCDIR/toolkit/modules/AppConstants.jsm"
 
   isPlatformAndVersionAtLeast(platform, version) {
     let platformVersion = Services.sysinfo.getProperty("version");
@@ -130,102 +138,87 @@ this.AppConstants = Object.freeze({
   },
 
   MOZ_CRASHREPORTER:
-//@line 185 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 202 "$SRCDIR/toolkit/modules/AppConstants.jsm"
   true,
-//@line 189 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 206 "$SRCDIR/toolkit/modules/AppConstants.jsm"
 
   MOZ_NORMANDY:
-//@line 192 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 209 "$SRCDIR/toolkit/modules/AppConstants.jsm"
   true,
-//@line 196 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 213 "$SRCDIR/toolkit/modules/AppConstants.jsm"
 
   MOZ_MAINTENANCE_SERVICE:
-//@line 201 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 218 "$SRCDIR/toolkit/modules/AppConstants.jsm"
   false,
-//@line 203 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 220 "$SRCDIR/toolkit/modules/AppConstants.jsm"
 
   MOZ_BITS_DOWNLOAD:
-//@line 208 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 225 "$SRCDIR/toolkit/modules/AppConstants.jsm"
   false,
-//@line 210 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 227 "$SRCDIR/toolkit/modules/AppConstants.jsm"
 
   DEBUG:
-//@line 215 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 232 "$SRCDIR/toolkit/modules/AppConstants.jsm"
   false,
-//@line 217 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 234 "$SRCDIR/toolkit/modules/AppConstants.jsm"
 
   ASAN:
-//@line 222 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 239 "$SRCDIR/toolkit/modules/AppConstants.jsm"
   false,
-//@line 224 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 241 "$SRCDIR/toolkit/modules/AppConstants.jsm"
 
   ASAN_REPORTER:
-//@line 229 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 246 "$SRCDIR/toolkit/modules/AppConstants.jsm"
   false,
-//@line 231 "$SRCDIR/toolkit/modules/AppConstants.jsm"
-
-  MOZ_GRAPHENE:
-//@line 236 "$SRCDIR/toolkit/modules/AppConstants.jsm"
-  false,
-//@line 238 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 248 "$SRCDIR/toolkit/modules/AppConstants.jsm"
 
   MOZ_SYSTEM_NSS:
-//@line 243 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 253 "$SRCDIR/toolkit/modules/AppConstants.jsm"
   false,
-//@line 245 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 255 "$SRCDIR/toolkit/modules/AppConstants.jsm"
 
   MOZ_PLACES:
-//@line 248 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 258 "$SRCDIR/toolkit/modules/AppConstants.jsm"
   true,
-//@line 252 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 262 "$SRCDIR/toolkit/modules/AppConstants.jsm"
 
   MOZ_REQUIRE_SIGNING:
-//@line 257 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 267 "$SRCDIR/toolkit/modules/AppConstants.jsm"
   false,
-//@line 259 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 269 "$SRCDIR/toolkit/modules/AppConstants.jsm"
 
   get MOZ_UNSIGNED_SCOPES() {
     let result = 0;
-//@line 268 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 278 "$SRCDIR/toolkit/modules/AppConstants.jsm"
     return result;
   },
 
   MOZ_ALLOW_LEGACY_EXTENSIONS:
-//@line 273 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 283 "$SRCDIR/toolkit/modules/AppConstants.jsm"
   true,
-//@line 277 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 287 "$SRCDIR/toolkit/modules/AppConstants.jsm"
 
   MENUBAR_CAN_AUTOHIDE:
-//@line 280 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 290 "$SRCDIR/toolkit/modules/AppConstants.jsm"
   true,
-//@line 284 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 294 "$SRCDIR/toolkit/modules/AppConstants.jsm"
 
   MOZ_ANDROID_HISTORY:
-//@line 289 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 299 "$SRCDIR/toolkit/modules/AppConstants.jsm"
   false,
-//@line 291 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 301 "$SRCDIR/toolkit/modules/AppConstants.jsm"
 
   MOZ_GECKO_PROFILER:
-//@line 294 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 304 "$SRCDIR/toolkit/modules/AppConstants.jsm"
   true,
-//@line 298 "$SRCDIR/toolkit/modules/AppConstants.jsm"
-
-  MOZ_ANDROID_ACTIVITY_STREAM:
-//@line 303 "$SRCDIR/toolkit/modules/AppConstants.jsm"
-  false,
-//@line 305 "$SRCDIR/toolkit/modules/AppConstants.jsm"
-
-  MOZ_ANDROID_MOZILLA_ONLINE:
-//@line 310 "$SRCDIR/toolkit/modules/AppConstants.jsm"
-  false,
-//@line 312 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 308 "$SRCDIR/toolkit/modules/AppConstants.jsm"
 
   DLL_PREFIX: "lib",
   DLL_SUFFIX: ".so",
 
   MOZ_APP_NAME: "firefox",
-  MOZ_APP_VERSION: "71.0a1",
-  MOZ_APP_VERSION_DISPLAY: "71.0a1",
+  MOZ_APP_VERSION: "74.0a1",
+  MOZ_APP_VERSION_DISPLAY: "74.0a1",
   MOZ_BUILD_APP: "browser",
   MOZ_MACBUNDLE_NAME: "Firefox Nightly.app",
   MOZ_UPDATE_CHANNEL: "nightly",
@@ -247,38 +240,43 @@ this.AppConstants = Object.freeze({
   // URL to the hg revision this was built from (e.g.
   // "https://hg.mozilla.org/mozilla-central/rev/6256ec9113c1")
   // On unofficial builds, this is an empty string.
-//@line 343 "$SRCDIR/toolkit/modules/AppConstants.jsm"
-  SOURCE_REVISION_URL: "https://hg.mozilla.org/mozilla-central/rev/aa8f530a1a35ba9b1c84303dbe15107d0026d77c",
+//@line 339 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+  SOURCE_REVISION_URL: "https://hg.mozilla.org/mozilla-central/rev/feb7d997f96164b028c9cf57a74878095cdad0d3",
 
   HAVE_USR_LIB64_DIR:
-//@line 349 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 345 "$SRCDIR/toolkit/modules/AppConstants.jsm"
     false,
-//@line 351 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 347 "$SRCDIR/toolkit/modules/AppConstants.jsm"
 
   HAVE_SHELL_SERVICE:
-//@line 354 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 350 "$SRCDIR/toolkit/modules/AppConstants.jsm"
     true,
-//@line 358 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 354 "$SRCDIR/toolkit/modules/AppConstants.jsm"
 
   MOZ_CODE_COVERAGE:
-//@line 363 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 359 "$SRCDIR/toolkit/modules/AppConstants.jsm"
     false,
-//@line 365 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 361 "$SRCDIR/toolkit/modules/AppConstants.jsm"
 
   TELEMETRY_PING_FORMAT_VERSION: 4,
 
   MOZ_NEW_XULSTORE:
-//@line 370 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 366 "$SRCDIR/toolkit/modules/AppConstants.jsm"
     true,
-//@line 374 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 370 "$SRCDIR/toolkit/modules/AppConstants.jsm"
 
   MOZ_NEW_NOTIFICATION_STORE:
-//@line 377 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 373 "$SRCDIR/toolkit/modules/AppConstants.jsm"
     true,
-//@line 381 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 377 "$SRCDIR/toolkit/modules/AppConstants.jsm"
 
   MOZ_NEW_CERT_STORAGE:
-//@line 384 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 380 "$SRCDIR/toolkit/modules/AppConstants.jsm"
     true,
-//@line 388 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+//@line 384 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+
+  ENABLE_REMOTE_AGENT:
+//@line 387 "$SRCDIR/toolkit/modules/AppConstants.jsm"
+    true,
+//@line 391 "$SRCDIR/toolkit/modules/AppConstants.jsm"
 });

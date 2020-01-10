@@ -13,7 +13,7 @@ loader.lazyRequireGetter(this, "_core", "devtools/client/debugger/src/utils/reso
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 function hasResource(state, id) {
-  return !!(0, _core.getResourcePair)(state, id);
+  return !!(0, _core.getValidatedResource)(state, id);
 }
 
 function getResourceIds(state) {
@@ -21,21 +21,21 @@ function getResourceIds(state) {
 }
 
 function getResource(state, id) {
-  const pair = (0, _core.getResourcePair)(state, id);
+  const validatedState = (0, _core.getValidatedResource)(state, id);
 
-  if (!pair) {
+  if (!validatedState) {
     throw new Error(`Resource ${id} does not exist`);
   }
 
-  return pair.value;
+  return validatedState.values[id];
 }
 
 function getMappedResource(state, id, map) {
-  const pair = (0, _core.getResourcePair)(state, id);
+  const validatedState = (0, _core.getValidatedResource)(state, id);
 
-  if (!pair) {
+  if (!validatedState) {
     throw new Error(`Resource ${id} does not exist`);
   }
 
-  return map(pair.value, pair.identity);
+  return map(validatedState.values[id], validatedState.identity[id]);
 }

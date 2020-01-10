@@ -52,9 +52,11 @@ function FrameMenu(frame, frameworkGroupingOn, callbacks, event, cx) {
   event.stopPropagation();
   event.preventDefault();
   const menuOptions = [];
-  const source = frame.source;
   const toggleFrameworkElement = toggleFrameworkGroupingElement(callbacks.toggleFrameworkGrouping, frameworkGroupingOn);
   menuOptions.push(toggleFrameworkElement);
+  const {
+    source
+  } = frame;
 
   if (source) {
     const copySourceUri2 = copySourceElement(source.url);

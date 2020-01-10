@@ -63,6 +63,18 @@ this.schema =
             }
           }
         },
+        "AllowProxies": {
+          "type": "object",
+          "properties": {
+            "SPNEGO": {
+              "type": "boolean"
+            },
+
+            "NTLM": {
+              "type": "boolean"
+            }
+          }
+        },
         "Locked": {
           "type": "boolean"
         }
@@ -220,6 +232,10 @@ this.schema =
       "type": "boolean"
     },
 
+    "DisablePasswordReveal": {
+      "type": "boolean"
+    },
+
     "DisablePocket": {
       "type": "boolean"
     },
@@ -270,7 +286,8 @@ this.schema =
     },
 
     "DisplayMenuBar": {
-      "type": "boolean"
+      "type": ["boolean", "string"],
+      "enum": ["always", "never", "default-on", "default-off"]
     },
 
     "DNSOverHTTPS": {
@@ -310,6 +327,13 @@ this.schema =
         },
         "Fingerprinting": {
           "type": "boolean"
+        },
+        "Exceptions": {
+          "type": "array",
+          "strict": false,
+          "items": {
+            "type": "origin"
+          }
         }
       }
     },
@@ -484,6 +508,10 @@ this.schema =
           "type": "boolean"
         }
       }
+    },
+
+    "LegacyProfiles": {
+      "type": "boolean"
     },
 
     "LocalFileLinks": {
@@ -670,13 +698,38 @@ this.schema =
     "Preferences": {
       "type": "object",
       "properties": {
+        "accessibility.force_disabled": {
+          "type": "number",
+          "enum": [-1, 0, 1]
+        },
         "app.update.auto": {
+          "type": "boolean"
+        },
+        "browser.bookmarks.autoExportHTML": {
+          "type": "boolean"
+        },
+        "browser.bookmarks.file": {
+          "type": "string"
+        },
+        "browser.places.importBookmarksHTML": {
+          "type": "boolean"
+        },
+        "browser.bookmarks.restore_default_bookmarks": {
           "type": "boolean"
         },
         "browser.cache.disk.enable": {
           "type": "boolean"
         },
         "browser.fixup.dns_first_for_single_words": {
+          "type": "boolean"
+        },
+        "browser.newtabpage.activity-stream.default.sites": {
+          "type": "string"
+        },
+        "browser.safebrowsing.phishing.enabled": {
+          "type": "boolean"
+        },
+        "browser.safebrowsing.malware.enabled": {
           "type": "boolean"
         },
         "browser.search.update": {
@@ -688,6 +741,15 @@ this.schema =
         "browser.cache.disk.parent_directory": {
           "type": "string"
         },
+        "browser.slowStartup.notificationDisabled": {
+          "type": "boolean"
+        },
+        "browser.taskbar.previews.enable": {
+          "type": "boolean"
+        },
+        "browser.urlbar.suggest.bookmark": {
+          "type": "boolean"
+        },
         "browser.urlbar.suggest.openpage": {
           "type": "boolean"
         },
@@ -697,7 +759,7 @@ this.schema =
         "datareporting.policy.dataSubmissionPolicyBypassNotification": {
           "type": "boolean"
         },
-        "browser.urlbar.suggest.bookmark": {
+        "dom.allow_scripts_to_close_windows": {
           "type": "boolean"
         },
         "dom.disable_window_flip": {
@@ -715,7 +777,22 @@ this.schema =
         "dom.keyboardevent.keypress.hack.use_legacy_keycode_and_charcode.addl": {
           "type": "string"
         },
+        "extensions.blocklist.enabled": {
+          "type": "boolean"
+        },
         "extensions.getAddons.showPane": {
+          "type": "boolean"
+        },
+        "extensions.htmlaboutaddons.recommendations.enabled": {
+          "type": "boolean"
+        },
+        "geo.enabled": {
+          "type": "boolean"
+        },
+        "intl.accept_languages": {
+          "type": "string"
+        },
+        "media.eme.enabled": {
           "type": "boolean"
         },
         "media.gmp-gmpopenh264.enabled": {
@@ -723,6 +800,12 @@ this.schema =
         },
         "media.gmp-widevinecdm.enabled": {
           "type": "boolean"
+        },
+        "media.peerconnection.enabled": {
+          "type": "boolean"
+        },
+        "media.peerconnection.ice.obfuscate_host_addresses.whitelist": {
+          "type": "string"
         },
         "network.dns.disableIPv6": {
           "type": "boolean"
@@ -733,17 +816,32 @@ this.schema =
         "places.history.enabled": {
           "type": "boolean"
         },
+        "print.save_print_settings": {
+          "type": "boolean"
+        },
         "privacy.file_unique_origin": {
           "type": "boolean"
         },
         "security.default_personal_cert": {
           "type": "string"
         },
+        "security.mixed_content.block_active_content": {
+          "type": "boolean"
+        },
+        "security.osclientcerts.autoload": {
+          "type": "boolean"
+        },
         "security.ssl.errorReporting.enabled": {
+          "type": "boolean"
+        },
+        "security.tls.hello_downgrade_check": {
           "type": "boolean"
         },
         "ui.key.menuAccessKeyFocuses": {
           "type": "boolean"
+        },
+        "widget.content.gtk-theme-override": {
+          "type": "string"
         }
       }
     },
@@ -890,6 +988,9 @@ this.schema =
           }
         },
         "Default": {
+          "type": "string"
+        },
+        "DefaultPrivate": {
           "type": "string"
         },
         "PreventInstalls": {

@@ -12,6 +12,7 @@ loader.lazyRequireGetter(this, "_selectedLocation", "devtools/client/debugger/sr
 var _actions = _interopRequireDefault(require("../../../actions/index"));
 
 loader.lazyRequireGetter(this, "_prefs", "devtools/client/debugger/src/utils/prefs");
+loader.lazyRequireGetter(this, "_text", "devtools/client/debugger/src/utils/text");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -169,7 +170,7 @@ function showContextMenu(props) {
       selectSpecificLocation(cx, selectedLocation);
       openConditionalPanel(selectedLocation);
     },
-    accelerator: L10N.getStr("toggleCondPanel.breakpoint.key")
+    accelerator: (0, _text.formatKeyShortcut)(L10N.getStr("toggleCondPanel.breakpoint.key"))
   };
   const editConditionItem = {
     id: "node-menu-edit-condition",
@@ -179,7 +180,7 @@ function showContextMenu(props) {
       selectSpecificLocation(cx, selectedLocation);
       openConditionalPanel(selectedLocation);
     },
-    accelerator: L10N.getStr("toggleCondPanel.breakpoint.key")
+    accelerator: (0, _text.formatKeyShortcut)(L10N.getStr("toggleCondPanel.breakpoint.key"))
   };
   const addLogPointItem = {
     id: "node-menu-add-log-point",
@@ -187,7 +188,7 @@ function showContextMenu(props) {
     accesskey: L10N.getStr("editor.addLogPoint.accesskey"),
     disabled: false,
     click: () => openConditionalPanel(selectedLocation, true),
-    accelerator: L10N.getStr("toggleCondPanel.logPoint.key")
+    accelerator: (0, _text.formatKeyShortcut)(L10N.getStr("toggleCondPanel.logPoint.key"))
   };
   const editLogPointItem = {
     id: "node-menu-edit-log-point",
@@ -195,7 +196,7 @@ function showContextMenu(props) {
     accesskey: L10N.getStr("editor.editLogPoint.accesskey"),
     disabled: false,
     click: () => openConditionalPanel(selectedLocation, true),
-    accelerator: L10N.getStr("toggleCondPanel.logPoint.key")
+    accelerator: (0, _text.formatKeyShortcut)(L10N.getStr("toggleCondPanel.logPoint.key"))
   };
   const removeLogPointItem = {
     id: "node-menu-remove-log",

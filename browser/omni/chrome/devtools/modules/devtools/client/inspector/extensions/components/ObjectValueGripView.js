@@ -11,10 +11,10 @@ const {
 const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
 
 const Accordion = createFactory(
-  require("devtools/client/inspector/layout/components/Accordion")
+  require("devtools/client/shared/components/Accordion")
 );
 
-const Types = require("../types");
+const Types = require("devtools/client/inspector/extensions/types");
 
 const {
   REPS: { Grip },
@@ -81,6 +81,7 @@ class ObjectValueGripView extends PureComponent {
             component: ObjectInspector,
             componentProps: objectInspectorProps,
             header: rootTitle,
+            id: rootTitle.replace(/\s/g, "-"),
             opened: true,
           },
         ],

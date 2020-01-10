@@ -48,11 +48,14 @@ class PreviewFunction extends _react.Component {
   }
 
   render() {
+    const {
+      func
+    } = this.props;
     return _react.default.createElement("span", {
       className: "function-signature"
-    }, this.renderFunctionName(this.props.func), _react.default.createElement("span", {
+    }, this.renderFunctionName(func), _react.default.createElement("span", {
       className: "paren"
-    }, "("), this.renderParams(this.props.func), _react.default.createElement("span", {
+    }, "("), this.renderParams(func), _react.default.createElement("span", {
       className: "paren"
     }, ")"));
   }

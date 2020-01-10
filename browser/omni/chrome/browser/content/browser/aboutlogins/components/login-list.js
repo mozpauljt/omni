@@ -36,6 +36,7 @@ export default class LoginList extends HTMLElement {
     this._filter = "";
     this._selectedGuid = null;
     this._blankLoginListItem = LoginListItemFactory.create({});
+    this._blankLoginListItem.hidden = true;
   }
 
   connectedCallback() {
@@ -118,6 +119,18 @@ export default class LoginList extends HTMLElement {
         this._blankLoginListItem.nextElementSibling
       );
     }
+
+    let activeDescendantId = this._list.getAttribute("aria-activedescendant");
+    let activeDescendant =
+      activeDescendantId && this.shadowRoot.getElementById(activeDescendantId);
+    if (!activeDescendant || activeDescendant.hidden) {
+      let visibleListItem = this._list.querySelector(
+        ".login-list-item:not([hidden])"
+      );
+      if (visibleListItem) {
+        this._list.setAttribute("aria-activedescendant", visibleListItem.id);
+      }
+    }
   }
 
   handleEvent(event) {
@@ -159,11 +172,15 @@ export default class LoginList extends HTMLElement {
         break;
       }
       case "change": {
-        this._applySort();
-        this.render();
-        this._list.scrollTop = 0;
+        this._applySortAndScrollToTop();
         const extra = { sort_key: this._sortSelect.value };
         recordTelemetryEvent({ object: "list", method: "sort", extra });
+        document.dispatchEvent(
+          new CustomEvent("AboutLoginsSortChanged", {
+            bubbles: true,
+            detail: this._sortSelect.value,
+          })
+        );
         break;
       }
       case "AboutLoginsClearSelection": {
@@ -211,6 +228,22 @@ export default class LoginList extends HTMLElement {
           return;
         }
 
+        // XXX If an AboutLoginsLoginSelected event is received that doesn't contain
+        // the full login object, re-dispatch the event with the full login object since
+        // only the login-list knows the full details of each login object.
+        if (
+          Object.keys(event.detail).length == 1 &&
+          event.detail.hasOwnProperty("guid")
+        ) {
+          window.dispatchEvent(
+            new CustomEvent("AboutLoginsLoginSelected", {
+              detail: this._logins[event.detail.guid].login,
+              cancelable: true,
+            })
+          );
+          return;
+        }
+
         let listItem = this._list.querySelector(
           `.login-list-item[data-guid="${event.detail.guid}"]`
         );
@@ -228,22 +261,26 @@ export default class LoginList extends HTMLElement {
         }
         break;
       }
+      case "keyup":
       case "keydown": {
         this._handleTabbingToExternalElements(event);
 
-        // Since Space will select a login in the list, prevent it from
-        // also scrolling the list.
         if (
           this.shadowRoot.activeElement &&
-          this.shadowRoot.activeElement.closest("ol") &&
-          event.key == " "
+          this.shadowRoot.activeElement.closest("ol")
         ) {
-          event.preventDefault();
+          // Since Space, ArrowUp and ArrowDown will perform actions, prevent
+          // them from also scrolling the list.
+          if (
+            event.type == "keydown" &&
+            (event.key == " " ||
+              event.key == "ArrowUp" ||
+              event.key == "ArrowDown")
+          ) {
+            event.preventDefault();
+          }
+          this._handleKeyboardNavWithinList(event);
         }
-        break;
-      }
-      case "keyup": {
-        this._handleKeyboardNavWithinList(event);
         break;
       }
     }
@@ -265,18 +302,7 @@ export default class LoginList extends HTMLElement {
     this.render();
 
     if (!this._selectedGuid || !this._logins[this._selectedGuid]) {
-      // Select the first visible login after any possible filter is applied.
-      let firstVisibleListItem = this._list.querySelector(
-        ".login-list-item[data-guid]:not([hidden])"
-      );
-      if (firstVisibleListItem) {
-        let { login } = this._logins[firstVisibleListItem.dataset.guid];
-        window.dispatchEvent(
-          new CustomEvent("AboutLoginsInitialLoginSelected", {
-            detail: login,
-          })
-        );
-      }
+      this._selectFirstVisibleLogin();
     }
   }
 
@@ -311,7 +337,7 @@ export default class LoginList extends HTMLElement {
    * @param {Map} breachesByLoginGUID A Map of breaches by login GUIDs used
    *                                  for displaying breached login indicators.
    */
-  updateBreaches(breachesByLoginGUID) {
+  setBreaches(breachesByLoginGUID) {
     this._breachesByLoginGUID = breachesByLoginGUID;
     if (this._breachesByLoginGUID.size === 0) {
       this.render();
@@ -320,11 +346,29 @@ export default class LoginList extends HTMLElement {
     const breachedSortOptionElement = this._sortSelect.namedItem("breached");
     breachedSortOptionElement.hidden = false;
     this._sortSelect.selectedIndex = breachedSortOptionElement.index;
-    this._sortSelect.dispatchEvent(new CustomEvent("input", { bubbles: true }));
-    this._sortSelect.dispatchEvent(
-      new CustomEvent("change", { bubbles: true })
-    );
-    this.render();
+    this._applySortAndScrollToTop();
+    this._selectFirstVisibleLogin();
+  }
+
+  /**
+   * @param {Map} breachesByLoginGUID A Map of breaches by login GUIDs that
+   *                                  should be added to the local cache of
+   *                                  breaches.
+   */
+  updateBreaches(breachesByLoginGUID) {
+    if (!this._breachesByLoginGUID) {
+      this._breachesByLoginGUID = new Map();
+    }
+    for (const [guid, breach] of [...breachesByLoginGUID]) {
+      this._breachesByLoginGUID.set(guid, breach);
+    }
+    this.setBreaches(this._breachesByLoginGUID);
+  }
+
+  setSortDirection(sortDirection) {
+    this._sortSelect.value = sortDirection;
+    this._applySortAndScrollToTop();
+    this._selectFirstVisibleLogin();
   }
 
   /**
@@ -338,6 +382,13 @@ export default class LoginList extends HTMLElement {
     // Add the list item and update any other related state that may pertain
     // to the list item such as breach alerts.
     this.render();
+
+    if (
+      this.classList.contains("no-logins") &&
+      !this.classList.contains("create-login-selected")
+    ) {
+      this._selectFirstVisibleLogin();
+    }
   }
 
   /**
@@ -434,6 +485,12 @@ export default class LoginList extends HTMLElement {
     });
   }
 
+  _applySortAndScrollToTop() {
+    this._applySort();
+    this.render();
+    this._list.scrollTop = 0;
+  }
+
   _updateVisibleLoginCount(count) {
     if (count != document.l10n.getAttributes(this._count).args.count) {
       document.l10n.setAttributes(this._count, "login-list-count", {
@@ -496,51 +553,77 @@ export default class LoginList extends HTMLElement {
     while (nextItem && nextItem.hidden) {
       nextItem = nextItem.nextElementSibling;
     }
-    switch (event.key) {
-      case "ArrowDown": {
-        if (!nextItem) {
+    if (event.type == "keydown") {
+      switch (event.key) {
+        case "ArrowDown": {
+          if (!nextItem) {
+            return;
+          }
+          newlyFocusedItem = nextItem;
+          break;
+        }
+        case "ArrowLeft": {
+          let item = isLTR ? previousItem : nextItem;
+          if (!item) {
+            return;
+          }
+          newlyFocusedItem = item;
+          break;
+        }
+        case "ArrowRight": {
+          let item = isLTR ? nextItem : previousItem;
+          if (!item) {
+            return;
+          }
+          newlyFocusedItem = item;
+          break;
+        }
+        case "ArrowUp": {
+          if (!previousItem) {
+            return;
+          }
+          newlyFocusedItem = previousItem;
+          break;
+        }
+        default:
+          return;
+      }
+    } else if (event.type == "keyup") {
+      switch (event.key) {
+        case " ":
+        case "Enter": {
+          event.preventDefault();
+          activeDescendant.click();
           return;
         }
-        newlyFocusedItem = nextItem;
-        break;
-      }
-      case "ArrowLeft": {
-        let item = isLTR ? previousItem : nextItem;
-        if (!item) {
+        default:
           return;
-        }
-        newlyFocusedItem = item;
-        break;
       }
-      case "ArrowRight": {
-        let item = isLTR ? nextItem : previousItem;
-        if (!item) {
-          return;
-        }
-        newlyFocusedItem = item;
-        break;
-      }
-      case "ArrowUp": {
-        if (!previousItem) {
-          return;
-        }
-        newlyFocusedItem = previousItem;
-        break;
-      }
-      case " ":
-      case "Enter": {
-        event.preventDefault();
-        activeDescendant.click();
-        return;
-      }
-      default:
-        return;
     }
     event.preventDefault();
     this._list.setAttribute("aria-activedescendant", newlyFocusedItem.id);
     activeDescendant.classList.remove("keyboard-selected");
     newlyFocusedItem.classList.add("keyboard-selected");
     newlyFocusedItem.scrollIntoView({ block: "nearest" });
+  }
+
+  /**
+   * Selects the first visible login as part of the initial load of the page,
+   * which will bypass any focus changes that occur during manual login
+   * selection.
+   */
+  _selectFirstVisibleLogin() {
+    let firstVisibleListItem = this._list.querySelector(
+      ".login-list-item[data-guid]:not([hidden])"
+    );
+    if (firstVisibleListItem) {
+      let { login } = this._logins[firstVisibleListItem.dataset.guid];
+      window.dispatchEvent(
+        new CustomEvent("AboutLoginsInitialLoginSelected", {
+          detail: login,
+        })
+      );
+    }
   }
 
   _setListItemAsSelected(listItem) {
@@ -550,6 +633,7 @@ export default class LoginList extends HTMLElement {
       oldSelectedItem.removeAttribute("aria-selected");
     }
     this.classList.toggle("create-login-selected", !listItem.dataset.guid);
+    this._blankLoginListItem.hidden = !!listItem.dataset.guid;
     this._createLoginButton.disabled = !listItem.dataset.guid;
     listItem.classList.add("selected");
     listItem.setAttribute("aria-selected", "true");

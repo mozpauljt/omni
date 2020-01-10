@@ -14,6 +14,7 @@ var _tabs = require("devtools/client/debugger/dist/vendors").vendored["react-ari
 var _actions = _interopRequireDefault(require("../../actions/index"));
 
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
+loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
 loader.lazyRequireGetter(this, "_prefs", "devtools/client/debugger/src/utils/prefs");
 loader.lazyRequireGetter(this, "_connect", "devtools/client/debugger/src/utils/connect");
 loader.lazyRequireGetter(this, "_text", "devtools/client/debugger/src/utils/text");
@@ -54,6 +55,30 @@ class PrimaryPanes extends _react.Component {
       }
     });
 
+    _defineProperty(this, "getRootLabel", projectRoot => {
+      const {
+        threads,
+        rootExtensionName
+      } = this.props;
+      const targetThread = threads.find(thread => thread.actor === projectRoot);
+
+      if (targetThread) {
+        return targetThread.name;
+      } else if (rootExtensionName) {
+        return rootExtensionName;
+      } else if (projectRoot.endsWith("://")) {
+        if (projectRoot === "ng://") {
+          return "Angular";
+        } else if (projectRoot === "webpack://") {
+          return "Webpack";
+        }
+
+        return `${unescape(projectRoot)}`;
+      }
+
+      return projectRoot.split("/").pop();
+    });
+
     this.state = {
       alphabetizeOutline: _prefs.prefs.alphabetizeOutline
     };
@@ -91,7 +116,7 @@ class PrimaryPanes extends _react.Component {
       return null;
     }
 
-    const rootLabel = projectRoot.split("/").pop();
+    const rootLabel = this.getRootLabel(projectRoot);
     return _react.default.createElement("div", {
       key: "root",
       className: "sources-clear-root-container"
@@ -141,14 +166,18 @@ class PrimaryPanes extends _react.Component {
 
 }
 
-const mapStateToProps = state => ({
-  cx: (0, _selectors.getContext)(state),
-  selectedTab: (0, _selectors.getSelectedPrimaryPaneTab)(state),
-  sources: (0, _selectors.getDisplayedSources)(state),
-  sourceSearchOn: (0, _selectors.getActiveSearch)(state) === "source",
-  threads: (0, _selectors.getAllThreads)(state),
-  projectRoot: (0, _selectors.getProjectDirectoryRoot)(state)
-});
+const mapStateToProps = state => {
+  const newProjectRoot = (0, _selectors.getProjectDirectoryRoot)(state);
+  const extensionAsRoot = (0, _source.isExtensionDirectoryPath)(newProjectRoot);
+  return {
+    cx: (0, _selectors.getContext)(state),
+    selectedTab: (0, _selectors.getSelectedPrimaryPaneTab)(state),
+    sourceSearchOn: (0, _selectors.getActiveSearch)(state) === "source",
+    threads: (0, _selectors.getAllThreads)(state),
+    projectRoot: newProjectRoot,
+    rootExtensionName: extensionAsRoot ? (0, _selectors.getExtensionNameBySourceUrl)(state, newProjectRoot) : null
+  };
+};
 
 const connector = (0, _connect.connect)(mapStateToProps, {
   setPrimaryPaneTab: _actions.default.setPrimaryPaneTab,

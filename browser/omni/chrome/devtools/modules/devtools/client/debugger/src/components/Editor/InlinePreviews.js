@@ -19,17 +19,15 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+function hasPreviews(previews) {
+  return !!previews && Object.keys(previews).length > 0;
+}
+
 class InlinePreviews extends _react.Component {
-  shouldComponentUpdate(nextProps) {
-    const {
-      previews
-    } = nextProps;
-
-    if (!previews) {
-      return false;
-    }
-
-    return true;
+  shouldComponentUpdate({
+    previews
+  }) {
+    return hasPreviews(previews);
   }
 
   render() {
@@ -40,19 +38,20 @@ class InlinePreviews extends _react.Component {
       previews
     } = this.props; // Render only if currently open file is the one where debugger is paused
 
-    if (!selectedFrame || selectedFrame.location.sourceId !== selectedSource.id || !previews) {
+    if (!selectedFrame || selectedFrame.location.sourceId !== selectedSource.id || !hasPreviews(previews)) {
       return null;
     }
 
+    const previewsObj = previews;
     let inlinePreviewRows;
     editor.codeMirror.operation(() => {
-      inlinePreviewRows = Object.keys(previews).map(line => {
+      inlinePreviewRows = Object.keys(previewsObj).map(line => {
         const lineNum = parseInt(line, 10);
         return _react.default.createElement(_InlinePreviewRow.default, {
           editor: editor,
           key: line,
           line: lineNum,
-          previews: previews[line]
+          previews: previewsObj[line]
         });
       });
     });
@@ -64,7 +63,14 @@ class InlinePreviews extends _react.Component {
 const mapStateToProps = state => {
   const thread = (0, _selectors.getCurrentThread)(state);
   const selectedFrame = (0, _selectors.getSelectedFrame)(state, thread);
-  if (!selectedFrame) return {};
+
+  if (!selectedFrame) {
+    return {
+      selectedFrame: null,
+      previews: null
+    };
+  }
+
   return {
     selectedFrame,
     previews: (0, _selectors.getInlinePreviews)(state, thread, selectedFrame.id)

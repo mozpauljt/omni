@@ -10,6 +10,8 @@ loader.lazyRequireGetter(this, "_fetchScopes", "devtools/client/debugger/src/act
 
 var _assert = _interopRequireDefault(require("../../utils/assert"));
 
+loader.lazyRequireGetter(this, "_threads", "devtools/client/debugger/src/reducers/threads");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
@@ -27,13 +29,23 @@ function selectFrame(cx, frame) {
     getState,
     sourceMaps
   }) => {
-    (0, _assert.default)(cx.thread == frame.thread, "Thread mismatch");
+    (0, _assert.default)(cx.thread == frame.thread, "Thread mismatch"); // Frames with an async cause are not selected
+
+    if (frame.asyncCause) {
+      return dispatch((0, _sources.selectLocation)(cx, frame.location));
+    }
+
     dispatch({
       type: "SELECT_FRAME",
       cx,
       thread: cx.thread,
       frame
     });
+
+    if ((0, _threads.getCanRewind)(getState())) {
+      client.fetchAncestorFramePositions(frame.index);
+    }
+
     dispatch((0, _sources.selectLocation)(cx, frame.location));
     dispatch((0, _expressions.evaluateExpressions)(cx));
     dispatch((0, _fetchScopes.fetchScopes)(cx));

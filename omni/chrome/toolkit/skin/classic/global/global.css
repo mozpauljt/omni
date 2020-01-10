@@ -10,7 +10,7 @@
 @import url("chrome://global/locale/intl.css");
 @import url("chrome://global/content/widgets.css");
 
-@namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
+@namespace xul url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
 @namespace html url("http://www.w3.org/1999/xhtml");
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
@@ -30,6 +30,12 @@ html|button,
 html|input,
 html|textarea {
   font: inherit;
+}
+
+/* Textbox context menu */
+
+.textbox-contextmenu:-moz-locale-dir(rtl) {
+  direction: rtl;
 }
 
 /* Close icon */
@@ -69,6 +75,8 @@ html|textarea {
   background-repeat: no-repeat;
   -moz-appearance: none;
   -moz-window-shadow: none;
+  /* Set pointer-events: none; so that mousemove events can be handled by browser-content.js. */
+  pointer-events: none;
 }
 
 .autoscroller[scrolldir="NS"] {
@@ -85,7 +93,7 @@ html|textarea {
   background-color: var(--arrowpanel-dimmed);
 }
 
-.panel-footer > button {
+.panel-footer > xul|button {
   -moz-appearance: none;
   border-top: 1px solid var(--panel-separator-color);
   /* !important overrides :hover and :active colors from button.css: */
@@ -95,52 +103,50 @@ html|textarea {
   padding: .9em 2px;
 }
 
-.panel-footer > button[disabled] {
+.panel-footer > xul|button[disabled] {
   color: var(--panel-disabled-color) !important;
 }
 
-.panel-footer > button:-moz-focusring {
+.panel-footer > xul|button:-moz-focusring {
   outline: 1px dotted;
   outline-offset: -3px;
 }
 
-.panel-footer > button:not([disabled]):hover {
+.panel-footer > xul|button:not([disabled]):hover {
   background-color: var(--arrowpanel-dimmed);
 }
 
-.panel-footer > button:not([disabled]):hover:active,
-.panel-footer > button:not([disabled])[open] {
+.panel-footer > xul|button:not([disabled]):hover:active,
+.panel-footer > xul|button:not([disabled])[open] {
   background-color: var(--arrowpanel-dimmed-further);
   box-shadow: 0 1px 0 hsla(210,4%,10%,.05) inset;
 }
 
-.panel-footer > button:not([disabled])[default] {
+.panel-footer > xul|button:not([disabled])[default] {
   color: white !important;
   background-color: #0060df;
 }
 
-.panel-footer > button:not([disabled])[default]:hover {
+.panel-footer > xul|button:not([disabled])[default]:hover {
   background-color: #003eaa;
 }
 
-.panel-footer > button:not([disabled])[default]:hover:active {
+.panel-footer > xul|button:not([disabled])[default]:hover:active {
   background-color: #002275;
 }
 
-.panel-footer > button > .button-box {
+.panel-footer > xul|button > .button-box {
   padding: 0;
 }
 
-/* ::::: XBL bindings ::::: */
-
 @media (-moz-menubar-drag) {
-  toolbar[type="menubar"] {
+  xul|toolbar[type="menubar"] {
     -moz-window-dragging: drag;
   }
 }
 
-/* ::::: Variables ::::: */
 :root {
+  /* ::::: Variables ::::: */
   --default-arrowpanel-background: -moz-field;
   --default-arrowpanel-color: -moz-fieldText;
   --default-arrowpanel-border-color: ThreeDShadow;
@@ -149,14 +155,7 @@ html|textarea {
   --arrowpanel-border-color: var(--default-arrowpanel-border-color);
   --arrowpanel-padding: 10px;
   --panel-disabled-color: GrayText;
-}
-
-/* ::::: root elements ::::: */
-
-window,
-page,
-dialog,
-wizard {
+  /* ::::: Styles ::::: */
   -moz-appearance: dialog;
   background-color: -moz-Dialog;
   color: -moz-DialogText;
@@ -188,7 +187,7 @@ wizard {
 
 /* ::::: iframe ::::: */
 
-iframe {
+xul|iframe {
   border: none;
   width: 100px;
   height: 100px;
@@ -198,24 +197,13 @@ iframe {
 
 @supports -moz-bool-pref("layout.css.emulate-moz-box-with-flex") {
   /* In emulation, <iframe> is block instead of inline, so reset the width/height */
-  iframe {
+  xul|iframe {
     width: auto;
     height: auto;
   }
 }
 
-/* XXXBlake yeah, shoot me -- these don't belong here.  I'll move them later. */
-
-sidebarheader {
-  min-height: 25px;
-  text-shadow: none;
-}
-
-sidebarheader > label {
-  padding-inline-start: 4px;
-}
-
-toolbar[mode="text"] .toolbarbutton-text {
+xul|toolbar[mode="text"] .toolbarbutton-text {
   padding: 0 !important;
   margin: 3px 5px !important;
 }
@@ -263,28 +251,28 @@ html|*#print-preview-pageNumber {
   text-shadow: 1px 1px 1.5px black;
 }
 
-separator:not([orient="vertical"]) {
+xul|separator:not([orient="vertical"]) {
   height: 1.5em;
 }
-separator[orient="vertical"] {
+xul|separator[orient="vertical"] {
   width: 1.5em;
 }
 
-separator.thin:not([orient="vertical"]) {
+xul|separator.thin:not([orient="vertical"]) {
   height: 0.5em;
 }
-separator.thin[orient="vertical"] {
+xul|separator.thin[orient="vertical"] {
   width: 0.5em;
 }
 
-separator.groove:not([orient="vertical"]) {
+xul|separator.groove:not([orient="vertical"]) {
   border-top: 1px solid ThreeDShadow;
   border-bottom: 1px solid ThreeDHighlight;
   height: 0;
   margin-top: 0.4em;
   margin-bottom: 0.4em;
 }
-separator.groove[orient="vertical"] {
+xul|separator.groove[orient="vertical"] {
   border-left: 1px solid ThreeDShadow;
   border-right: 1px solid ThreeDHighlight;
   width: 0;
@@ -292,8 +280,8 @@ separator.groove[orient="vertical"] {
   margin-right: 0.4em;
 }
 
-description,
-label {
+xul|description,
+xul|label {
   cursor: default;
   margin-top: 1px;
   margin-bottom: 2px;
@@ -301,11 +289,11 @@ label {
   margin-inline-end: 5px;
 }
 
-description {
+xul|description {
   margin-bottom: 4px;
 }
 
-label[disabled="true"] {
+xul|label[disabled="true"] {
   color: GrayText;
 }
 
@@ -339,19 +327,23 @@ label[disabled="true"] {
 }
 
 html|input {
-  margin: 2px 4px; /* matches xul <textbox> default margin */
+  margin: 2px 4px;
 }
 
-notification > hbox > button {
+xul|notification > xul|hbox > xul|button {
   margin-top: 0;
   margin-bottom: 0;
 }
 
-popupnotificationcontent {
+xul|popupnotificationcontent {
   margin-top: .5em;
 }
 
-.popup-notification-panel > .panel-arrowcontainer > .panel-arrowcontent {
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+.popup-notification-panel::part(arrowcontent) {
   /* To keep the rounded borders of the panel, we use overflow: hidden; from the
    * panel-no-padding class to ensure the contents are clipped to the border box.
    * That causes us to override the "display" property so that the height of the
@@ -359,4 +351,11 @@ popupnotificationcontent {
   display: flex;
   /* Make multiple popupnotifications stack vertically. */
   flex-direction: column;
+}
+
+.popup-notification-panel > popupnotification:not([hidden]) {
+  /* Since the anonymous parent (::part(arrowcontent)) has display: flex, sizing
+   * computations work better with display: block; than with the XUL default
+   * display: -moz-box; */
+  display: block;
 }

@@ -28,7 +28,7 @@ loader.lazyRequireGetter(this, "_getURL", "devtools/client/debugger/src/utils/so
 const IGNORED_URLS = ["debugger eval code", "XStringBundle"];
 
 function nodeHasChildren(item) {
-  return Array.isArray(item.contents) && item.type == "directory";
+  return item.type == "directory" && Array.isArray(item.contents);
 }
 
 function isExactUrlMatch(pathPart, debuggeeUrl) {
@@ -41,18 +41,48 @@ function isExactUrlMatch(pathPart, debuggeeUrl) {
     return false;
   }
 
-  return host.replace(/^www\./, "") === pathPart.replace(/^www\./, "");
+  return host === pathPart || host.replace(/^www\./, "") === pathPart.replace(/^www\./, "");
 }
 
 function isPathDirectory(path) {
   // Assume that all urls point to files except when they end with '/'
   // Or directory node has children
-  const parts = path.split("/").filter(p => p !== "");
-  return parts.length === 0 || path.slice(-1) === "/";
+  if (path.endsWith("/")) {
+    return true;
+  }
+
+  let separators = 0;
+
+  for (let i = 0; i < path.length - 1; ++i) {
+    if (path[i] === "/") {
+      if (path[i + i] !== "/") {
+        return false;
+      }
+
+      ++separators;
+    }
+  }
+
+  switch (separators) {
+    case 0:
+      {
+        return false;
+      }
+
+    case 1:
+      {
+        return !path.startsWith("/");
+      }
+
+    default:
+      {
+        return true;
+      }
+  }
 }
 
 function isDirectory(item) {
-  return (isPathDirectory(item.path) || item.type === "directory") && item.name != "(index)";
+  return (item.type === "directory" || isPathDirectory(item.path)) && item.name != "(index)";
 }
 
 function getSourceFromNode(item) {
@@ -70,13 +100,16 @@ function isSource(item) {
 }
 
 function getFileExtension(source) {
-  const parsedUrl = (0, _getURL.getURL)(source).path;
+  const {
+    path
+  } = (0, _getURL.getURL)(source);
 
-  if (!parsedUrl) {
+  if (!path) {
     return "";
   }
 
-  return parsedUrl.split(".").pop();
+  const lastIndex = path.lastIndexOf(".");
+  return lastIndex !== -1 ? path.slice(lastIndex + 1) : "";
 }
 
 function isNotJavaScript(source) {
@@ -84,12 +117,12 @@ function isNotJavaScript(source) {
 }
 
 function isInvalidUrl(url, source) {
-  return IGNORED_URLS.includes(url) || !source.url || !url.group || (0, _source.isPretty)(source) || isNotJavaScript(source);
+  return !source.url || !url.group || isNotJavaScript(source) || IGNORED_URLS.includes(url) || (0, _source.isPretty)(source);
 }
 
 function partIsFile(index, parts, url) {
   const isLastPart = index === parts.length - 1;
-  return !isDirectory(url) && isLastPart;
+  return isLastPart && !isDirectory(url);
 }
 
 function createDirectoryNode(name, path, contents) {
@@ -141,9 +174,8 @@ function getRelativePath(url) {
     return url;
   }
 
-  const path = pathname.split("/");
-  path.shift();
-  return path.join("/");
+  const index = pathname.indexOf("/");
+  return index !== -1 ? pathname.slice(index + 1) : "";
 }
 
 function getPathWithoutThread(path) {

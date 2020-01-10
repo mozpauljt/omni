@@ -47,7 +47,9 @@ function syncXHRBreakpoints() {
 
 async function loadInitialState() {
   const pendingBreakpoints = await _prefs.asyncStore.pendingBreakpoints;
-  const tabs = await _prefs.asyncStore.tabs;
+  const tabs = {
+    tabs: await _prefs.asyncStore.tabs
+  };
   const xhrBreakpoints = await _prefs.asyncStore.xhrBreakpoints;
   const eventListenerBreakpoints = await _prefs.asyncStore.eventListenerBreakpoints;
   const breakpoints = (0, _breakpoints.initialBreakpointsState)(xhrBreakpoints);

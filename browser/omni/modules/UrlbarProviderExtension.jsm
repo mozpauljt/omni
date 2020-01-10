@@ -220,11 +220,23 @@ class UrlbarProviderExtension extends UrlbarProvider {
    *
    * @param {UrlbarResult} result
    *   The result that was picked.
-   * @param {object} details
-   *   Details about the pick, depending on the result type.
    */
-  pickResult(result, details) {
-    this._notifyListener("resultPicked", result.payload, details);
+  pickResult(result) {
+    this._notifyListener("resultPicked", result.payload);
+  }
+
+  /**
+   * This method is called when the user starts and ends an engagement with the
+   * urlbar.
+   *
+   * @param {boolean} isPrivate
+   *   True if the engagement is in a private context.
+   * @param {string} state
+   *   The state of the engagement, one of: start, engagement, abandonment,
+   *   discard.
+   */
+  onEngagement(isPrivate, state) {
+    this._notifyListener("engagement", isPrivate, state);
   }
 
   /**
@@ -232,8 +244,8 @@ class UrlbarProviderExtension extends UrlbarProvider {
    *
    * @param {string} eventName
    *   The name of the listener to call (i.e., the name of the event to fire).
-   * @param {arguments} args
-   *   The arguments to pass to the listener.
+   * @param {*} args
+   *   Arguments to the listener function.
    * @returns {*}
    *   The value returned by the listener function, if any.
    */
@@ -312,7 +324,7 @@ class UrlbarProviderExtension extends UrlbarProvider {
       extResult.payload.engine = engine.name;
     }
 
-    return new UrlbarResult(
+    let result = new UrlbarResult(
       UrlbarProviderExtension.RESULT_TYPES[extResult.type],
       UrlbarProviderExtension.SOURCE_TYPES[extResult.source],
       ...UrlbarResult.payloadAndSimpleHighlights(
@@ -320,6 +332,17 @@ class UrlbarProviderExtension extends UrlbarProvider {
         extResult.payload || {}
       )
     );
+    if (extResult.heuristic && this.behavior == "restricting") {
+      // The muxer chooses the final heuristic result by taking the first one
+      // that claims to be the heuristic.  We don't want extensions to clobber
+      // UnifiedComplete's heuristic, so we allow this only if the provider is
+      // restricting.
+      result.heuristic = extResult.heuristic;
+    }
+    if (extResult.suggestedIndex !== undefined) {
+      result.suggestedIndex = extResult.suggestedIndex;
+    }
+    return result;
   }
 }
 

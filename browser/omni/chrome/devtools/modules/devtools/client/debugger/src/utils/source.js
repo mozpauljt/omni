@@ -27,6 +27,7 @@ exports.isOriginal = isOriginal;
 exports.isGenerated = isGenerated;
 exports.getSourceQueryString = getSourceQueryString;
 exports.isUrlExtension = isUrlExtension;
+exports.isExtensionDirectoryPath = isExtensionDirectoryPath;
 exports.getPlainUrl = getPlainUrl;
 Object.defineProperty(exports, "isMinified", {
   enumerable: true,
@@ -36,10 +37,9 @@ Object.defineProperty(exports, "isMinified", {
 });
 exports.getLineText = exports.sourceTypes = void 0;
 
-var _devtoolsSourceMap = require("devtools/client/shared/source-map/index.js");
-
 var _devtoolsModules = require("devtools/client/debugger/dist/vendors").vendored["devtools-modules"];
 
+loader.lazyRequireGetter(this, "_sourceMaps", "devtools/client/debugger/src/utils/source-maps");
 loader.lazyRequireGetter(this, "_utils", "devtools/client/debugger/src/utils/utils");
 loader.lazyRequireGetter(this, "_text", "devtools/client/debugger/src/utils/text");
 loader.lazyRequireGetter(this, "_url", "devtools/client/debugger/src/utils/url");
@@ -69,6 +69,24 @@ const sourceTypes = {
 exports.sourceTypes = sourceTypes;
 const javascriptLikeExtensions = ["marko", "es6", "vue", "jsm"];
 
+function getPath(source) {
+  const {
+    path
+  } = (0, _sourcesTree.getURL)(source);
+  let lastIndex = path.lastIndexOf("/");
+  let nextToLastIndex = path.lastIndexOf("/", lastIndex - 1);
+  const result = [];
+
+  do {
+    result.push(path.slice(nextToLastIndex + 1, lastIndex));
+    lastIndex = nextToLastIndex;
+    nextToLastIndex = path.lastIndexOf("/", lastIndex - 1);
+  } while (lastIndex !== nextToLastIndex);
+
+  result.push("");
+  return result;
+}
+
 function shouldBlackbox(source) {
   if (!source) {
     return false;
@@ -78,7 +96,7 @@ function shouldBlackbox(source) {
     return false;
   }
 
-  if ((0, _devtoolsSourceMap.isOriginalId)(source.id) && !_prefs.features.originalBlackbox) {
+  if (!_prefs.features.originalBlackbox && (0, _sourceMaps.isOriginalSource)(source)) {
     return false;
   }
 
@@ -108,12 +126,11 @@ function isJavaScript(source, content) {
 
 
 function isPretty(source) {
-  const url = source.url;
-  return isPrettyURL(url);
+  return isPrettyURL(source.url);
 }
 
 function isPrettyURL(url) {
-  return url ? /formatted$/.test(url) : false;
+  return url ? url.endsWith(":formatted") : false;
 }
 
 function isThirdParty(source) {
@@ -123,7 +140,7 @@ function isThirdParty(source) {
     return false;
   }
 
-  return !!url.match(/(node_modules|bower_components)/);
+  return url.includes("node_modules") || url.includes("bower_components");
 }
 /**
  * @memberof utils/source
@@ -145,7 +162,7 @@ function getPrettySourceURL(url) {
 
 
 function getRawSourceURL(url) {
-  return url ? url.replace(/:formatted$/, "") : url;
+  return url && url.endsWith(":formatted") ? url.slice(0, -":formatted".length) : url;
 }
 
 function resolveFileURL(url, transformUrl = initialUrl => initialUrl, truncate = true) {
@@ -160,8 +177,9 @@ function resolveFileURL(url, transformUrl = initialUrl => initialUrl, truncate =
 }
 
 function getFormattedSourceId(id) {
-  const sourceId = id.split("/")[1];
-  return `SOURCE${sourceId}`;
+  const firstIndex = id.indexOf("/");
+  const secondIndex = id.indexOf("/", firstIndex);
+  return `SOURCE${id.slice(firstIndex, secondIndex)}`;
 }
 /**
  * Gets a readable filename from a source URL for display purposes.
@@ -172,13 +190,12 @@ function getFormattedSourceId(id) {
  */
 
 
-function getFilename(source) {
+function getFilename(source, rawSourceURL = getRawSourceURL(source.url)) {
   const {
-    url,
     id
   } = source;
 
-  if (!getRawSourceURL(url)) {
+  if (!rawSourceURL) {
     return getFormattedSourceId(id);
   }
 
@@ -207,30 +224,50 @@ function getTruncatedFileName(source, querystring = "", length = 30) {
 
 
 function getDisplayPath(mySource, sources) {
-  const filename = getFilename(mySource); // Find sources that have the same filename, but different paths
+  const rawSourceURL = getRawSourceURL(mySource.url);
+  const filename = getFilename(mySource, rawSourceURL); // Find sources that have the same filename, but different paths
   // as the original source
 
-  const similarSources = sources.filter(source => getRawSourceURL(mySource.url) != getRawSourceURL(source.url) && filename == getFilename(source));
+  const similarSources = sources.filter(source => {
+    const rawSource = getRawSourceURL(source.url);
+    return rawSourceURL != rawSource && filename == getFilename(source, rawSource);
+  });
 
   if (similarSources.length == 0) {
     return undefined;
   } // get an array of source path directories e.g. ['a/b/c.html'] => [['b', 'a']]
 
 
-  const paths = [mySource, ...similarSources].map(source => (0, _sourcesTree.getURL)(source).path.split("/").reverse().slice(1)); // create an array of similar path directories and one dis-similar directory
+  const paths = new Array(similarSources.length + 1);
+  paths[0] = getPath(mySource);
+
+  for (let i = 0; i < similarSources.length; ++i) {
+    paths[i + 1] = getPath(similarSources[i]);
+  } // create an array of similar path directories and one dis-similar directory
   // for example [`a/b/c.html`, `a1/b/c.html`] => ['b', 'a']
   // where 'b' is the similar directory and 'a' is the dis-similar directory.
 
-  let similar = true;
-  const displayPath = [];
 
-  for (let i = 0; similar && i < paths[0].length; i++) {
-    const [dir, ...dirs] = paths.map(path => path[i]);
-    displayPath.push(dir);
-    similar = dirs.includes(dir);
+  let displayPath = "";
+
+  for (let i = 0; i < paths[0].length; i++) {
+    let similar = false;
+
+    for (let k = 1; k < paths.length; ++k) {
+      if (paths[k][i] === paths[0][i]) {
+        similar = true;
+        break;
+      }
+    }
+
+    displayPath = paths[0][i] + (i !== 0 ? "/" : "") + displayPath;
+
+    if (!similar) {
+      break;
+    }
   }
 
-  return displayPath.reverse().join("/");
+  return displayPath;
 }
 /**
  * Gets a readable source URL for display purposes.
@@ -318,7 +355,15 @@ function getSourceLineCount(content) {
     return binary.length;
   }
 
-  return content.value.split("\n").length;
+  let count = 0;
+
+  for (let i = 0; i < content.value.length; ++i) {
+    if (content.value[i] === "\n") {
+      ++count;
+    }
+  }
+
+  return count + 1;
 }
 /**
  *
@@ -480,8 +525,10 @@ const getLineText = (0, _memoizeLast.memoizeLast)((sourceId, asyncContent, line)
 exports.getLineText = getLineText;
 
 function getTextAtPosition(sourceId, asyncContent, location) {
-  const column = location.column || 0;
-  const line = location.line;
+  const {
+    column,
+    line = 0
+  } = location;
   const lineText = getLineText(sourceId, asyncContent, line);
   return lineText.slice(column, column + 100).trim();
 }
@@ -528,18 +575,33 @@ function getRelativeUrl(source, root) {
   return url.slice(url.indexOf(root) + root.length + 1);
 }
 
-function underRoot(source, root) {
+function underRoot(source, root, threadActors) {
+  // source.url doesn't include thread actor ID, so remove the thread actor ID from the root
+  threadActors.forEach(threadActor => {
+    if (root.includes(threadActor)) {
+      root = root.slice(threadActor.length + 1);
+    }
+  });
+
+  if (source.url && source.url.includes("chrome://")) {
+    const {
+      group,
+      path
+    } = (0, _sourcesTree.getURL)(source);
+    return (group + path).includes(root);
+  }
+
   return source.url && source.url.includes(root);
 }
 
 function isOriginal(source) {
   // Pretty-printed sources are given original IDs, so no need
   // for any additional check
-  return (0, _devtoolsSourceMap.isOriginalId)(source.id);
+  return (0, _sourceMaps.isOriginalSource)(source);
 }
 
 function isGenerated(source) {
-  return (0, _devtoolsSourceMap.isGeneratedId)(source.id);
+  return !isOriginal(source);
 }
 
 function getSourceQueryString(source) {
@@ -551,7 +613,20 @@ function getSourceQueryString(source) {
 }
 
 function isUrlExtension(url) {
-  return /\/?(chrome|moz)-extension:\//.test(url);
+  return url.includes("moz-extension:") || url.includes("chrome-extension");
+}
+
+function isExtensionDirectoryPath(url) {
+  if (isUrlExtension(url)) {
+    const urlArr = url.replace(/\/+/g, "/").split("/");
+    let extensionIndex = urlArr.indexOf("moz-extension:");
+
+    if (extensionIndex === -1) {
+      extensionIndex = urlArr.indexOf("chrome-extension:");
+    }
+
+    return !urlArr[extensionIndex + 2];
+  }
 }
 
 function getPlainUrl(url) {

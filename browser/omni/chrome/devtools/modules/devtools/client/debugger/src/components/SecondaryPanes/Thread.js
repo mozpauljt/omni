@@ -43,7 +43,12 @@ class Thread extends _react.Component {
       thread
     } = this.props;
     const worker = (0, _threads.isWorker)(thread);
-    const label = thread.name;
+    let label = thread.name;
+
+    if (thread.serviceWorkerStatus) {
+      label += ` (${thread.serviceWorkerStatus})`;
+    }
+
     return _react.default.createElement("div", {
       className: (0, _classnames.default)("thread", {
         selected: thread.actor == currentThread

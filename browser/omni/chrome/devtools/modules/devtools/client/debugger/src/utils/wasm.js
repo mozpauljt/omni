@@ -60,7 +60,9 @@ function getWasmText(sourceId, data) {
     };
   }
 
-  const offsets = result.offsets;
+  const {
+    offsets
+  } = result;
   const lines = [];
 
   for (let i = 0; i < offsets.length; i++) {

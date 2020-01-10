@@ -4,7 +4,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.onConnect = onConnect;
-exports.createObjectClient = createObjectClient;
 Object.defineProperty(exports, "clientCommands", {
   enumerable: true,
   get: function () {
@@ -24,64 +23,90 @@ loader.lazyRequireGetter(this, "_prefs", "devtools/client/debugger/src/utils/pre
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-let DebuggerClient;
+let actions;
 
-function createObjectClient(grip) {
-  return DebuggerClient.createObjectClient(grip);
-}
-
-async function onConnect(connection, actions) {
+async function onConnect(connection, _actions) {
   const {
-    tabConnection: {
-      tabTarget,
-      threadFront,
-      debuggerClient
-    }
-  } = connection;
-  DebuggerClient = debuggerClient;
-
-  if (!tabTarget || !threadFront || !debuggerClient) {
-    return;
-  }
-
-  const supportsWasm = _prefs.features.wasm && !!debuggerClient.mainRoot.traits.wasmBinarySource;
-  (0, _commands.setupCommands)({
-    threadFront,
-    tabTarget,
     debuggerClient,
-    supportsWasm
+    targetList
+  } = connection;
+  actions = _actions;
+  (0, _commands.setupCommands)({
+    debuggerClient
   });
   (0, _events.setupEvents)({
-    threadFront,
-    tabTarget,
     actions,
-    supportsWasm
+    debuggerClient
   });
-  tabTarget.on("will-navigate", actions.willNavigate);
-  tabTarget.on("navigate", actions.navigated);
-  await threadFront.reconfigure({
-    observeAsmJS: true,
-    pauseWorkersUntilAttach: true,
-    wasmBinarySource: supportsWasm,
-    skipBreakpoints: _prefs.prefs.skipPausing,
-    logEventBreakpoints: _prefs.prefs.logEventBreakpoints
-  }); // Retrieve possible event listener breakpoints
+  await targetList.watchTargets(targetList.ALL_TYPES, onTargetAvailable, onTargetDestroyed);
+}
 
-  actions.getEventListenerBreakpointTypes().catch(e => console.error(e)); // Initialize the event breakpoints on the thread up front so that
-  // they are active once attached.
+async function onTargetAvailable({
+  targetFront,
+  isTopLevel,
+  isTargetSwitching
+}) {
+  if (isTopLevel) {
+    if (isTargetSwitching) {
+      // Simulate navigation actions when target switching.
+      // The will-navigate event will be missed when using target switching,
+      // however `navigate` corresponds more or less to the load event, so it
+      // should still be received on the new target.
+      actions.willNavigate({
+        url: targetFront.url
+      });
+    } // Make sure targetFront.threadFront is availabled and attached.
 
-  actions.addEventListenerBreakpoints([]).catch(e => console.error(e));
-  const traits = tabTarget.traits;
-  await actions.connect(tabTarget.url, threadFront.actor, traits && traits.canRewind, tabTarget.isWebExtension); // Fetch the sources for all the targets
-  //
-  // In Firefox, we need to initially request all of the sources. This
-  // usually fires off individual `newSource` notifications as the
-  // debugger finds them, but there may be existing sources already in
-  // the debugger (if it's paused already, or if loading the page from
-  // bfcache) so explicity fire `newSource` events for all returned
-  // sources.
 
-  const sources = await _commands.clientCommands.fetchSources();
-  await actions.newGeneratedSources(sources);
-  await _commands.clientCommands.checkIfAlreadyPaused();
+    await targetFront.onThreadAttached;
+    const threadFront = targetFront.threadFront;
+
+    if (!threadFront) {
+      return;
+    }
+
+    (0, _commands.setupCommandsTopTarget)(targetFront);
+    (0, _events.setupEventsTopTarget)(targetFront);
+    targetFront.on("will-navigate", actions.willNavigate);
+    targetFront.on("navigate", actions.navigated);
+    const wasmBinarySource = _prefs.features.wasm && !!targetFront.client.mainRoot.traits.wasmBinarySource;
+    await threadFront.reconfigure({
+      observeAsmJS: true,
+      pauseWorkersUntilAttach: true,
+      wasmBinarySource,
+      skipBreakpoints: _prefs.prefs.skipPausing,
+      logEventBreakpoints: _prefs.prefs.logEventBreakpoints
+    }); // Retrieve possible event listener breakpoints
+
+    actions.getEventListenerBreakpointTypes().catch(e => console.error(e)); // Initialize the event breakpoints on the thread up front so that
+    // they are active once attached.
+
+    actions.addEventListenerBreakpoints([]).catch(e => console.error(e));
+    const {
+      traits
+    } = targetFront;
+    await actions.connect(targetFront.url, threadFront.actor, traits, targetFront.isWebExtension); // Fetch the sources for all the targets
+    //
+    // In Firefox, we need to initially request all of the sources. This
+    // usually fires off individual `newSource` notifications as the
+    // debugger finds them, but there may be existing sources already in
+    // the debugger (if it's paused already, or if loading the page from
+    // bfcache) so explicity fire `newSource` events for all returned
+    // sources.
+
+    const sources = await _commands.clientCommands.fetchSources();
+    await actions.newGeneratedSources(sources);
+    await _commands.clientCommands.checkIfAlreadyPaused();
+  }
+}
+
+function onTargetDestroyed({
+  targetFront,
+  isTopLevel
+}) {
+  if (isTopLevel) {
+    targetFront.off("will-navigate", actions.willNavigate);
+    targetFront.off("navigate", actions.navigated);
+    (0, _events.removeEventsTopTarget)(targetFront);
+  }
 }

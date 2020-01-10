@@ -52,11 +52,13 @@ class DebugLine extends _react.PureComponent {
   }
 
   setDebugLine(why, location, source) {
-    if (!isDocumentReady(source, location)) {
+    if (!location || !isDocumentReady(source, location)) {
       return;
     }
 
-    const sourceId = location.sourceId;
+    const {
+      sourceId
+    } = location;
     const doc = (0, _editor.getDocument)(sourceId);
     let {
       line,
@@ -89,7 +91,7 @@ class DebugLine extends _react.PureComponent {
   }
 
   clearDebugLine(why, location, source) {
-    if (!isDocumentReady(source, location)) {
+    if (!location || !isDocumentReady(source, location)) {
       return;
     }
 
@@ -97,11 +99,10 @@ class DebugLine extends _react.PureComponent {
       this.debugExpression.clear();
     }
 
-    const sourceId = location.sourceId;
     const {
       line
     } = (0, _editor.toEditorPosition)(location);
-    const doc = (0, _editor.getDocument)(sourceId);
+    const doc = (0, _editor.getDocument)(location.sourceId);
     const {
       lineClass
     } = this.getTextClasses(why);

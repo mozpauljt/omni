@@ -5,25 +5,22 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.selectThread = selectThread;
 exports.command = command;
+exports.seekToPosition = seekToPosition;
 exports.stepIn = stepIn;
 exports.stepOver = stepOver;
 exports.stepOut = stepOut;
 exports.resume = resume;
 exports.rewind = rewind;
 exports.reverseStepOver = reverseStepOver;
-exports.astCommand = astCommand;
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
 loader.lazyRequireGetter(this, "_promise", "devtools/client/debugger/src/actions/utils/middleware/promise");
-loader.lazyRequireGetter(this, "_breakpoints", "devtools/client/debugger/src/actions/breakpoints/index");
 loader.lazyRequireGetter(this, "_expressions", "devtools/client/debugger/src/actions/expressions");
 loader.lazyRequireGetter(this, "_sources", "devtools/client/debugger/src/actions/sources/index");
 loader.lazyRequireGetter(this, "_fetchScopes", "devtools/client/debugger/src/actions/pause/fetchScopes");
-loader.lazyRequireGetter(this, "_prefs", "devtools/client/debugger/src/utils/prefs");
+loader.lazyRequireGetter(this, "_fetchFrames", "devtools/client/debugger/src/actions/pause/fetchFrames");
 loader.lazyRequireGetter(this, "_telemetry", "devtools/client/debugger/src/utils/telemetry");
 
 var _assert = _interopRequireDefault(require("../../utils/assert"));
-
-loader.lazyRequireGetter(this, "_asyncValue", "devtools/client/debugger/src/utils/async-value");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -50,6 +47,7 @@ function selectThread(cx, thread) {
 
     if (frame) {
       serverRequests.push(dispatch((0, _sources.selectLocation)(threadcx, frame.location)));
+      serverRequests.push(dispatch((0, _fetchFrames.fetchFrames)(threadcx)));
       serverRequests.push(dispatch((0, _fetchScopes.fetchScopes)(threadcx)));
     }
 
@@ -80,6 +78,23 @@ function command(cx, type) {
         [_promise.PROMISE]: client[type](cx.thread)
       });
     }
+  };
+}
+
+function seekToPosition(position) {
+  return ({
+    dispatch,
+    getState,
+    client
+  }) => {
+    const cx = (0, _selectors.getThreadContext)(getState());
+    client.timeWarp(position);
+    dispatch({
+      type: "COMMAND",
+      command: "timeWarp",
+      status: "start",
+      thread: cx.thread
+    });
   };
 }
 /**
@@ -114,7 +129,7 @@ function stepOver(cx) {
     getState
   }) => {
     if (cx.isPaused) {
-      return dispatch(astCommand(cx, "stepOver"));
+      return dispatch(command(cx, "stepOver"));
     }
   };
 }
@@ -187,71 +202,7 @@ function reverseStepOver(cx) {
     getState
   }) => {
     if (cx.isPaused) {
-      return dispatch(astCommand(cx, "reverseStepOver"));
+      return dispatch(command(cx, "reverseStepOver"));
     }
-  };
-}
-/*
- * Checks for await or yield calls on the paused line
- * This avoids potentially expensive parser calls when we are likely
- * not at an async expression.
- */
-
-
-function hasAwait(content, pauseLocation) {
-  const {
-    line,
-    column
-  } = pauseLocation;
-
-  if (!content || !(0, _asyncValue.isFulfilled)(content) || content.value.type !== "text") {
-    return false;
-  }
-
-  const lineText = content.value.value.split("\n")[line - 1];
-
-  if (!lineText) {
-    return false;
-  }
-
-  const snippet = lineText.slice(column - 50, column + 50);
-  return !!snippet.match(/(yield|await)/);
-}
-/**
- * @memberOf actions/pause
- * @static
- * @param stepType
- * @returns {function(ThunkArgs)}
- */
-
-
-function astCommand(cx, stepType) {
-  return async ({
-    dispatch,
-    getState,
-    sourceMaps,
-    parser
-  }) => {
-    if (!_prefs.features.asyncStepping) {
-      return dispatch(command(cx, stepType));
-    }
-
-    if (stepType == "stepOver") {
-      // This type definition is ambiguous:
-      const frame = (0, _selectors.getTopFrame)(getState(), cx.thread);
-      const source = (0, _selectors.getSource)(getState(), frame.location.sourceId);
-      const content = source ? (0, _selectors.getSourceContent)(getState(), source.id) : null;
-
-      if (source && hasAwait(content, frame.location)) {
-        const nextLocation = await parser.getNextStep(source.id, frame.location);
-
-        if (nextLocation) {
-          await dispatch((0, _breakpoints.addHiddenBreakpoint)(cx, nextLocation));
-          return dispatch(command(cx, "resume"));
-        }
-      }
-    }
-
-    return dispatch(command(cx, stepType));
   };
 }

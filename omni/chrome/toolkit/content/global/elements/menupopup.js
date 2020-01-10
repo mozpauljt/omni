@@ -29,28 +29,6 @@
 
         // Make sure we generated shadow DOM to place menuitems into.
         this.shadowRoot;
-
-        let array = [];
-        let width = 0;
-        for (
-          let menuitem = this.firstElementChild;
-          menuitem;
-          menuitem = menuitem.nextElementSibling
-        ) {
-          if (
-            menuitem.localName == "menuitem" &&
-            menuitem.hasAttribute("acceltext")
-          ) {
-            let accel = menuitem.querySelector(".menu-accel-container");
-            if (accel && accel.boxObject) {
-              array.push(accel);
-              if (accel.boxObject.width > width) {
-                width = accel.boxObject.width;
-              }
-            }
-          }
-        }
-        array.forEach(accel => (accel.width = width));
       });
 
       this.attachShadow({ mode: "open" });
@@ -67,22 +45,27 @@
       }
     }
 
+    initShadowDOM() {
+      // Retarget events from shadow DOM arrowscrollbox to the host.
+      this.scrollBox.addEventListener("scroll", ev =>
+        this.dispatchEvent(new Event("scroll"))
+      );
+      this.scrollBox.addEventListener("overflow", ev =>
+        this.dispatchEvent(new Event("overflow"))
+      );
+      this.scrollBox.addEventListener("underflow", ev =>
+        this.dispatchEvent(new Event("underflow"))
+      );
+      this.scrollBox._scrollButtonUp.classList.add("menupopup-scrollbutton");
+      this.scrollBox._scrollButtonDown.classList.add("menupopup-scrollbutton");
+    }
+
     get shadowRoot() {
       // We generate shadow DOM lazily on popupshowing event to avoid extra load
       // on the system during browser startup.
       if (!super.shadowRoot.firstElementChild) {
         super.shadowRoot.appendChild(this.fragment);
-
-        // Retarget events from shadow DOM scrolbox to the popup itself.
-        this.scrollBox.addEventListener("scroll", ev =>
-          this.dispatchEvent(new Event("scroll"))
-        );
-        this.scrollBox.addEventListener("overflow", ev =>
-          this.dispatchEvent(new Event("overflow"))
-        );
-        this.scrollBox.addEventListener("underflow", ev =>
-          this.dispatchEvent(new Event("underflow"))
-        );
+        this.initShadowDOM();
       }
       return super.shadowRoot;
     }
@@ -111,13 +94,13 @@
 
     get styles() {
       let s = `
-        :host(.in-menulist) .popup-internal-box > .scrollbutton-up,
-        :host(.in-menulist) .popup-internal-box > .arrowscrollbox-overflow-start-indicator,
-        :host(.in-menulist) .popup-internal-box > .arrowscrollbox-overflow-end-indicator,
-        :host(.in-menulist) .popup-internal-box > .scrollbutton-down {
+        :host(.in-menulist) .popup-internal-box::part(scrollbutton-up),
+        :host(.in-menulist) .popup-internal-box::part(arrowscrollbox-overflow-start-indicator),
+        :host(.in-menulist) .popup-internal-box::part(arrowscrollbox-overflow-end-indicator),
+        :host(.in-menulist) .popup-internal-box::part(scrollbutton-down) {
           display: none;
         }
-        :host(.in-menulist) .popup-internal-box > .arrowscrollbox-scrollbox {
+        :host(.in-menulist) .popup-internal-box::part(scrollbox) {
           overflow: auto;
         }
       `;
@@ -166,6 +149,7 @@
         this._draggingState = this.NOT_DRAGGING;
         this._clearScrollTimer();
         this.releaseCapture();
+        this.scrollBox.scrollbox.scrollTop = 0;
       });
 
       this.addEventListener("mousedown", event => {

@@ -119,6 +119,10 @@ ReplayPool.prototype = {
   },
 
   addPauseData(pauseData) {
+    if (!pauseData) {
+      return;
+    }
+
     for (const { data, preview } of Object.values(pauseData.objects)) {
       if (!this.objects[data.id]) {
         this.addObject(data);
@@ -243,6 +247,18 @@ ReplayDebugger.prototype = {
 
   replayCurrentExecutionPoint() {
     return this._control.lastPausePoint();
+  },
+
+  replayFramePositions(point) {
+    return this._control.findFrameSteps(point);
+  },
+
+  async replayAncestorFramePositions(point, index) {
+    const ancestor = await this._control.findAncestorFrameEntryPoint(
+      point,
+      index
+    );
+    return this._control.findFrameSteps(ancestor);
   },
 
   replayRecordingEndpoint() {
@@ -563,9 +579,10 @@ ReplayDebugger.prototype = {
     this._pool.addPauseData(pauseData);
   },
 
-  _virtualConsoleLog(position, text, condition, callback) {
+  _virtualConsoleLog(logpoint) {
+    const { position, text, condition } = logpoint;
     dumpv(`AddLogpoint ${JSON.stringify(position)} ${text} ${condition}`);
-    this._control.addLogpoint({ position, text, condition, callback });
+    this._control.addLogpoint(logpoint);
   },
 
   /////////////////////////////////////////////////////////
@@ -845,6 +862,10 @@ ReplayDebuggerScript.prototype = {
     return this._data.mainOffset;
   },
 
+  getChildScripts() {
+    return this._data.childScripts.map(id => this._dbg._getScript(id));
+  },
+
   _forward(type, value) {
     return this._dbg._sendRequestMainChild({ type, id: this._data.id, value });
   },
@@ -900,17 +921,24 @@ ReplayDebuggerScript.prototype = {
     });
   },
 
-  replayVirtualConsoleLog(offset, text, condition, callback) {
-    this._dbg._virtualConsoleLog(
-      { kind: "Break", script: this._data.id, offset },
+  replayVirtualConsoleLog({
+    offset,
+    text,
+    condition,
+    messageCallback,
+    validCallback,
+  }) {
+    this._dbg._virtualConsoleLog({
+      position: { kind: "Break", script: this._data.id, offset },
       text,
       condition,
-      (point, result, resultData) => {
+      messageCallback: (point, result, resultData) => {
         const pool = new ReplayPool(this._dbg, resultData);
         const converted = result.map(v => pool.convertValue(v));
-        callback(point, converted);
-      }
-    );
+        return messageCallback(point, converted);
+      },
+      validCallback,
+    });
   },
 
   get isGeneratorFunction() {
@@ -919,7 +947,6 @@ ReplayDebuggerScript.prototype = {
   get isAsyncFunction() {
     NYI();
   },
-  getChildScripts: NYI,
   getAllOffsets: NYI,
   getBreakpoints: NYI,
   clearAllBreakpoints: NYI,
@@ -993,9 +1020,6 @@ ReplayDebuggerFrame.prototype = {
   get environment() {
     return this._pool.getObject(this._data.environment);
   },
-  get generator() {
-    return this._data.generator;
-  },
   get constructing() {
     return this._data.constructing;
   },
@@ -1018,15 +1042,16 @@ ReplayDebuggerFrame.prototype = {
 
   eval(text, options) {
     assert(this._pool == this._dbg._pool);
-    const rv = this._dbg._sendRequestAllowDiverge(
+    const { rv, preview } = this._dbg._sendRequestAllowDiverge(
       {
         type: "frameEvaluate",
         index: this._data.index,
         text,
         options,
       },
-      { throw: "Recording divergence in frameEvaluate" }
+      { rv: { throw: "Recording divergence in frameEvaluate" } }
     );
+    this._pool.addPauseData(preview);
     return this._pool.convertCompletionValue(rv);
   },
 
@@ -1120,12 +1145,16 @@ const PropertyLevels = {
   FULL: 2,
 };
 
+const emptyPreview = {
+  level: PropertyLevels.FULL,
+  properties: mapify([]),
+};
+
 function ReplayDebuggerObject(pool, data) {
   this._dbg = pool.dbg;
   this._pool = pool;
   this._data = data;
   this._preview = null;
-  this._properties = null;
   this._containerContents = null;
 }
 
@@ -1196,12 +1225,8 @@ ReplayDebuggerObject.prototype = {
   },
 
   getOwnPropertyNames() {
-    if (this._preview && this._preview.level >= PropertyLevels.FULL) {
-      // The preview will include all properties of the object.
-      return this.getEnumerableOwnPropertyNamesForPreview();
-    }
     this._ensureProperties();
-    return [...this._properties.keys()];
+    return this.getEnumerableOwnPropertyNamesForPreview();
   },
 
   getEnumerableOwnPropertyNamesForPreview() {
@@ -1235,21 +1260,34 @@ ReplayDebuggerObject.prototype = {
       }
     }
     this._ensureProperties();
-    return this._convertPropertyDescriptor(this._properties.get(name));
+    if (!this._preview.properties) {
+      return undefined;
+    }
+    return this._convertPropertyDescriptor(this._preview.properties.get(name));
+  },
+
+  _hasProperties() {
+    return this._preview && this._preview.level == PropertyLevels.FULL;
   },
 
   _ensureProperties() {
-    if (!this._properties) {
-      if (this._pool != this._dbg._pool) {
-        this._properties = mapify([]);
-        return;
-      }
-      const id = this._data.id;
-      const { properties } = this._dbg._sendRequestAllowDiverge(
-        { type: "getObjectProperties", id },
-        []
-      );
-      this._properties = mapify(properties);
+    if (this._hasProperties()) {
+      return;
+    }
+    if (this._pool != this._dbg._pool) {
+      this._preview = emptyPreview;
+      return;
+    }
+    const id = this._data.id;
+    const { preview } = this._dbg._sendRequestAllowDiverge(
+      { type: "getObjectProperties", id },
+      {}
+    );
+    if (preview) {
+      this._pool.addPauseData(preview);
+      assert(this._hasProperties());
+    } else {
+      this._preview = emptyPreview;
     }
   },
 
@@ -1307,6 +1345,20 @@ ReplayDebuggerObject.prototype = {
     return this._pool.convertValue(value);
   },
 
+  replayHasPropertyValue(name) {
+    return (
+      this._preview &&
+      this._preview.properties &&
+      this._preview.properties.has(name) &&
+      "value" in this._preview.properties.get(name)
+    );
+  },
+
+  replayPropertyValue(name) {
+    const value = this._preview.properties.get(name).value;
+    return this._pool.convertValue(value);
+  },
+
   unwrap() {
     if (!this.isProxy) {
       return this;
@@ -1355,15 +1407,16 @@ ReplayDebuggerObject.prototype = {
     thisv = this._dbg._convertValueForChild(thisv);
     args = (args || []).map(v => this._dbg._convertValueForChild(v));
 
-    const rv = this._dbg._sendRequestAllowDiverge(
+    const { rv, preview } = this._dbg._sendRequestAllowDiverge(
       {
         type: "objectApply",
         id: this._data.id,
         thisv,
         args,
       },
-      { throw: "Recording divergence in objectApply" }
+      { rv: { throw: "Recording divergence in objectApply" } }
     );
+    this._pool.addPauseData(preview);
     return this._pool.convertCompletionValue(rv);
   },
 
@@ -1523,7 +1576,7 @@ function isNonNullObject(obj) {
 
 function stringify(object) {
   const str = JSON.stringify(object);
-  if (str.length >= 4096) {
+  if (str && str.length >= 4096) {
     return `${str.substr(0, 4096)} TRIMMED ${str.length}`;
   }
   return str;

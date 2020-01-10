@@ -73,6 +73,14 @@ function FrameLocation({
 FrameLocation.displayName = "FrameLocation";
 
 class FrameComponent extends _react.Component {
+  get isSelectable() {
+    return this.props.panel == "webconsole";
+  }
+
+  get isDebugger() {
+    return this.props.panel == "debugger";
+  }
+
   onContextMenu(event) {
     const {
       frame,
@@ -113,8 +121,7 @@ class FrameComponent extends _react.Component {
       shouldMapDisplayName,
       displayFullUrl,
       getFrameTitle,
-      disableContextMenu,
-      selectable
+      disableContextMenu
     } = this.props;
     const {
       l10n
@@ -137,7 +144,11 @@ class FrameComponent extends _react.Component {
       onContextMenu: disableContextMenu ? null : e => this.onContextMenu(e),
       tabIndex: 0,
       title: title
-    }, selectable && _react.default.createElement(_FrameIndent.default, null), _react.default.createElement(FrameTitle, {
+    }, frame.asyncCause && _react.default.createElement("span", {
+      className: "location-async-cause"
+    }, this.isSelectable && _react.default.createElement(_FrameIndent.default, null), this.isDebugger ? frame.asyncCause : l10n.getFormatStr("stacktrace.asyncStack", frame.asyncCause), this.isSelectable && _react.default.createElement("br", {
+      className: "clipboard-only"
+    })), this.isSelectable && _react.default.createElement(_FrameIndent.default, null), _react.default.createElement(FrameTitle, {
       frame: frame,
       options: {
         shouldMapDisplayName
@@ -148,7 +159,7 @@ class FrameComponent extends _react.Component {
     }, " "), !hideLocation && _react.default.createElement(FrameLocation, {
       frame: frame,
       displayFullUrl: displayFullUrl
-    }), selectable && _react.default.createElement("br", {
+    }), this.isSelectable && _react.default.createElement("br", {
       className: "clipboard-only"
     }));
   }

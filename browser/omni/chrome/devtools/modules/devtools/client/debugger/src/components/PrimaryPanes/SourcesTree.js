@@ -47,8 +47,13 @@ function findSource({
   const targetThread = threads.find(thread => itemPath.includes(thread.actor));
 
   if (targetThread && source) {
-    const actor = targetThread.actor;
-    return sources[actor][source.id];
+    const {
+      actor
+    } = targetThread;
+
+    if (sources[actor]) {
+      return sources[actor][source.id];
+    }
   }
 
   return source;
@@ -254,7 +259,7 @@ class SourcesTree extends _react.Component {
     return _react.default.createElement(_ManagedTree.default, treeProps);
   }
 
-  renderPane(...children) {
+  renderPane(child) {
     const {
       projectRoot
     } = this.props;
@@ -263,7 +268,7 @@ class SourcesTree extends _react.Component {
       className: (0, _classnames.default)("sources-pane", {
         "sources-list-custom-root": projectRoot
       })
-    }, children);
+    }, child);
   }
 
   render() {

@@ -8,7 +8,7 @@ exports.insertResources = insertResources;
 exports.removeResources = removeResources;
 exports.updateResources = updateResources;
 exports.makeIdentity = makeIdentity;
-exports.getResourcePair = getResourcePair;
+exports.getValidatedResource = getValidatedResource;
 exports.getResourceValues = getResourceValues;
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
@@ -141,7 +141,7 @@ function makeIdentity() {
   return {};
 }
 
-function getResourcePair(state, id) {
+function getValidatedResource(state, id) {
   const value = state.values[id];
   const identity = state.identity[id];
 
@@ -149,10 +149,7 @@ function getResourcePair(state, id) {
     throw new Error(`Resource state corrupt: ${id} has mismatched value and identity`);
   }
 
-  return value ? {
-    value,
-    identity
-  } : null;
+  return value ? state : null;
 }
 
 function getResourceValues(state) {

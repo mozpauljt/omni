@@ -11,8 +11,6 @@ loader.lazyRequireGetter(this, "_connect", "devtools/client/debugger/src/utils/c
 
 var _devtoolsContextmenu = require("devtools/client/debugger/dist/vendors").vendored["devtools-contextmenu"];
 
-var _devtoolsSourceMap = require("devtools/client/shared/source-map/index.js");
-
 loader.lazyRequireGetter(this, "_editor", "devtools/client/debugger/src/utils/editor/index");
 loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
@@ -63,7 +61,7 @@ class EditorMenu extends _react.Component {
 const mapStateToProps = (state, props) => ({
   cx: (0, _selectors.getThreadContext)(state),
   isPaused: (0, _selectors.getIsPaused)(state, (0, _selectors.getCurrentThread)(state)),
-  hasMappedLocation: ((0, _devtoolsSourceMap.isOriginalId)(props.selectedSource.id) || (0, _selectors.isSourceWithMap)(state, props.selectedSource.id) || (0, _source.isPretty)(props.selectedSource)) && !(0, _selectors.getPrettySource)(state, props.selectedSource.id)
+  hasMappedLocation: (props.selectedSource.isOriginal || (0, _selectors.isSourceWithMap)(state, props.selectedSource.id) || (0, _source.isPretty)(props.selectedSource)) && !(0, _selectors.getPrettySource)(state, props.selectedSource.id)
 });
 
 const mapDispatchToProps = dispatch => ({

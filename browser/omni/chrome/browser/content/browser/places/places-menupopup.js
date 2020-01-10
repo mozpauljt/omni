@@ -37,7 +37,7 @@
       <html:link rel="stylesheet" href="chrome://global/skin/global.css" />
       <hbox flex="1" part="innerbox">
         <vbox part="drop-indicator-bar" hidden="true">
-          <image part="drop-indicator" mousethrough="always"></image>
+          <image part="drop-indicator"/>
         </vbox>
         <arrowscrollbox class="popup-internal-box" flex="1" orient="vertical"
                         smoothscroll="false" part="popupbox">
@@ -45,6 +45,13 @@
         </arrowscrollbox>
       </hbox>
     `;
+    }
+
+    initShadowDOM() {
+      super.initShadowDOM();
+      if (this.closest("#BMB_bookmarksPopup")) {
+        this.scrollBox.classList.add("in-bookmarks-menu");
+      }
     }
 
     connectedCallback() {
@@ -382,7 +389,7 @@
         }
 
         if (linkURI) {
-          window.XULBrowserWindow.setOverLink(linkURI, null);
+          window.XULBrowserWindow.setOverLink(linkURI);
         }
       }
     }
@@ -394,7 +401,7 @@
       }
 
       if (window.XULBrowserWindow) {
-        window.XULBrowserWindow.setOverLink("", null);
+        window.XULBrowserWindow.setOverLink("");
       }
     }
 
@@ -479,11 +486,10 @@
       }
 
       // Autoscroll the popup strip if we drag over the scroll buttons.
-      let anonid = event.originalTarget.getAttribute("anonid");
       let scrollDir = 0;
-      if (anonid == "scrollbutton-up") {
+      if (event.originalTarget == this.scrollBox._scrollButtonUp) {
         scrollDir = -1;
-      } else if (anonid == "scrollbutton-down") {
+      } else if (event.originalTarget == this.scrollBox._scrollButtonDown) {
         scrollDir = 1;
       }
       if (scrollDir != 0) {
@@ -585,27 +591,25 @@
 
     static get inheritedAttributes() {
       return {
-        ".panel-arrowcontainer": "side,panelopen",
-        ".panel-arrow": "side",
-        ".panel-arrowcontent": "side,align,dir,orient,pack",
+        ".panel-arrowcontent": "align,dir,orient,pack",
       };
     }
 
     get markup() {
       return `
-      <html:link rel="stylesheet" href="chrome://global/skin/global.css" />
+      <html:link rel="stylesheet" href="chrome://global/skin/global.css"/>
       <vbox class="panel-arrowcontainer" flex="1">
-        <box class="panel-arrowbox">
-          <image class="panel-arrow"></image>
+        <box class="panel-arrowbox" part="arrowbox">
+          <image class="panel-arrow" part="arrow"/>
         </box>
         <box class="panel-arrowcontent" part="arrowcontent" flex="1">
           <vbox part="drop-indicator-bar" hidden="true">
-            <image part="drop-indicator" mousethrough="always"></image>
+            <image part="drop-indicator"/>
           </vbox>
           <arrowscrollbox class="popup-internal-box" flex="1"
                           orient="vertical" smoothscroll="false"
                           part="popupbox">
-            <html:slot></html:slot>
+            <html:slot/>
           </arrowscrollbox>
         </box>
       </vbox>
@@ -656,12 +660,12 @@
       // if this panel has a "sliding" arrow, we may have previously set margins...
       arrowbox.style.removeProperty("transform");
       if (position.indexOf("start_") == 0 || position.indexOf("end_") == 0) {
-        container.orient = "horizontal";
-        arrowbox.orient = "vertical";
+        container.setAttribute("orient", "horizontal");
+        arrowbox.setAttribute("orient", "vertical");
         if (position.indexOf("_after") > 0) {
-          arrowbox.pack = "end";
+          arrowbox.setAttribute("pack", "end");
         } else {
-          arrowbox.pack = "start";
+          arrowbox.setAttribute("pack", "start");
         }
         arrowbox.style.transform = "translate(0, " + -offset + "px)";
 
@@ -669,30 +673,30 @@
         let isRTL = this.matches(":-moz-locale-dir(rtl)");
 
         if (position.indexOf("start_") == 0) {
-          container.dir = "reverse";
+          container.style.MozBoxDirection = "reverse";
           this.setAttribute("side", isRTL ? "left" : "right");
         } else {
-          container.dir = "";
+          container.style.removeProperty("-moz-box-direction");
           this.setAttribute("side", isRTL ? "right" : "left");
         }
       } else if (
         position.indexOf("before_") == 0 ||
         position.indexOf("after_") == 0
       ) {
-        container.orient = "";
-        arrowbox.orient = "";
+        container.removeAttribute("orient");
+        arrowbox.removeAttribute("orient");
         if (position.indexOf("_end") > 0) {
-          arrowbox.pack = "end";
+          arrowbox.setAttribute("pack", "end");
         } else {
-          arrowbox.pack = "start";
+          arrowbox.setAttribute("pack", "start");
         }
         arrowbox.style.transform = "translate(" + -offset + "px, 0)";
 
         if (position.indexOf("before_") == 0) {
-          container.dir = "reverse";
+          container.style.MozBoxDirection = "reverse";
           this.setAttribute("side", "bottom");
         } else {
-          container.dir = "";
+          container.style.removeProperty("-moz-box-direction");
           this.setAttribute("side", "top");
         }
       }

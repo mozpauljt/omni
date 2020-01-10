@@ -45,6 +45,18 @@ Object.defineProperty(exports, "reverseStepOver", {
     return _commands.reverseStepOver;
   }
 });
+Object.defineProperty(exports, "seekToPosition", {
+  enumerable: true,
+  get: function () {
+    return _commands.seekToPosition;
+  }
+});
+Object.defineProperty(exports, "fetchFrames", {
+  enumerable: true,
+  get: function () {
+    return _fetchFrames.fetchFrames;
+  }
+});
 Object.defineProperty(exports, "fetchScopes", {
   enumerable: true,
   get: function () {
@@ -135,7 +147,14 @@ Object.defineProperty(exports, "clearPreviewPausedLocation", {
     return _previewPausedLocation.clearPreviewPausedLocation;
   }
 });
+Object.defineProperty(exports, "setFramePositions", {
+  enumerable: true,
+  get: function () {
+    return _setFramePositions.setFramePositions;
+  }
+});
 loader.lazyRequireGetter(this, "_commands", "devtools/client/debugger/src/actions/pause/commands");
+loader.lazyRequireGetter(this, "_fetchFrames", "devtools/client/debugger/src/actions/pause/fetchFrames");
 loader.lazyRequireGetter(this, "_fetchScopes", "devtools/client/debugger/src/actions/pause/fetchScopes");
 loader.lazyRequireGetter(this, "_paused", "devtools/client/debugger/src/actions/pause/paused");
 loader.lazyRequireGetter(this, "_resumed", "devtools/client/debugger/src/actions/pause/resumed");
@@ -149,3 +168,4 @@ loader.lazyRequireGetter(this, "_mapScopes", "devtools/client/debugger/src/actio
 loader.lazyRequireGetter(this, "_expandScopes", "devtools/client/debugger/src/actions/pause/expandScopes");
 loader.lazyRequireGetter(this, "_inlinePreview", "devtools/client/debugger/src/actions/pause/inlinePreview");
 loader.lazyRequireGetter(this, "_previewPausedLocation", "devtools/client/debugger/src/actions/pause/previewPausedLocation");
+loader.lazyRequireGetter(this, "_setFramePositions", "devtools/client/debugger/src/actions/pause/setFramePositions");

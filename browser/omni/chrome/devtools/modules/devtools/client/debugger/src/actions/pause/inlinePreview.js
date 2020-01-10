@@ -39,7 +39,12 @@ function generateInlinePreview(cx, frame) {
 
     const {
       thread
-    } = cx;
+    } = cx; // Avoid regenerating inline previews when we already have preview data
+
+    if ((0, _selectors.getInlinePreviews)(getState(), thread, frame.id)) {
+      return;
+    }
+
     const originalFrameScopes = (0, _selectors.getOriginalFrameScope)(getState(), thread, frame.location.sourceId, frame.id);
     const generatedFrameScopes = (0, _selectors.getGeneratedFrameScope)(getState(), thread, frame.id);
     let scopes = originalFrameScopes && originalFrameScopes.scope || generatedFrameScopes && generatedFrameScopes.scope;
@@ -55,7 +60,7 @@ function generateInlinePreview(cx, frame) {
       return;
     }
 
-    const previews = {};
+    const allPreviews = [];
     const pausedOnLine = frame.location.line;
     const levels = getLocalScopeLevels(originalAstScopes);
 
@@ -71,29 +76,37 @@ function generateInlinePreview(cx, frame) {
         // We want to show values of properties of objects only and not
         // function calls on other data types like someArr.forEach etc..
         let properties = null;
+        const objectFront = bindings[name].value;
 
-        if (bindings[name].value.class === "Object") {
-          const root = {
+        if (objectFront.actorID && objectFront.class === "Object") {
+          properties = await client.loadObjectProperties({
             name,
             path: name,
             contents: {
-              value: bindings[name].value
+              value: objectFront
             }
-          };
-          properties = await client.loadObjectProperties(root);
+          });
         }
 
-        const preview = getBindingValues(originalAstScopes, pausedOnLine, name, bindings[name].value, curLevel, properties);
-        Object.keys(preview).forEach(line => {
-          previews[line] = (previews[line] || []).concat(preview[line]);
-        });
+        const previewsFromBindings = getBindingValues(originalAstScopes, pausedOnLine, name, bindings[name].value, curLevel, properties);
+        allPreviews.push(...previewsFromBindings);
       });
       await Promise.all(previewBindings);
       scopes = scopes.parent;
     }
 
-    Object.keys(previews).forEach(line => {
-      previews[line] = (0, _lodash.sortBy)(previews[line], ["column"]);
+    const previews = {};
+    const sortedPreviews = (0, _lodash.sortBy)(allPreviews, ["line", "column"]);
+    sortedPreviews.forEach(preview => {
+      const {
+        line
+      } = preview;
+
+      if (!previews[line]) {
+        previews[line] = [preview];
+      } else {
+        previews[line].push(preview);
+      }
     });
     return dispatch({
       type: "ADD_INLINE_PREVIEW",
@@ -105,7 +118,7 @@ function generateInlinePreview(cx, frame) {
 }
 
 function getBindingValues(originalAstScopes, pausedOnLine, name, value, curLevel, properties) {
-  const previews = {};
+  const previews = [];
   const binding = originalAstScopes[curLevel] && originalAstScopes[curLevel].bindings[name];
 
   if (!binding) {
@@ -120,16 +133,13 @@ function getBindingValues(originalAstScopes, pausedOnLine, name, value, curLevel
   for (let i = binding.refs.length - 1; i >= 0; i--) {
     const ref = binding.refs[i]; // Subtracting 1 from line as codemirror lines are 0 indexed
 
-    let line = ref.start.line - 1;
+    const line = ref.start.line - 1;
     const column = ref.start.column; // We don't want to render inline preview below the paused line
 
     if (line >= pausedOnLine - 1) {
       continue;
-    } // Converting to string as all iterators on object keys ( eg: Object.keys,
-    // for..in ) will return string
+    }
 
-
-    line = line.toString();
     const {
       displayName,
       displayValue
@@ -140,15 +150,12 @@ function getBindingValues(originalAstScopes, pausedOnLine, name, value, curLevel
       continue;
     }
 
-    if (!previews[line]) {
-      previews[line] = [];
-    }
-
     identifiers.add(displayName);
-    previews[line].push({
+    previews.push({
+      line,
+      column,
       name: displayName,
-      value: displayValue,
-      column
+      value: displayValue
     });
   }
 
@@ -172,7 +179,7 @@ ref, properties) {
         const property = properties.find(prop => prop.name === meta.property);
         displayValue = property && property.contents.value;
         displayName += `.${meta.property}`;
-      } else if (displayValue && displayValue.preview) {
+      } else if (displayValue && displayValue.preview && displayValue.preview.ownProperties) {
         const {
           ownProperties
         } = displayValue.preview;

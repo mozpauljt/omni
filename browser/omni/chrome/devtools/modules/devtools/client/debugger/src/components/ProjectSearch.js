@@ -264,6 +264,8 @@ class ProjectSearch extends _react.Component {
 
   renderInput() {
     const {
+      cx,
+      closeProjectSearch,
       status
     } = this.props;
     return _react.default.createElement(_SearchInput.default, {
@@ -283,8 +285,7 @@ class ProjectSearch extends _react.Component {
       }),
       onKeyDown: this.onKeyDown,
       onHistoryScroll: this.onHistoryScroll,
-      handleClose: // TODO - This function doesn't quite match the signature.
-      this.props.closeProjectSearch,
+      handleClose: () => closeProjectSearch(cx),
       ref: "searchInput"
     });
   }

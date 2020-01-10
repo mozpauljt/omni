@@ -180,7 +180,7 @@ class SearchInput extends _react.Component {
 
     if (isLoading) {
       return _react.default.createElement(_AccessibleImage.default, {
-        className: "loader"
+        className: "loader spin"
       });
     }
   }

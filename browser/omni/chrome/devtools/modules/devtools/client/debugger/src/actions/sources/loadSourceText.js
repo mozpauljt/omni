@@ -9,7 +9,6 @@ loader.lazyRequireGetter(this, "_promise", "devtools/client/debugger/src/actions
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
 loader.lazyRequireGetter(this, "_breakpoints", "devtools/client/debugger/src/actions/breakpoints/index");
 loader.lazyRequireGetter(this, "_prettyPrint", "devtools/client/debugger/src/actions/sources/prettyPrint");
-loader.lazyRequireGetter(this, "_breakableLines", "devtools/client/debugger/src/actions/sources/breakableLines");
 loader.lazyRequireGetter(this, "_asyncValue", "devtools/client/debugger/src/utils/async-value");
 loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
 loader.lazyRequireGetter(this, "_memoizableAction", "devtools/client/debugger/src/utils/memoizableAction");
@@ -58,17 +57,36 @@ async function loadSource(state, source, {
     }
 
     return result;
+  } // We only need the source text from one actor, but messages sent to retrieve
+  // the source might fail if the actor has or is about to shut down. Keep
+  // trying with different actors until one request succeeds.
+
+
+  let response;
+  const handledActors = new Set();
+
+  while (true) {
+    const actors = (0, _selectors.getSourceActorsForSource)(state, source.id);
+    const actor = actors.find(({
+      actor: a
+    }) => !handledActors.has(a));
+
+    if (!actor) {
+      throw new Error("Unknown source");
+    }
+
+    handledActors.add(actor.actor);
+
+    try {
+      telemetry.start(loadSourceHistogram, source);
+      response = await client.sourceContents(actor);
+      telemetry.finish(loadSourceHistogram, source);
+      break;
+    } catch (e) {
+      console.warn(`sourceContents failed: ${e}`);
+    }
   }
 
-  const actors = (0, _selectors.getSourceActorsForSource)(state, source.id);
-
-  if (!actors.length) {
-    throw new Error("No source actor for loadSource");
-  }
-
-  telemetry.start(loadSourceHistogram, source);
-  const response = await client.sourceContents(actors[0]);
-  telemetry.finish(loadSourceHistogram, source);
   return {
     text: response.source,
     contentType: response.contentType || "text/javascript"
@@ -106,8 +124,7 @@ async function loadSourceTextPromise(cx, source, {
       type: "text",
       value: "",
       contentType: undefined
-    });
-    await dispatch((0, _breakableLines.setBreakableLines)(cx, source.id)); // Update the text in any breakpoints for this source by re-adding them.
+    }); // Update the text in any breakpoints for this source by re-adding them.
 
     const breakpoints = (0, _selectors.getBreakpointsForSource)(getState(), source.id);
 

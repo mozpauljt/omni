@@ -1156,23 +1156,6 @@ exports.CSS_PROPERTIES = {
       "unset"
     ]
   },
-  "-moz-stack-sizing": {
-    "isInherited": false,
-    "subproperties": [
-      "-moz-stack-sizing"
-    ],
-    "supports": [],
-    "values": [
-      "ignore",
-      "ignore-horizontal",
-      "ignore-vertical",
-      "inherit",
-      "initial",
-      "revert",
-      "stretch-to-fit",
-      "unset"
-    ]
-  },
   "-moz-tab-size": {
     "isInherited": true,
     "subproperties": [
@@ -3012,6 +2995,8 @@ exports.CSS_PROPERTIES = {
       "border-end-end-radius",
       "overflow-inline",
       "overflow-block",
+      "overscroll-behavior-inline",
+      "overscroll-behavior-block",
       "margin-block-start",
       "margin-block-end",
       "margin-inline-start",
@@ -3119,7 +3104,6 @@ exports.CSS_PROPERTIES = {
       "transform-origin",
       "contain",
       "-moz-appearance",
-      "-moz-binding",
       "-moz-orient",
       "will-change",
       "shape-image-threshold",
@@ -3224,6 +3208,7 @@ exports.CSS_PROPERTIES = {
       "text-rendering",
       "-moz-control-character-visibility",
       "text-underline-offset",
+      "text-underline-position",
       "text-decoration-skip-ink",
       "cursor",
       "pointer-events",
@@ -3340,7 +3325,6 @@ exports.CSS_PROPERTIES = {
       "-moz-box-flex",
       "-moz-box-orient",
       "-moz-box-pack",
-      "-moz-stack-sizing",
       "-moz-box-ordinal-group"
     ],
     "supports": [],
@@ -8668,6 +8652,38 @@ exports.CSS_PROPERTIES = {
       "unset"
     ]
   },
+  "overscroll-behavior-block": {
+    "isInherited": false,
+    "subproperties": [
+      "overscroll-behavior-block"
+    ],
+    "supports": [],
+    "values": [
+      "auto",
+      "contain",
+      "inherit",
+      "initial",
+      "none",
+      "revert",
+      "unset"
+    ]
+  },
+  "overscroll-behavior-inline": {
+    "isInherited": false,
+    "subproperties": [
+      "overscroll-behavior-inline"
+    ],
+    "supports": [],
+    "values": [
+      "auto",
+      "contain",
+      "inherit",
+      "initial",
+      "none",
+      "revert",
+      "unset"
+    ]
+  },
   "overscroll-behavior-x": {
     "isInherited": false,
     "subproperties": [
@@ -9141,6 +9157,20 @@ exports.CSS_PROPERTIES = {
       "unset"
     ]
   },
+  "rotate": {
+    "isInherited": false,
+    "subproperties": [
+      "rotate"
+    ],
+    "supports": [],
+    "values": [
+      "inherit",
+      "initial",
+      "none",
+      "revert",
+      "unset"
+    ]
+  },
   "row-gap": {
     "isInherited": false,
     "subproperties": [
@@ -9211,6 +9241,20 @@ exports.CSS_PROPERTIES = {
       "auto",
       "inherit",
       "initial",
+      "revert",
+      "unset"
+    ]
+  },
+  "scale": {
+    "isInherited": false,
+    "subproperties": [
+      "scale"
+    ],
+    "supports": [],
+    "values": [
+      "inherit",
+      "initial",
+      "none",
       "revert",
       "unset"
     ]
@@ -10305,6 +10349,23 @@ exports.CSS_PROPERTIES = {
       "unset"
     ]
   },
+  "text-underline-position": {
+    "isInherited": true,
+    "subproperties": [
+      "text-underline-position"
+    ],
+    "supports": [],
+    "values": [
+      "auto",
+      "inherit",
+      "initial",
+      "left",
+      "revert",
+      "right",
+      "under",
+      "unset"
+    ]
+  },
   "top": {
     "isInherited": false,
     "subproperties": [
@@ -10514,6 +10575,20 @@ exports.CSS_PROPERTIES = {
       "step-end",
       "step-start",
       "steps",
+      "unset"
+    ]
+  },
+  "translate": {
+    "isInherited": false,
+    "subproperties": [
+      "translate"
+    ],
+    "supports": [],
+    "values": [
+      "inherit",
+      "initial",
+      "none",
+      "revert",
       "unset"
     ]
   },
@@ -10803,10 +10878,6 @@ exports.PSEUDO_ELEMENTS = [
  */
 exports.PREFERENCES = [
   [
-    "column-span",
-    "layout.css.column-span.enabled"
-  ],
-  [
     "contain",
     "layout.css.contain.enabled"
   ],
@@ -10831,10 +10902,6 @@ exports.PREFERENCES = [
     "layout.css.scroll-anchoring.enabled"
   ],
   [
-    "scroll-snap-align",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
     "scrollbar-width",
     "layout.css.scrollbar-width.enabled"
   ],
@@ -10845,6 +10912,10 @@ exports.PREFERENCES = [
   [
     "text-justify",
     "layout.css.text-justify.enabled"
+  ],
+  [
+    "text-underline-position",
+    "layout.css.text-underline-position.enabled"
   ],
   [
     "touch-action",
@@ -10867,20 +10938,28 @@ exports.PREFERENCES = [
     "layout.css.overflow-clip-box.enabled"
   ],
   [
-    "overscroll-behavior-x",
-    "layout.css.overscroll-behavior.enabled"
-  ],
-  [
-    "overscroll-behavior-y",
-    "layout.css.overscroll-behavior.enabled"
-  ],
-  [
     "overflow-block",
     "layout.css.overflow-logical.enabled"
   ],
   [
     "overflow-inline",
     "layout.css.overflow-logical.enabled"
+  ],
+  [
+    "overscroll-behavior-block",
+    "layout.css.overscroll-behavior.enabled"
+  ],
+  [
+    "overscroll-behavior-inline",
+    "layout.css.overscroll-behavior.enabled"
+  ],
+  [
+    "overscroll-behavior-x",
+    "layout.css.overscroll-behavior.enabled"
+  ],
+  [
+    "overscroll-behavior-y",
+    "layout.css.overscroll-behavior.enabled"
   ],
   [
     "backdrop-filter",
@@ -10923,76 +11002,8 @@ exports.PREFERENCES = [
     "layout.css.text-underline-offset.enabled"
   ],
   [
-    "-moz-binding",
-    "layout.css.moz-binding.content.enabled"
-  ],
-  [
     "offset-distance",
     "layout.css.motion-path.enabled"
-  ],
-  [
-    "scroll-margin-block-end",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-margin-block-start",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-margin-bottom",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-margin-inline-end",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-margin-inline-start",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-margin-left",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-margin-right",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-margin-top",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-padding-block-end",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-padding-block-start",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-padding-bottom",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-padding-inline-end",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-padding-inline-start",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-padding-left",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-padding-right",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-padding-top",
-    "layout.css.scroll-snap-v1.enabled"
   ],
   [
     "overflow-clip-box",
@@ -11007,28 +11018,8 @@ exports.PREFERENCES = [
     "layout.css.motion-path.enabled"
   ],
   [
-    "scroll-margin",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-margin-block",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-margin-inline",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-padding",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-padding-block",
-    "layout.css.scroll-snap-v1.enabled"
-  ],
-  [
-    "scroll-padding-inline",
-    "layout.css.scroll-snap-v1.enabled"
+    "zoom",
+    "layout.css.zoom-transform-hack.enabled"
   ],
   [
     "-moz-transition-duration",
@@ -11105,10 +11096,6 @@ exports.PREFERENCES = [
   [
     "-webkit-appearance",
     "layout.css.webkit-appearance.enabled"
-  ],
-  [
-    "-moz-column-span",
-    "layout.css.column-span.enabled"
   ],
   [
     "-moz-font-feature-settings",

@@ -9,6 +9,12 @@ loader.lazyRequireGetter(
   "devtools/client/shared/link",
   true
 );
+loader.lazyRequireGetter(
+  this,
+  "features",
+  "devtools/client/debugger/src/utils/prefs",
+  true
+);
 
 const DBG_STRINGS_URI = "devtools/client/locales/debugger.properties";
 const L10N = new LocalizationHelper(DBG_STRINGS_URI);
@@ -24,10 +30,9 @@ async function getNodeFront(gripOrFront, toolbox) {
   if ("actorID" in gripOrFront) {
     return new Promise(resolve => resolve(gripOrFront));
   }
-  // TODO: Bug1574506 - Use the contextual WalkerFront for gripToNodeFront.
-  // Given a grip
-  const walkerFront = (await toolbox.target.getFront("inspector")).walker;
-  return walkerFront.gripToNodeFront(gripOrFront);
+
+  const inspectorFront = await toolbox.target.getFront("inspector");
+  return inspectorFront.getNodeFrontFromNodeGrip(gripOrFront);
 }
 
 DebuggerPanel.prototype = {
@@ -38,8 +43,7 @@ DebuggerPanel.prototype = {
       selectors,
       client,
     } = await this.panelWin.Debugger.bootstrap({
-      threadFront: this.toolbox.threadFront,
-      tabTarget: this.toolbox.target,
+      targetList: this.toolbox.targetList,
       debuggerClient: this.toolbox.target.client,
       workers: {
         sourceMaps: this.toolbox.sourceMapService,
@@ -114,18 +118,22 @@ DebuggerPanel.prototype = {
   },
 
   highlightDomElement: async function(gripOrFront) {
-    const nodeFront = await getNodeFront(gripOrFront, this.toolbox);
-    nodeFront.highlighterFront.highlight(nodeFront);
+    if (!this._highlight) {
+      const { highlight, unhighlight } = this.toolbox.getHighlighter();
+      this._highlight = highlight;
+      this._unhighlight = unhighlight;
+    }
+
+    return this._highlight(gripOrFront);
   },
 
-  unHighlightDomElement: async function(gripOrFront) {
-    try {
-      const nodeFront = await getNodeFront(gripOrFront, this.toolbox);
-      nodeFront.highlighterFront.unhighlight();
-    } catch (e) {
-      // This call might fail if called asynchrously after the toolbox is finished
-      // closing.
+  unHighlightDomElement: function() {
+    if (!this._unhighlight) {
+      return;
     }
+
+    const forceUnHighlightInTest = true;
+    return this._unhighlight(forceUnHighlightInTest);
   },
 
   getFrames: function() {
@@ -166,6 +174,29 @@ DebuggerPanel.prototype = {
   selectSourceURL(url, line, column) {
     const cx = this._selectors.getContext(this._getState());
     return this._actions.selectSourceURL(cx, url, { line, column });
+  },
+
+  async selectWorker(workerTargetFront) {
+    const threadId = workerTargetFront.threadFront.actorID;
+    const isThreadAvailable = this._selectors
+      .getThreads(this._getState())
+      .find(x => x.actor === threadId);
+
+    if (!features.windowlessServiceWorkers) {
+      console.error(
+        "Selecting a worker needs the pref debugger.features.windowless-service-workers set to true"
+      );
+    } else if (!isThreadAvailable) {
+      console.error(`Worker ${threadId} is not available for debugging`);
+    } else {
+      // select worker's thread
+      const cx = this._selectors.getContext(this._getState());
+      this._actions.selectThread(cx, threadId);
+
+      // select worker's source
+      const source = this.getSourceByURL(workerTargetFront._url);
+      await this.selectSource(source.id, 1, 1);
+    }
   },
 
   previewPausedLocation(location) {

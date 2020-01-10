@@ -1,0 +1,129 @@
+<?xml version="1.0"?>
+
+
+<?xml-stylesheet href="chrome://global/skin/"?>
+<?xml-stylesheet href="chrome://browser/content/downloads/contentAreaDownloadsView.css"?>
+<?xml-stylesheet href="chrome://browser/skin/downloads/contentAreaDownloadsView.css"?>
+<?xml-stylesheet href="chrome://browser/content/downloads/downloads.css"?>
+<?xml-stylesheet href="chrome://browser/skin/downloads/allDownloadsView.css"?>
+
+<!DOCTYPE window [
+<!ENTITY % downloadsDTD SYSTEM "chrome://browser/locale/downloads/downloads.dtd">
+%downloadsDTD;
+<!ENTITY % editMenuDTD SYSTEM "chrome://global/locale/editMenuOverlay.dtd">
+%editMenuDTD;
+]>
+
+<!-- @CSP: We have to whitelist the 'oncommand' handler for all the cmd_* fields within
+   - editMenuOverlay.js until Bug 371900 is fixed using
+   -    sha512-4o5Uf4E4EG+90Mb820FH2YFDf4IuX4bfUwQC7reK1ZhgcXWJBKMK2330XIELaFJJ8HiPffS9mP60MPjuXMIrHA==
+   -->
+<window id="contentAreaDownloadsView"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        title="&downloads.title;"
+        csp="default-src chrome:; script-src chrome: 'sha512-4o5Uf4E4EG+90Mb820FH2YFDf4IuX4bfUwQC7reK1ZhgcXWJBKMK2330XIELaFJJ8HiPffS9mP60MPjuXMIrHA=='; img-src chrome: moz-icon:; object-src 'none'">
+
+  <script src="chrome://global/content/globalOverlay.js"/>
+  <script src="chrome://browser/content/downloads/contentAreaDownloadsView.js"/>
+  <script src="chrome://browser/content/downloads/allDownloadsView.js"/>
+  <script src="chrome://global/content/contentAreaUtils.js"/>
+  <script src="chrome://global/content/editMenuOverlay.js"/>
+
+
+  <!-- These key nodes are here only for show. The real bindings come from
+       XBL, in platformHTMLBindings.xml. See bugs 57078 and 71779. -->
+
+  <keyset id="editMenuKeys">
+    <key id="key_undo" key="&undoCmd.key;" modifiers="accel" command="cmd_undo"/>
+    <key id="key_redo" key="&undoCmd.key;" modifiers="accel,shift" command="cmd_redo"/>
+    <key id="key_cut" key="&cutCmd.key;" modifiers="accel" command="cmd_cut"/>
+    <key id="key_copy" key="&copyCmd.key;" modifiers="accel" command="cmd_copy"/>
+    <key id="key_paste" key="&pasteCmd.key;" modifiers="accel" command="cmd_paste"/>
+    <key id="key_delete" keycode="VK_DELETE" command="cmd_delete"/>
+    <key id="key_selectAll" key="&selectAllCmd.key;" modifiers="accel" command="cmd_selectAll"/>
+    <key id="key_find" key="&findCmd.key;" modifiers="accel" command="cmd_find"/>
+    <key id="key_findAgain" key="&findAgainCmd.key;" modifiers="accel" command="cmd_findAgain"/>
+    <key id="key_findPrevious" key="&findAgainCmd.key;" modifiers="shift,accel" command="cmd_findPrevious"/>
+    <key id="key_findAgain2" keycode="&findAgainCmd.key2;" command="cmd_findAgain"/>
+    <key id="key_findPrevious2" keycode="&findAgainCmd.key2;" modifiers="shift" command="cmd_findPrevious"/>
+  </keyset>
+
+  <richlistbox flex="1"
+               seltype="multiple"
+               id="downloadsRichListBox"
+               context="downloadsContextMenu"/>
+  <description id="downloadsListEmptyDescription"
+               value="&downloadsListEmpty.label;"/>
+
+<script src="chrome://browser/content/downloads/downloadsCommands.js"/>
+
+<commandset id="downloadCommands"
+            commandupdater="true"
+            events="focus,select,contextmenu">
+  <command id="downloadsCmd_pauseResume"/>
+  <command id="downloadsCmd_cancel"/>
+  <command id="downloadsCmd_unblock"/>
+  <command id="downloadsCmd_chooseUnblock"/>
+  <command id="downloadsCmd_chooseOpen"/>
+  <command id="downloadsCmd_confirmBlock"/>
+  <command id="downloadsCmd_open"/>
+  <command id="downloadsCmd_show"/>
+  <command id="downloadsCmd_retry"/>
+  <command id="downloadsCmd_openReferrer"/>
+  <command id="downloadsCmd_clearDownloads"/>
+</commandset>
+
+
+<stringbundleset id="downloadsStrings"
+  string-download-cancel="&cmd.cancel.label;"
+  string-download-cancel-description="&cancelDownload.label;"
+  string-download-open-file-description="&openFile.label;"
+  string-download-open-or-remove-file="&cmd.chooseOpen.label;"
+  string-download-remove-file="&cmd.removeFile.label;"
+  string-download-remove-file-or-allow="&cmd.chooseUnblock.label;"
+  string-download-retry="&cmd.retry.label;"
+  string-download-retry-description="&retryDownload.label;"
+  string-download-show="&cmd.show.label;"
+  string-download-show-description="&cmd.show.label;"
+  string-download-show-more-information-description="&showMoreInformation.label;"
+/>
+
+<menupopup id="downloadsContextMenu" class="download-state">
+  <menuitem command="downloadsCmd_pauseResume"
+            class="downloadPauseMenuItem"
+            label="&cmd.pause.label;"
+            accesskey="&cmd.pause.accesskey;"/>
+  <menuitem command="downloadsCmd_pauseResume"
+            class="downloadResumeMenuItem"
+            label="&cmd.resume.label;"
+            accesskey="&cmd.resume.accesskey;"/>
+  <menuitem command="downloadsCmd_unblock"
+            class="downloadUnblockMenuItem"
+            label="&cmd.unblock2.label;"
+            accesskey="&cmd.unblock2.accesskey;"/>
+  <menuitem command="downloadsCmd_show"
+            class="downloadShowMenuItem"
+            label="&cmd.show.label;"
+            accesskey="&cmd.show.accesskey;"
+            />
+
+  <menuseparator class="downloadCommandsSeparator"/>
+
+  <menuitem command="downloadsCmd_openReferrer"
+            label="&cmd.goToDownloadPage.label;"
+            accesskey="&cmd.goToDownloadPage.accesskey;"/>
+  <menuitem command="cmd_copy"
+            label="&cmd.copyDownloadLink.label;"
+            accesskey="&cmd.copyDownloadLink.accesskey;"/>
+
+  <menuseparator/>
+
+  <menuitem command="cmd_delete"
+            class="downloadRemoveFromHistoryMenuItem"
+            label="&cmd.removeFromHistory.label;"
+            accesskey="&cmd.removeFromHistory.accesskey;"/>
+  <menuitem command="downloadsCmd_clearDownloads"
+            label="&cmd.clearDownloads.label;"
+            accesskey="&cmd.clearDownloads.accesskey;"/>
+</menupopup>
+</window>

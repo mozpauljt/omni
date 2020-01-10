@@ -58,7 +58,7 @@ function convertToList(results, source) {
     for (const column of results[line]) {
       positions.push({
         line: Number(line),
-        column: column,
+        column,
         sourceId: id,
         sourceUrl: url
       });
@@ -146,7 +146,8 @@ async function _setBreakpointPositions(cx, sourceId, line, thunkArgs) {
 
     const actorColumns = await Promise.all((0, _selectors.getSourceActorsForSource)(getState(), generatedSource.id).map(actor => dispatch((0, _sourceActors.loadSourceActorBreakpointColumns)({
       id: actor.id,
-      line
+      line,
+      cx
     }))));
 
     for (const columns of actorColumns) {
@@ -168,7 +169,7 @@ async function _setBreakpointPositions(cx, sourceId, line, thunkArgs) {
   dispatch({
     type: "ADD_BREAKPOINT_POSITIONS",
     cx,
-    source: source,
+    source,
     positions
   });
 }

@@ -132,12 +132,8 @@ var gIdentityHandler = {
   },
 
   get _hasInsecureLoginForms() {
-    // checks if the page has been flagged for an insecure login. Also checks
-    // if the pref to degrade the UI is set to true
-    return (
-      LoginManagerParent.hasInsecureLoginForms(gBrowser.selectedBrowser) &&
-      Services.prefs.getBoolPref("security.insecure_password.ui.enabled")
-    );
+    // This function will be deleted in bug 1567827.
+    return false;
   },
 
   // smart getters
@@ -292,6 +288,11 @@ var gIdentityHandler = {
   get _geoSharingIcon() {
     delete this._geoSharingIcon;
     return (this._geoSharingIcon = document.getElementById("geo-sharing-icon"));
+  },
+
+  get _xrSharingIcon() {
+    delete this._xrSharingIcon;
+    return (this._xrSharingIcon = document.getElementById("xr-sharing-icon"));
   },
 
   get _webRTCSharingIcon() {
@@ -576,6 +577,7 @@ var gIdentityHandler = {
     this._webRTCSharingIcon.removeAttribute("paused");
     this._webRTCSharingIcon.removeAttribute("sharing");
     this._geoSharingIcon.removeAttribute("sharing");
+    this._xrSharingIcon.removeAttribute("sharing");
 
     if (this._sharingState) {
       if (
@@ -594,6 +596,9 @@ var gIdentityHandler = {
       }
       if (this._sharingState.geo) {
         this._geoSharingIcon.setAttribute("sharing", this._sharingState.geo);
+      }
+      if (this._sharingState.xr) {
+        this._xrSharingIcon.setAttribute("sharing", this._sharingState.xr);
       }
     }
 
@@ -681,10 +686,9 @@ var gIdentityHandler = {
    */
   _hasCustomRoot() {
     let issuerCert = null;
-    // Walk the whole chain to get the last cert.
-    // eslint-disable-next-line no-empty
-    for (issuerCert of this._secInfo.succeededCertChain.getEnumerator()) {
-    }
+    issuerCert = this._secInfo.succeededCertChain[
+      this._secInfo.succeededCertChain.length - 1
+    ];
 
     return !issuerCert.isBuiltInRoot;
   },
@@ -1170,29 +1174,19 @@ var gIdentityHandler = {
     }
 
     // If we are in DOM full-screen, exit it before showing the identity popup
+    // (see bug 1557041)
     if (document.fullscreen) {
       // Open the identity popup after DOM full-screen exit
       // We need to wait for the exit event and after that wait for the fullscreen exit transition to complete
       // If we call _openPopup before the full-screen transition ends it can get cancelled
       // Only waiting for painted is not sufficient because we could still be in the full-screen enter transition.
-      let exitedEventReceived = false;
-      window.messageManager.addMessageListener(
-        "DOMFullscreen:Painted",
-        function listener() {
-          if (!exitedEventReceived) {
-            return;
-          }
-          window.messageManager.removeMessageListener(
-            "DOMFullscreen:Painted",
-            listener
-          );
-          gIdentityHandler._openPopup(event);
-        }
-      );
+      this._exitedEventReceived = false;
+      this._event = event;
+      Services.obs.addObserver(this, "fullscreen-painted");
       window.addEventListener(
         "MozDOMFullscreen:Exited",
         () => {
-          exitedEventReceived = true;
+          this._exitedEventReceived = true;
         },
         { once: true }
       );
@@ -1260,16 +1254,29 @@ var gIdentityHandler = {
   },
 
   observe(subject, topic, data) {
-    // Exclude permissions which do not appear in the UI in order to avoid
-    // doing extra work here.
-    if (
-      topic == "perm-changed" &&
-      subject &&
-      SitePermissions.listPermissions().includes(
-        subject.QueryInterface(Ci.nsIPermission).type
-      )
-    ) {
-      this.refreshIdentityBlock();
+    switch (topic) {
+      case "perm-changed": {
+        // Exclude permissions which do not appear in the UI in order to avoid
+        // doing extra work here.
+        if (
+          subject &&
+          SitePermissions.listPermissions().includes(
+            subject.QueryInterface(Ci.nsIPermission).type
+          )
+        ) {
+          this.refreshIdentityBlock();
+        }
+        break;
+      }
+      case "fullscreen-painted": {
+        if (subject != window || !this._exitedEventReceived) {
+          return;
+        }
+        Services.obs.removeObserver(this, "fullscreen-painted");
+        this._openPopup(this._event);
+        delete this._event;
+        break;
+      }
     }
   },
 
@@ -1303,6 +1310,9 @@ var gIdentityHandler = {
     dt.setData("text/plain", value);
     dt.setData("text/html", htmlString);
     dt.setDragImage(canvas, 16, 16);
+
+    // Don't cover potential drop targets on the toolbars or in content.
+    gURLBar.view.close();
   },
 
   onLocationChange() {
@@ -1337,6 +1347,20 @@ var gIdentityHandler = {
       } else {
         permissions.push({
           id: "geo",
+          state: SitePermissions.ALLOW,
+          scope: SitePermissions.SCOPE_REQUEST,
+          sharingState: true,
+        });
+      }
+    }
+
+    if (this._sharingState && this._sharingState.xr) {
+      let xrPermission = permissions.find(perm => perm.id === "xr");
+      if (xrPermission) {
+        xrPermission.sharingState = true;
+      } else {
+        permissions.push({
+          id: "xr",
           state: SitePermissions.ALLOW,
           scope: SitePermissions.SCOPE_REQUEST,
           sharingState: true,
@@ -1571,9 +1595,12 @@ var gIdentityHandler = {
       return container;
     }
 
-    if (aPermission.id == "geo") {
+    if (aPermission.id == "geo" || aPermission.id == "xr") {
       let block = document.createXULElement("vbox");
-      block.setAttribute("id", "identity-popup-geo-container");
+      block.setAttribute(
+        "id",
+        "identity-popup-" + aPermission.id + "-container"
+      );
 
       let button = this._createPermissionClearButton(aPermission, block);
       container.appendChild(button);
@@ -1607,8 +1634,8 @@ var gIdentityHandler = {
       let browser = gBrowser.selectedBrowser;
       this._permissionList.removeChild(container);
       if (aPermission.sharingState) {
-        if (aPermission.id === "geo") {
-          let origins = browser.getDevicePermissionOrigins("geo");
+        if (aPermission.id === "geo" || aPermission.id === "xr") {
+          let origins = browser.getDevicePermissionOrigins(aPermission.id);
           for (let origin of origins) {
             let principal = Services.scriptSecurityManager.createContentPrincipalFromOrigin(
               origin
@@ -1663,6 +1690,8 @@ var gIdentityHandler = {
 
       if (aPermission.id === "geo") {
         gBrowser.updateBrowserSharing(browser, { geo: false });
+      } else if (aPermission.id === "xr") {
+        gBrowser.updateBrowserSharing(browser, { xr: false });
       }
     });
 

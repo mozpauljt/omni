@@ -10,7 +10,7 @@ const {
   FrontClassWithSpec,
   registerFront,
 } = require("devtools/shared/protocol");
-const { TargetMixin } = require("./target-mixin");
+const { TargetMixin } = require("devtools/shared/fronts/targets/target-mixin");
 
 class BrowsingContextTargetFront extends TargetMixin(
   FrontClassWithSpec(browsingContextTargetSpec)
@@ -33,6 +33,7 @@ class BrowsingContextTargetFront extends TargetMixin(
 
   form(json) {
     this.actorID = json.actor;
+    this.browsingContextID = json.browsingContextID;
 
     // Save the full form for Target class usage.
     // Do not use `form` name to avoid colliding with protocol.js's `form` method
@@ -127,13 +128,18 @@ class BrowsingContextTargetFront extends TargetMixin(
     return response;
   }
 
+  listRemoteFrames() {
+    return this.client.mainRoot.listRemoteFrames(this.browsingContextID);
+  }
+
   async detach() {
     let response;
     try {
       response = await super.detach();
     } catch (e) {
       console.warn(
-        `Error while detaching the browsing context target front: ${e.message}`
+        "Error while detaching the browsing context target front:",
+        e
       );
     }
 

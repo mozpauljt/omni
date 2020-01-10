@@ -59,7 +59,7 @@ class Tab extends _react.PureComponent {
     const tabURLs = tabSources.map(t => t.url);
     const otherTabURLs = otherTabs.map(t => t.url);
 
-    if (!sourceTab) {
+    if (!sourceTab || !selectedSource) {
       return;
     }
 
@@ -186,7 +186,7 @@ const mapStateToProps = (state, {
   return {
     cx: (0, _selectors.getContext)(state),
     tabSources: (0, _selectors.getSourcesForTabs)(state),
-    selectedSource: selectedSource,
+    selectedSource,
     activeSearch: (0, _selectors.getActiveSearch)(state),
     hasSiblingOfSameName: (0, _selectors.getHasSiblingOfSameName)(state, source)
   };

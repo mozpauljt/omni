@@ -37,12 +37,6 @@ loader.lazyRequireGetter(
   "devtools/server/actors/memory",
   true
 );
-loader.lazyRequireGetter(
-  this,
-  "PromisesActor",
-  "devtools/server/actors/promises",
-  true
-);
 
 const ContentProcessTargetActor = ActorClassWithSpec(contentProcessTargetSpec, {
   initialize: function(connection) {
@@ -132,19 +126,12 @@ const ContentProcessTargetActor = ActorClassWithSpec(contentProcessTargetSpec, {
       this.memoryActor = new MemoryActor(this.conn, this);
       this.manage(this.memoryActor);
     }
-    // Promises actor is being tested by xpcshell test, which uses the content process
-    // target actor. But this actor isn't being used outside of tests yet.
-    if (!this._promisesActor) {
-      this._promisesActor = new PromisesActor(this.conn, this);
-      this.manage(this._promisesActor);
-    }
 
     return {
       actor: this.actorID,
       consoleActor: this._consoleActor.actorID,
       threadActor: this.threadActor.actorID,
       memoryActor: this.memoryActor.actorID,
-      promisesActor: this._promisesActor.actorID,
 
       traits: {
         networkMonitor: false,
@@ -152,30 +139,36 @@ const ContentProcessTargetActor = ActorClassWithSpec(contentProcessTargetSpec, {
     };
   },
 
-  listWorkers: function() {
+  ensureWorkerList() {
     if (!this._workerList) {
       this._workerList = new WorkerTargetActorList(this.conn, {});
     }
-    return this._workerList.getList().then(actors => {
-      const pool = new Pool(this.conn);
-      for (const actor of actors) {
-        pool.manage(actor);
-      }
+    return this._workerList;
+  },
 
-      // Do not destroy the pool before transfering ownership to the newly created
-      // pool, so that we do not accidentally destroy actors that are still in use.
-      if (this._workerTargetActorPool) {
-        this._workerTargetActorPool.destroy();
-      }
+  listWorkers: function() {
+    return this.ensureWorkerList()
+      .getList()
+      .then(actors => {
+        const pool = new Pool(this.conn);
+        for (const actor of actors) {
+          pool.manage(actor);
+        }
 
-      this._workerTargetActorPool = pool;
-      this._workerList.onListChanged = this._onWorkerListChanged;
+        // Do not destroy the pool before transfering ownership to the newly created
+        // pool, so that we do not accidentally destroy actors that are still in use.
+        if (this._workerTargetActorPool) {
+          this._workerTargetActorPool.destroy();
+        }
 
-      return {
-        from: this.actorID,
-        workers: actors,
-      };
-    });
+        this._workerTargetActorPool = pool;
+        this._workerList.onListChanged = this._onWorkerListChanged;
+
+        return {
+          from: this.actorID,
+          workers: actors,
+        };
+      });
   },
 
   _onWorkerListChanged: function() {
@@ -183,12 +176,17 @@ const ContentProcessTargetActor = ActorClassWithSpec(contentProcessTargetSpec, {
     this._workerList.onListChanged = null;
   },
 
+  pauseMatchingServiceWorkers(request) {
+    this.ensureWorkerList().workerPauser.setPauseServiceWorkers(request.origin);
+  },
+
   destroy: function() {
     Actor.prototype.destroy.call(this);
 
     // Tell the live lists we aren't watching any more.
     if (this._workerList) {
-      this._workerList.onListChanged = null;
+      this._workerList.destroy();
+      this._workerList = null;
     }
 
     if (this._sources) {

@@ -78,7 +78,7 @@ class ToolboxToolbar extends Component {
         })
       ),
       // Current docking type. Typically one of the position values in
-      // |hostTypes| but this is not always the case (e.g. when it is "custom").
+      // |hostTypes| but this is not always the case (e.g. for "browsertoolbox").
       currentHostType: PropTypes.string,
       // Are docking options enabled? They are not enabled in certain situations
       // like when the toolbox is opened in a tab.
@@ -266,7 +266,7 @@ class ToolboxToolbar extends Component {
         id,
         disabled,
         menuId: id + "-panel",
-        doc: toolbox.doc,
+        toolboxDoc: toolbox.doc,
         className: `devtools-button command-button ${
           isChecked ? "checked" : ""
         }`,
@@ -402,7 +402,7 @@ class ToolboxToolbar extends Component {
       {
         id: meatballMenuButtonId,
         menuId: meatballMenuButtonId + "-panel",
-        doc: toolbox.doc,
+        toolboxDoc: toolbox.doc,
         onFocus: () => focusButton(meatballMenuButtonId),
         className: "devtools-button",
         title: L10N.getStr("toolbox.meatballMenu.button.tooltip"),

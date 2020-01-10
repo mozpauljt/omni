@@ -19,7 +19,7 @@ var _actions = _interopRequireDefault(require("../../actions/index"));
 
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
 loader.lazyRequireGetter(this, "_expressions", "devtools/client/debugger/src/utils/expressions");
-loader.lazyRequireGetter(this, "_firefox", "devtools/client/debugger/src/client/firefox");
+loader.lazyRequireGetter(this, "_evaluationResult", "devtools/client/debugger/src/utils/evaluation-result");
 loader.lazyRequireGetter(this, "_Button", "devtools/client/debugger/src/components/shared/Button/index");
 
 var _lodash = require("devtools/client/shared/vendor/lodash");
@@ -52,7 +52,9 @@ class Expressions extends _react.Component {
     });
 
     _defineProperty(this, "handleChange", e => {
-      const target = e.target;
+      const {
+        target
+      } = e;
 
       if (_prefs.features.autocompleteExpression) {
         this.findAutocompleteMatches(target.value, target.selectionStart);
@@ -144,21 +146,26 @@ class Expressions extends _react.Component {
         return;
       }
 
-      const {
-        value
-      } = (0, _expressions.getValue)(expression);
+      let value = (0, _expressions.getValue)(expression);
+      let front = null;
+
+      if (value && value.unavailable !== true) {
+        value = (0, _evaluationResult.getGrip)(value);
+        front = (0, _evaluationResult.getFront)(value);
+      }
+
       const root = {
         name: expression.input,
         path: input,
         contents: {
-          value
+          value,
+          front
         }
       };
       return _react.default.createElement("li", {
         className: "expression-container",
         key: input,
-        title: expression.input,
-        onDoubleClick: (items, options) => this.editExpression(expression, index)
+        title: expression.input
       }, _react.default.createElement("div", {
         className: "expression-content"
       }, _react.default.createElement(ObjectInspector, {
@@ -166,7 +173,13 @@ class Expressions extends _react.Component {
         autoExpandDepth: 0,
         disableWrap: true,
         openLink: openLink,
-        createObjectClient: grip => (0, _firefox.createObjectClient)(grip),
+        onDoubleClick: (items, {
+          depth
+        }) => {
+          if (depth === 0) {
+            this.editExpression(expression, index);
+          }
+        },
         onDOMNodeClick: grip => openElementInInspector(grip),
         onInspectIconClick: grip => openElementInInspector(grip),
         onDOMNodeMouseOver: grip => highlightDomElement(grip),
@@ -189,17 +202,9 @@ class Expressions extends _react.Component {
 
   componentDidMount() {
     const {
-      cx,
-      expressions,
-      evaluateExpressions,
       showInput
-    } = this.props;
-
-    if (expressions.length > 0) {
-      evaluateExpressions(cx);
-    } // Ensures that the input is focused when the "+"
+    } = this.props; // Ensures that the input is focused when the "+"
     // is clicked while the panel is collapsed
-
 
     if (showInput && this._input) {
       this._input.focus();
@@ -391,7 +396,6 @@ var _default = (0, _connect.connect)(mapStateToProps, {
   clearAutocomplete: _actions.default.clearAutocomplete,
   addExpression: _actions.default.addExpression,
   clearExpressionError: _actions.default.clearExpressionError,
-  evaluateExpressions: _actions.default.evaluateExpressions,
   updateExpression: _actions.default.updateExpression,
   deleteExpression: _actions.default.deleteExpression,
   openLink: _actions.default.openLink,

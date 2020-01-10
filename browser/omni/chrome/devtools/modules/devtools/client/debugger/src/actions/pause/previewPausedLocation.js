@@ -23,7 +23,9 @@ function previewPausedLocation(location) {
       return;
     }
 
-    const sourceLocation = { ...location,
+    const sourceLocation = {
+      line: location.line,
+      column: location.column,
       sourceId: source.id
     };
     dispatch((0, _sources.selectLocation)(cx, sourceLocation));

@@ -13,7 +13,6 @@ loader.lazyRequireGetter(this, "_connect", "devtools/client/debugger/src/utils/c
 
 var _actions = _interopRequireDefault(require("../../actions/index"));
 
-loader.lazyRequireGetter(this, "_firefox", "devtools/client/debugger/src/client/firefox");
 loader.lazyRequireGetter(this, "_prefs", "devtools/client/debugger/src/utils/prefs");
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
 loader.lazyRequireGetter(this, "_scopes", "devtools/client/debugger/src/utils/pause/scopes/index");
@@ -32,14 +31,14 @@ const {
 } = _devtoolsReps.objectInspector;
 
 class Scopes extends _react.PureComponent {
-  constructor(props, ...args) {
+  constructor(props) {
     const {
       why,
       selectedFrame,
       originalFrameScopes,
       generatedFrameScopes
     } = props;
-    super(props, ...args);
+    super(props);
 
     _defineProperty(this, "onToggleMapScopes", () => {
       this.props.toggleMapScopes();
@@ -51,7 +50,7 @@ class Scopes extends _react.PureComponent {
         removeWatchpoint
       } = this.props;
 
-      if (!_prefs.features.watchpoints || !item.parent || !item.parent.contents || !item.contents.configurable) {
+      if (!_prefs.features.watchpoints || !item.parent || !item.contents.configurable) {
         return;
       }
 
@@ -91,6 +90,23 @@ class Scopes extends _react.PureComponent {
       };
       const menuItems = [watchpointsSubmenuItem];
       (0, _devtoolsContextmenu.showMenu)(event, menuItems);
+    });
+
+    _defineProperty(this, "renderWatchpointButton", item => {
+      const {
+        removeWatchpoint
+      } = this.props;
+
+      if (!item || !item.contents || !item.contents.watchpoint || typeof L10N === "undefined") {
+        return null;
+      }
+
+      const watchpoint = item.contents.watchpoint;
+      return _react.default.createElement("button", {
+        className: `remove-${watchpoint}-watchpoint`,
+        title: L10N.getStr("watchpoints.removeWatchpointTooltip"),
+        onClick: () => removeWatchpoint(item)
+      });
     });
 
     this.state = {
@@ -153,14 +169,14 @@ class Scopes extends _react.PureComponent {
         disableWrap: true,
         dimTopLevelWindow: true,
         openLink: openLink,
-        createObjectClient: grip => (0, _firefox.createObjectClient)(grip),
         onDOMNodeClick: grip => openElementInInspector(grip),
         onInspectIconClick: grip => openElementInInspector(grip),
         onDOMNodeMouseOver: grip => highlightDomElement(grip),
         onDOMNodeMouseOut: grip => unHighlightDomElement(grip),
         onContextMenu: this.onContextMenu,
         setExpanded: (path, expand) => setExpandedScope(cx, path, expand),
-        initiallyExpanded: initiallyExpanded
+        initiallyExpanded: initiallyExpanded,
+        renderItemActions: this.renderWatchpointButton
       }));
     }
 

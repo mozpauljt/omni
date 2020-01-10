@@ -89,10 +89,10 @@ class SourceFooter extends _react.PureComponent {
 
     if (!selectedSource.content && selectedSource.isPrettyPrinted) {
       return _react.default.createElement("div", {
-        className: "loader",
+        className: "action",
         key: "pretty-loader"
       }, _react.default.createElement(_AccessibleImage.default, {
-        className: "loader"
+        className: "loader spin"
       }));
     }
 
@@ -140,7 +140,7 @@ class SourceFooter extends _react.PureComponent {
       onClick: () => toggleBlackBox(cx, selectedSource),
       className: (0, _classnames.default)("action", type, {
         active: sourceLoaded,
-        blackboxed: blackboxed
+        blackboxed
       }),
       key: type,
       title: tooltip,

@@ -43,11 +43,12 @@ exports.canPrettyPrintSource = canPrettyPrintSource;
 exports.getBreakpointPositions = getBreakpointPositions;
 exports.getBreakpointPositionsForSource = getBreakpointPositionsForSource;
 exports.hasBreakpointPositions = hasBreakpointPositions;
+exports.getBreakpointPositionsForLine = getBreakpointPositionsForLine;
 exports.hasBreakpointPositionsForLine = hasBreakpointPositionsForLine;
 exports.getBreakpointPositionsForLocation = getBreakpointPositionsForLocation;
 exports.getBreakableLines = getBreakableLines;
 exports.isSourceLoadingOrLoaded = isSourceLoadingOrLoaded;
-exports.default = exports.getSelectedBreakableLines = exports.getDisplayedSources = exports.getSelectedSourceWithContent = exports.getSelectedSource = exports.getSelectedLocation = void 0;
+exports.default = exports.getSelectedBreakableLines = exports.getDisplayedSources = exports.getSelectedSourceWithContent = exports.getSelectedSource = exports.getSelectedLocation = exports.resourceAsSourceBase = void 0;
 
 var _reselect = require("devtools/client/shared/vendor/reselect");
 
@@ -60,6 +61,7 @@ var _devtoolsSourceMap = require("devtools/client/shared/source-map/index.js");
 
 loader.lazyRequireGetter(this, "_prefs", "devtools/client/debugger/src/utils/prefs");
 loader.lazyRequireGetter(this, "_sourceActors", "devtools/client/debugger/src/reducers/source-actors");
+loader.lazyRequireGetter(this, "_threads", "devtools/client/debugger/src/reducers/threads");
 
 var _lodash = require("devtools/client/shared/vendor/lodash");
 
@@ -84,7 +86,7 @@ function initialSourcesState() {
     selectedLocation: undefined,
     pendingSelectedLocation: _prefs.prefs.pendingSelectedLocation,
     projectDirectoryRoot: _prefs.prefs.projectDirectoryRoot,
-    chromeAndExtenstionsEnabled: _prefs.prefs.chromeAndExtenstionsEnabled,
+    chromeAndExtensionsEnabled: _prefs.prefs.chromeAndExtensionsEnabled,
     focusedItem: null
   };
 }
@@ -135,7 +137,8 @@ function update(state = initialSourcesState(), action) {
     case "SET_PENDING_SELECTED_LOCATION":
       location = {
         url: action.url,
-        line: action.line
+        line: action.line,
+        column: action.column
       };
       _prefs.prefs.pendingSelectedLocation = location;
       return { ...state,
@@ -210,6 +213,7 @@ const resourceAsSourceBase = (0, _resource.memoizeResourceShallow)(({
   content,
   ...source
 }) => source);
+exports.resourceAsSourceBase = resourceAsSourceBase;
 const resourceAsSourceWithContent = (0, _resource.memoizeResourceShallow)(({
   content,
   ...source
@@ -320,25 +324,22 @@ function removeSourceActors(state, action) {
 
 function updateProjectDirectoryRoot(state, root) {
   _prefs.prefs.projectDirectoryRoot = root;
-  return updateRootRelativeValues({ ...state,
-    projectDirectoryRoot: root
-  });
+  return updateRootRelativeValues(state, undefined, root);
 }
 
-function updateRootRelativeValues(state, sources) {
-  const ids = sources ? sources.map(source => source.id) : (0, _resource.getResourceIds)(state.sources);
-  state = { ...state
+function updateRootRelativeValues(state, sources, projectDirectoryRoot = state.projectDirectoryRoot) {
+  const wrappedIdsOrIds = sources ? sources : (0, _resource.getResourceIds)(state.sources);
+  state = { ...state,
+    projectDirectoryRoot
   };
-  const relativeURLUpdates = [];
-
-  for (const id of ids) {
+  const relativeURLUpdates = wrappedIdsOrIds.map(wrappedIdOrId => {
+    const id = typeof wrappedIdOrId === "string" ? wrappedIdOrId : wrappedIdOrId.id;
     const source = (0, _resource.getResource)(state.sources, id);
-    relativeURLUpdates.push({
+    return {
       id,
       relativeUrl: (0, _source.getRelativeUrl)(source, state.projectDirectoryRoot)
-    });
-  }
-
+    };
+  });
   state.sources = (0, _resource.updateResources)(state.sources, relativeURLUpdates);
   return state;
 }
@@ -638,10 +639,11 @@ function getProjectDirectoryRoot(state) {
 const queryAllDisplayedSources = (0, _resource.makeReduceQuery)((0, _resource.makeMapWithArgs)((resource, ident, {
   projectDirectoryRoot,
   chromeAndExtensionsEnabled,
-  debuggeeIsWebExtension
+  debuggeeIsWebExtension,
+  threadActors
 }) => ({
   id: resource.id,
-  displayed: (0, _source.underRoot)(resource, projectDirectoryRoot) && (!resource.isExtension || chromeAndExtensionsEnabled || debuggeeIsWebExtension)
+  displayed: (0, _source.underRoot)(resource, projectDirectoryRoot, threadActors) && (!resource.isExtension || chromeAndExtensionsEnabled || debuggeeIsWebExtension)
 })), items => items.reduce((acc, {
   id,
   displayed
@@ -656,8 +658,9 @@ const queryAllDisplayedSources = (0, _resource.makeReduceQuery)((0, _resource.ma
 function getAllDisplayedSources(state) {
   return queryAllDisplayedSources(state.sources.sources, {
     projectDirectoryRoot: state.sources.projectDirectoryRoot,
-    chromeAndExtensionsEnabled: state.sources.chromeAndExtenstionsEnabled,
-    debuggeeIsWebExtension: state.threads.isWebExtension
+    chromeAndExtensionsEnabled: state.sources.chromeAndExtensionsEnabled,
+    debuggeeIsWebExtension: state.threads.isWebExtension,
+    threadActors: [(0, _threads.getMainThread)(state).actor, ...(0, _threads.getThreads)(state).map(t => t.actor)]
   });
 }
 
@@ -755,9 +758,13 @@ function hasBreakpointPositions(state, sourceId) {
   return !!getBreakpointPositionsForSource(state, sourceId);
 }
 
-function hasBreakpointPositionsForLine(state, sourceId, line) {
+function getBreakpointPositionsForLine(state, sourceId, line) {
   const positions = getBreakpointPositionsForSource(state, sourceId);
-  return !!(positions && positions[line]);
+  return positions && positions[line];
+}
+
+function hasBreakpointPositionsForLine(state, sourceId, line) {
+  return !!getBreakpointPositionsForLine(state, sourceId, line);
 }
 
 function getBreakpointPositionsForLocation(state, location) {

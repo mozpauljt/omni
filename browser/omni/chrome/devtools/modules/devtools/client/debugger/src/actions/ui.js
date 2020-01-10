@@ -19,6 +19,7 @@ exports.closeConditionalPanel = closeConditionalPanel;
 exports.clearProjectDirectoryRoot = clearProjectDirectoryRoot;
 exports.setProjectDirectoryRoot = setProjectDirectoryRoot;
 exports.updateViewport = updateViewport;
+exports.updateCursorPosition = updateCursorPosition;
 exports.setOrientation = setOrientation;
 exports.copyToClipboard = copyToClipboard;
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
@@ -222,14 +223,13 @@ function setProjectDirectoryRoot(cx, newRoot) {
     dispatch,
     getState
   }) => {
-    // Remove the thread actor ID from the root path
     const threadActor = (0, _selectors.startsWithThreadActor)(getState(), newRoot);
+    let curRoot = (0, _selectors.getProjectDirectoryRoot)(getState()); // Remove the thread actor ID from the root path
 
     if (threadActor) {
       newRoot = newRoot.slice(threadActor.length + 1);
+      curRoot = curRoot.slice(threadActor.length + 1);
     }
-
-    const curRoot = (0, _selectors.getProjectDirectoryRoot)(getState());
 
     if (newRoot && curRoot) {
       const newRootArr = newRoot.replace(/\/+/g, "/").split("/");
@@ -253,6 +253,13 @@ function updateViewport() {
   return {
     type: "SET_VIEWPORT",
     viewport: (0, _editor.getLocationsInViewport)((0, _editor.getEditor)())
+  };
+}
+
+function updateCursorPosition(cursorPosition) {
+  return {
+    type: "SET_CURSOR_POSITION",
+    cursorPosition
   };
 }
 

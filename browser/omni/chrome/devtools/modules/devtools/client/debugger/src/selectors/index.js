@@ -14,6 +14,7 @@ var _exportNames = {
   getClosestBreakpoint: true,
   getBreakpointAtLocation: true,
   getBreakpointsAtLine: true,
+  getClosestBreakpointPosition: true,
   getVisibleBreakpoints: true,
   getFirstVisibleBreakpoints: true,
   inComponent: true,
@@ -25,7 +26,8 @@ var _exportNames = {
   shouldPauseOnAnyXHR: true,
   getSelectedFrame: true,
   getSelectedFrames: true,
-  getVisibleSelectedFrame: true
+  getVisibleSelectedFrame: true,
+  getFramePositions: true
 };
 Object.defineProperty(exports, "getSourceActor", {
   enumerable: true,
@@ -85,6 +87,12 @@ Object.defineProperty(exports, "getBreakpointsAtLine", {
   enumerable: true,
   get: function () {
     return _breakpointAtLocation.getBreakpointsAtLine;
+  }
+});
+Object.defineProperty(exports, "getClosestBreakpointPosition", {
+  enumerable: true,
+  get: function () {
+    return _breakpointAtLocation.getClosestBreakpointPosition;
   }
 });
 Object.defineProperty(exports, "getVisibleBreakpoints", {
@@ -157,6 +165,12 @@ Object.defineProperty(exports, "getVisibleSelectedFrame", {
   enumerable: true,
   get: function () {
     return _pause2.getVisibleSelectedFrame;
+  }
+});
+Object.defineProperty(exports, "getFramePositions", {
+  enumerable: true,
+  get: function () {
+    return _pause2.getFramePositions;
   }
 });
 loader.lazyRequireGetter(this, "_expressions", "devtools/client/debugger/src/reducers/expressions");

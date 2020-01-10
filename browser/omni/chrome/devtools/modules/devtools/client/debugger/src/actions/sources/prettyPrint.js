@@ -40,7 +40,7 @@ async function prettyPrintSource(sourceMaps, generatedSource, content, actors) {
     mappings
   } = await (0, _prettyPrint.prettyPrint)({
     text: content.value,
-    url: url
+    url
   });
   await sourceMaps.applySourceMap(generatedSource.id, url, code, mappings); // The source map URL service used by other devtools listens to changes to
   // sources based on their actor IDs, so apply the mapping there too.
@@ -76,27 +76,28 @@ function createPrettySource(cx, sourceId) {
       introductionUrl: null,
       introductionType: undefined,
       isExtension: false,
-      extensionName: null
+      extensionName: null,
+      isOriginal: true
     };
     dispatch({
       type: "ADD_SOURCE",
       cx,
       source: prettySource
     });
-    await dispatch((0, _select.selectSource)(cx, prettySource.id));
+    await dispatch((0, _select.selectSource)(cx, id));
     return prettySource;
   };
 }
 
-function selectPrettyLocation(cx, prettySource) {
+function selectPrettyLocation(cx, prettySource, generatedLocation) {
   return async ({
     dispatch,
     sourceMaps,
     getState
   }) => {
-    let location = (0, _selectors.getSelectedLocation)(getState());
+    let location = generatedLocation ? generatedLocation : (0, _selectors.getSelectedLocation)(getState());
 
-    if (location) {
+    if (location && location.line >= 1) {
       location = await sourceMaps.getOriginalLocation(location);
       return dispatch((0, _sources.selectSpecificLocation)(cx, { ...location,
         sourceId: prettySource.id
@@ -149,8 +150,9 @@ function togglePrettyPrint(cx, sourceId) {
       return dispatch(selectPrettyLocation(cx, prettySource));
     }
 
+    const selectedLocation = (0, _selectors.getSelectedLocation)(getState());
     const newPrettySource = await dispatch(createPrettySource(cx, sourceId));
-    await dispatch(selectPrettyLocation(cx, newPrettySource));
+    dispatch(selectPrettyLocation(cx, newPrettySource, selectedLocation));
     const threadcx = (0, _selectors.getThreadContext)(getState());
     await dispatch((0, _pause.mapFrames)(threadcx));
     await dispatch((0, _symbols.setSymbols)({

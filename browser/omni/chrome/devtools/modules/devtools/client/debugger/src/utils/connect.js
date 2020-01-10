@@ -3,19 +3,12 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.connect = connect;
+exports.connect = void 0;
 
 var _reactRedux = require("devtools/client/shared/vendor/react-redux");
-
-var React = _interopRequireWildcard(require("devtools/client/shared/vendor/react"));
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-function connect(mapStateToProps, mapDispatchToProps, mergeProps, opts) {
-  // TODO: Bug 1572214 - We should use the standard type definitions directly.
-  // $FlowFixMe
-  return (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps, null, opts);
-}
+const connect = _reactRedux.connect;
+exports.connect = connect;

@@ -9,14 +9,13 @@ const reducers = require("devtools/client/inspector/reducers");
 
 module.exports = services =>
   createStore(reducers, {
-    disableTask: true,
     // Enable log middleware in tests
     shouldLog: true,
     thunkOptions: {
       // Needed for the ObjectInspector
       client: {
-        createObjectClient: services && services.createObjectClient,
-        createLongStringClient: services && services.createLongStringClient,
+        createObjectFront: services && services.createObjectFront,
+        createLongStringFront: services && services.createLongStringFront,
         releaseActor: services && services.releaseActor,
       },
     },

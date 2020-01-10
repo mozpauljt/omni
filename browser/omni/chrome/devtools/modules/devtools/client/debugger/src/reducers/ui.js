@@ -13,6 +13,7 @@ exports.getConditionalPanelLocation = getConditionalPanelLocation;
 exports.getLogPointStatus = getLogPointStatus;
 exports.getOrientation = getOrientation;
 exports.getViewport = getViewport;
+exports.getCursorPosition = getCursorPosition;
 exports.getInlinePreview = getInlinePreview;
 exports.default = exports.createUIState = void 0;
 loader.lazyRequireGetter(this, "_prefs", "devtools/client/debugger/src/utils/prefs");
@@ -37,6 +38,7 @@ const createUIState = () => ({
   isLogPoint: false,
   orientation: "horizontal",
   viewport: null,
+  cursorPosition: null,
   inlinePreviewEnabled: _prefs.features.inlinePreview
 });
 
@@ -156,6 +158,13 @@ function update(state = createUIState(), action) {
         };
       }
 
+    case "SET_CURSOR_POSITION":
+      {
+        return { ...state,
+          cursorPosition: action.cursorPosition
+        };
+      }
+
     case "NAVIGATE":
       {
         return { ...state,
@@ -215,6 +224,10 @@ function getOrientation(state) {
 
 function getViewport(state) {
   return state.ui.viewport;
+}
+
+function getCursorPosition(state) {
+  return state.ui.cursorPosition;
 }
 
 function getInlinePreview(state) {

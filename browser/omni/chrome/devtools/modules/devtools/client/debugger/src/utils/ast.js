@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.findBestMatchExpression = findBestMatchExpression;
+exports.positionAfter = positionAfter;
 exports.containsPosition = containsPosition;
 exports.findClosestFunction = findClosestFunction;
 exports.findClosestClass = findClosestClass;
@@ -37,11 +38,17 @@ function findBestMatchExpression(symbols, tokenPos) {
 
     return found;
   }, null);
+} // Check whether location A starts after location B
+
+
+function positionAfter(a, b) {
+  return a.start.line > b.start.line || a.start.line === b.start.line && a.start.column > b.start.column;
 }
 
 function containsPosition(a, b) {
-  const startsBefore = a.start.line < b.line || a.start.line === b.line && a.start.column <= b.column;
-  const endsAfter = a.end.line > b.line || a.end.line === b.line && a.end.column >= b.column;
+  const bColumn = b.column || 0;
+  const startsBefore = a.start.line < b.line || a.start.line === b.line && a.start.column <= bColumn;
+  const endsAfter = a.end.line > b.line || a.end.line === b.line && a.end.column >= bColumn;
   return startsBefore && endsAfter;
 }
 

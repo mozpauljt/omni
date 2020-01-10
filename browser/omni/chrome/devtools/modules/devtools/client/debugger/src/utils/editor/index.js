@@ -205,7 +205,7 @@ function scrollToColumn(codeMirror, line, column) {
     top,
     left
   } = codeMirror.charCoords({
-    line: line,
+    line,
     ch: column
   }, "local");
 
@@ -349,7 +349,7 @@ function getCursorColumn(codeMirror) {
 
 function getTokenEnd(codeMirror, line, column) {
   const token = codeMirror.getTokenAt({
-    line: line,
+    line,
     ch: column + 1
   });
   const tokenString = token.string;

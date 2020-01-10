@@ -20,8 +20,7 @@ function unmountRoot() {
 
 module.exports = {
   bootstrap: ({
-    threadFront,
-    tabTarget,
+    targetList,
     debuggerClient,
     workers,
     panel
@@ -29,11 +28,8 @@ module.exports = {
     tab: {
       clientType: "firefox"
     },
-    tabConnection: {
-      tabTarget,
-      threadFront,
-      debuggerClient
-    }
+    targetList,
+    debuggerClient
   }, workers, panel),
   destroy: () => {
     unmountRoot();

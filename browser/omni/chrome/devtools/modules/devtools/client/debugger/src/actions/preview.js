@@ -8,6 +8,7 @@ exports.setPreview = setPreview;
 exports.clearPreview = clearPreview;
 loader.lazyRequireGetter(this, "_preview", "devtools/client/debugger/src/utils/preview");
 loader.lazyRequireGetter(this, "_ast", "devtools/client/debugger/src/utils/ast");
+loader.lazyRequireGetter(this, "_evaluationResult", "devtools/client/debugger/src/utils/evaluation-result");
 loader.lazyRequireGetter(this, "_getExpression", "devtools/client/debugger/src/utils/editor/get-expression");
 loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
 
@@ -112,18 +113,19 @@ function setPreview(cx, expression, location, tokenPos, cursorPos, target) {
     } = await client.evaluateInFrame(expression, {
       frameId: selectedFrame.id,
       thread
-    }); // Error case occurs for a token that follows an errored evaluation
+    });
+    const resultGrip = (0, _evaluationResult.getGrip)(result); // Error case occurs for a token that follows an errored evaluation
     // https://github.com/firefox-devtools/debugger/pull/8056
     // Accommodating for null allows us to show preview for falsy values
     // line "", false, null, Nan, and more
 
-    if (result === null) {
+    if (resultGrip === null) {
       return;
     } // Handle cases where the result is invisible to the debugger
     // and not possible to preview. Bug 1548256
 
 
-    if (result.class && result.class.includes("InvisibleToDebugger")) {
+    if (resultGrip && resultGrip.class && typeof resultGrip.class === "string" && resultGrip.class.includes("InvisibleToDebugger")) {
       return;
     }
 
@@ -131,7 +133,8 @@ function setPreview(cx, expression, location, tokenPos, cursorPos, target) {
       name: expression,
       path: expression,
       contents: {
-        value: result
+        value: resultGrip,
+        front: (0, _evaluationResult.getFront)(result)
       }
     };
     const properties = await client.loadObjectProperties(root); // The first time a popup is rendered, the mouse should be hovered
@@ -152,7 +155,7 @@ function setPreview(cx, expression, location, tokenPos, cursorPos, target) {
       cx,
       value: {
         expression,
-        result,
+        resultGrip,
         properties,
         root,
         location,

@@ -19,7 +19,6 @@ var _BreakpointHeading = _interopRequireDefault(require("./BreakpointHeading"));
 
 var _actions = _interopRequireDefault(require("../../../actions/index"));
 
-loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
 loader.lazyRequireGetter(this, "_selectedLocation", "devtools/client/debugger/src/utils/selected-location");
 loader.lazyRequireGetter(this, "_createEditor", "devtools/client/debugger/src/utils/editor/create-editor");
 loader.lazyRequireGetter(this, "_breakpoint", "devtools/client/debugger/src/utils/breakpoint/index");
@@ -100,13 +99,11 @@ class Breakpoints extends _react.Component {
       breakpoints,
       i
     }) => {
-      const path = (0, _source.getDisplayPath)(source, sources);
       const sortedBreakpoints = (0, _breakpoint.sortSelectedBreakpoints)(breakpoints, selectedSource);
       return [_react.default.createElement(_BreakpointHeading.default, {
+        key: source.id,
         source: source,
-        sources: sources,
-        path: path,
-        key: source.url
+        sources: sources
       }), ...sortedBreakpoints.map(breakpoint => _react.default.createElement(_Breakpoint.default, {
         breakpoint: breakpoint,
         source: source,

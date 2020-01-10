@@ -88,5 +88,13 @@ async function mapLocation(state, sourceMaps, location) {
 }
 
 function isOriginalSource(source) {
-  return source && (0, _devtoolsSourceMap.isOriginalId)(source.id);
+  if (!source) {
+    return false;
+  }
+
+  if (!source.hasOwnProperty("isOriginal")) {
+    throw new Error("source must have an isOriginal property");
+  }
+
+  return source.isOriginal;
 }

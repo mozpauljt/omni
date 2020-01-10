@@ -67,6 +67,7 @@ class InlinePreviewRow extends _react.PureComponent {
 
     _reactDom.default.render(_react.default.createElement(_react.default.Fragment, null, previews.map(preview => _react.default.createElement(_InlinePreview.default, {
       line: line,
+      key: `${line}-${preview.name}`,
       variable: preview.name,
       value: preview.value,
       openElementInInspector: openElementInInspector,

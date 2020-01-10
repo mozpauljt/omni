@@ -33,7 +33,7 @@ class Breakpoints extends _react.Component {
       editorActions
     } = this.props;
 
-    if (!breakpoints || selectedSource.isBlackBoxed) {
+    if (!selectedSource || !breakpoints || selectedSource.isBlackBoxed) {
       return null;
     }
 

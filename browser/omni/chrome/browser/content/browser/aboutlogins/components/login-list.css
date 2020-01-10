@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 :host {
+  --in-content-box-background-hover: var(--in-content-page-background);
   border-inline-end: 1px solid var(--in-content-box-border-color);
   background-color: var(--in-content-box-background);
   display: flex;
@@ -31,6 +32,10 @@
   color: var(--in-content-text-color) !important;
 }
 
+#login-sort:hover {
+  background-color: var(--in-content-button-background);
+}
+
 #login-sort > option {
   font-weight: normal;
 }
@@ -57,8 +62,7 @@
 :host(.no-logins:not(.create-login-selected)) ol,
 :host(:not(.no-logins)) .intro,
 :host(.create-login-selected) .intro,
-:host(.create-login-selected) .empty-search-message,
-:host(:not(.create-login-selected)) #new-login-list-item {
+:host(.create-login-selected) .empty-search-message {
   display: none;
 }
 
@@ -68,7 +72,7 @@
   padding: 1em;
   max-width: 50ch; /* This should be kept in sync with login-list-item username and title max-width */
   flex-grow: 1;
-  border-bottom: 1px solid var(--in-content-box-border-color);
+  border-bottom: 1px solid var(--in-content-border-color);
 }
 
 .empty-search-message span,
@@ -101,7 +105,7 @@ ol {
   padding-inline-end: 18px;
   padding-inline-start: 12px;
   border-inline-start: 4px solid transparent;
-  border-bottom: 1px solid var(--in-content-box-border-color);
+  border-bottom: 1px solid var(--in-content-border-color);
   user-select: none;
 }
 
@@ -172,11 +176,17 @@ ol {
   display: none;
 }
 
-.breached > .list-item-warning-icon {
+.list-item-warning-icon {
   -moz-context-properties: fill;
   fill: var(--red-90);
   min-width: 16px;
   margin-inline-start: 12px;
+}
+
+@media (-moz-windows-default-theme: 0) {
+  .list-item-warning-icon {
+    fill: currentColor;
+  }
 }
 
 @supports -moz-bool-pref("browser.in-content.dark-mode") {

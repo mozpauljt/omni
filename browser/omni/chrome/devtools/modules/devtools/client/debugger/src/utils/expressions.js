@@ -6,17 +6,21 @@ Object.defineProperty(exports, "__esModule", {
 exports.wrapExpression = wrapExpression;
 exports.getValue = getValue;
 loader.lazyRequireGetter(this, "_indentation", "devtools/client/debugger/src/utils/indentation");
+loader.lazyRequireGetter(this, "_evaluationResult", "devtools/client/debugger/src/utils/evaluation-result");
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
-
+const UNAVAILABLE_GRIP = {
+  unavailable: true
+};
 /*
  * wrap the expression input in a try/catch so that it can be safely
  * evaluated.
  *
  * NOTE: we add line after the expression to protect against comments.
  */
+
 function wrapExpression(input) {
   return (0, _indentation.correctIndentation)(`
     try {
@@ -36,69 +40,41 @@ function isUnavailable(value) {
 }
 
 function getValue(expression) {
-  const value = expression.value;
+  const {
+    value,
+    exception,
+    error
+  } = expression;
+
+  if (error) {
+    return error;
+  }
 
   if (!value) {
-    return {
-      path: expression.from,
-      value: {
-        unavailable: true
-      }
-    };
+    return UNAVAILABLE_GRIP;
   }
 
-  if (value.exception) {
-    if (isUnavailable(value.exception)) {
-      return {
-        value: {
-          unavailable: true
-        }
-      };
+  if (exception) {
+    if (isUnavailable(exception)) {
+      return UNAVAILABLE_GRIP;
     }
 
-    return {
-      path: value.from,
-      value: value.exception
-    };
+    return exception;
   }
 
-  if (value.error) {
-    return {
-      path: value.from,
-      value: value.error
-    };
-  }
+  const valueGrip = (0, _evaluationResult.getGrip)(value.result);
 
-  if (value.result && value.result.class == "Error") {
+  if (valueGrip && typeof valueGrip === "object" && valueGrip.class == "Error") {
+    if (isUnavailable(valueGrip)) {
+      return UNAVAILABLE_GRIP;
+    }
+
     const {
       name,
       message
-    } = value.result.preview;
-
-    if (isUnavailable(value.result)) {
-      return {
-        value: {
-          unavailable: true
-        }
-      };
-    }
-
-    const newValue = `${name}: ${message}`;
-    return {
-      path: value.input,
-      value: newValue
-    };
+    } = valueGrip.preview;
+    return `${name}: ${message}`;
   }
 
-  if (typeof value.result == "object") {
-    return {
-      path: value.result.actor,
-      value: value.result
-    };
-  }
-
-  return {
-    path: value.input,
-    value: value.result
-  };
+  return valueGrip;
 }

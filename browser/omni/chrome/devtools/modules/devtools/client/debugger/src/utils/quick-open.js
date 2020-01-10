@@ -11,13 +11,8 @@ exports.formatSymbols = formatSymbols;
 exports.formatShortcutResults = formatShortcutResults;
 exports.formatSources = formatSources;
 exports.MODIFIERS = void 0;
-
-var _classnames = _interopRequireDefault(require("devtools/client/debugger/dist/vendors").vendored["classnames"]);
-
 loader.lazyRequireGetter(this, "_utils", "devtools/client/debugger/src/utils/utils");
 loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -31,15 +26,14 @@ const MODIFIERS = {
 exports.MODIFIERS = MODIFIERS;
 
 function parseQuickOpenQuery(query) {
-  const modifierPattern = /^@|#|:|\?$/;
-  const gotoSourcePattern = /^(\w+)\:/;
-  const startsWithModifier = modifierPattern.test(query[0]);
-  const isGotoSource = gotoSourcePattern.test(query);
+  const startsWithModifier = query[0] === "@" || query[0] === "#" || query[0] === ":" || query[0] === "?";
 
   if (startsWithModifier) {
     const modifier = query[0];
     return MODIFIERS[modifier];
   }
+
+  const isGotoSource = query.includes(":", 1);
 
   if (isGotoSource) {
     return "gotoSource";
@@ -72,7 +66,7 @@ function formatSourcesForList(source, tabUrls) {
     value,
     title,
     subtitle,
-    icon: tabUrls.has(source.url) ? "tab result-item-icon" : (0, _classnames.default)((0, _source.getSourceClassnames)(source), "result-item-icon"),
+    icon: tabUrls.has(source.url) ? "tab result-item-icon" : `result-item-icon ${(0, _source.getSourceClassnames)(source)}`,
     id: source.id,
     url: source.url
   };
@@ -120,5 +114,15 @@ function formatShortcutResults() {
 }
 
 function formatSources(sources, tabUrls) {
-  return sources.filter(source => !(0, _source.isPretty)(source)).filter(source => !!source.relativeUrl && !(0, _source.isPretty)(source)).map(source => formatSourcesForList(source, tabUrls));
+  const formattedSources = [];
+
+  for (let i = 0; i < sources.length; ++i) {
+    const source = sources[i];
+
+    if (!!source.relativeUrl && !(0, _source.isPretty)(source)) {
+      formattedSources.push(formatSourcesForList(source, tabUrls));
+    }
+  }
+
+  return formattedSources;
 }

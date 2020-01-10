@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.memoizeableAction = memoizeableAction;
 loader.lazyRequireGetter(this, "_asyncValue", "devtools/client/debugger/src/utils/async-value");
+loader.lazyRequireGetter(this, "_context", "devtools/client/debugger/src/utils/context");
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -57,6 +58,11 @@ function memoizeableAction(name, {
       }
 
       await requests.get(key);
+
+      if (args.cx) {
+        (0, _context.validateContext)(thunkArgs.getState(), args.cx);
+      }
+
       result = (0, _asyncValue.asSettled)(getValue(args, thunkArgs));
 
       if (!result) {

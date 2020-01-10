@@ -34,7 +34,7 @@ loader.lazyRequireGetter(this, "_breakpoints", "devtools/client/debugger/src/sel
 function initialBreakpointsState(xhrBreakpoints = []) {
   return {
     breakpoints: {},
-    xhrBreakpoints: xhrBreakpoints,
+    xhrBreakpoints,
     breakpointsDisabled: false
   };
 }

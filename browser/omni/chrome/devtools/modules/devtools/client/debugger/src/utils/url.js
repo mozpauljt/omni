@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.sameOrigin = sameOrigin;
 exports.parse = void 0;
 
 var _lodash = require("devtools/client/shared/vendor/lodash");
@@ -46,3 +47,7 @@ const parse = (0, _lodash.memoize)(function parse(url) {
   }
 });
 exports.parse = parse;
+
+function sameOrigin(firstUrl, secondUrl) {
+  return parse(firstUrl).origin == parse(secondUrl).origin;
+}

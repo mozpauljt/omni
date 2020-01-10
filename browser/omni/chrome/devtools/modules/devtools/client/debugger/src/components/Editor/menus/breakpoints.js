@@ -13,6 +13,7 @@ var _actions = _interopRequireDefault(require("../../../actions/index"));
 var _redux = require("devtools/client/shared/vendor/redux");
 
 loader.lazyRequireGetter(this, "_prefs", "devtools/client/debugger/src/utils/prefs");
+loader.lazyRequireGetter(this, "_text", "devtools/client/debugger/src/utils/text");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -25,7 +26,7 @@ const addBreakpointItem = (cx, location, breakpointActions) => ({
   accesskey: L10N.getStr("shortcuts.toggleBreakpoint.accesskey"),
   disabled: false,
   click: () => breakpointActions.addBreakpoint(cx, location),
-  accelerator: L10N.getStr("toggleBreakpoint.key")
+  accelerator: (0, _text.formatKeyShortcut)(L10N.getStr("toggleBreakpoint.key"))
 });
 
 exports.addBreakpointItem = addBreakpointItem;
@@ -36,7 +37,7 @@ const removeBreakpointItem = (cx, breakpoint, breakpointActions) => ({
   accesskey: L10N.getStr("shortcuts.toggleBreakpoint.accesskey"),
   disabled: false,
   click: () => breakpointActions.removeBreakpoint(cx, breakpoint),
-  accelerator: L10N.getStr("toggleBreakpoint.key")
+  accelerator: (0, _text.formatKeyShortcut)(L10N.getStr("toggleBreakpoint.key"))
 });
 
 exports.removeBreakpointItem = removeBreakpointItem;
@@ -44,7 +45,7 @@ exports.removeBreakpointItem = removeBreakpointItem;
 const addConditionalBreakpointItem = (location, breakpointActions) => ({
   id: "node-menu-add-conditional-breakpoint",
   label: L10N.getStr("editor.addConditionBreakpoint"),
-  accelerator: L10N.getStr("toggleCondPanel.breakpoint.key"),
+  accelerator: (0, _text.formatKeyShortcut)(L10N.getStr("toggleCondPanel.breakpoint.key")),
   accesskey: L10N.getStr("editor.addConditionBreakpoint.accesskey"),
   disabled: false,
   click: () => breakpointActions.openConditionalPanel(location)
@@ -55,7 +56,7 @@ exports.addConditionalBreakpointItem = addConditionalBreakpointItem;
 const editConditionalBreakpointItem = (location, breakpointActions) => ({
   id: "node-menu-edit-conditional-breakpoint",
   label: L10N.getStr("editor.editConditionBreakpoint"),
-  accelerator: L10N.getStr("toggleCondPanel.breakpoint.key"),
+  accelerator: (0, _text.formatKeyShortcut)(L10N.getStr("toggleCondPanel.breakpoint.key")),
   accesskey: L10N.getStr("editor.addConditionBreakpoint.accesskey"),
   disabled: false,
   click: () => breakpointActions.openConditionalPanel(location)
@@ -80,7 +81,7 @@ const addLogPointItem = (location, breakpointActions) => ({
   accesskey: L10N.getStr("editor.addLogPoint.accesskey"),
   disabled: false,
   click: () => breakpointActions.openConditionalPanel(location, true),
-  accelerator: L10N.getStr("toggleCondPanel.logPoint.key")
+  accelerator: (0, _text.formatKeyShortcut)(L10N.getStr("toggleCondPanel.logPoint.key"))
 });
 
 exports.addLogPointItem = addLogPointItem;
@@ -91,7 +92,7 @@ const editLogPointItem = (location, breakpointActions) => ({
   accesskey: L10N.getStr("editor.editLogPoint.accesskey"),
   disabled: false,
   click: () => breakpointActions.openConditionalPanel(location, true),
-  accelerator: L10N.getStr("toggleCondPanel.logPoint.key")
+  accelerator: (0, _text.formatKeyShortcut)(L10N.getStr("toggleCondPanel.logPoint.key"))
 });
 
 exports.editLogPointItem = editLogPointItem;
@@ -124,21 +125,24 @@ const toggleDisabledBreakpointItem = (cx, breakpoint, breakpointActions) => {
 
 exports.toggleDisabledBreakpointItem = toggleDisabledBreakpointItem;
 
-const toggleDbgStatementItem = (cx, breakpoint, location, breakpointActions) => {
-  return {
-    disabled: false,
-    ...(breakpoint.options.condition === "false" ? {
+const toggleDbgStatementItem = (cx, location, breakpointActions, breakpoint) => {
+  if (breakpoint && breakpoint.options.condition === "false") {
+    return {
+      disabled: false,
       id: "node-menu-enable-dbgStatement",
       label: L10N.getStr("breakpointMenuItem.enabledbg.label"),
       click: () => breakpointActions.setBreakpointOptions(cx, location, { ...breakpoint.options,
         condition: null
       })
-    } : {
-      id: "node-menu-disable-dbgStatement",
-      label: L10N.getStr("breakpointMenuItem.disabledbg.label"),
-      click: () => breakpointActions.setBreakpointOptions(cx, location, { ...breakpoint.options,
-        condition: "false"
-      })
+    };
+  }
+
+  return {
+    disabled: false,
+    id: "node-menu-disable-dbgStatement",
+    label: L10N.getStr("breakpointMenuItem.disabledbg.label"),
+    click: () => breakpointActions.setBreakpointOptions(cx, location, {
+      condition: "false"
     })
   };
 };
@@ -151,7 +155,7 @@ function breakpointItems(cx, breakpoint, selectedLocation, breakpointActions) {
   if (breakpoint.originalText.startsWith("debugger")) {
     items.push({
       type: "separator"
-    }, toggleDbgStatementItem(cx, breakpoint, selectedLocation, breakpointActions));
+    }, toggleDbgStatementItem(cx, selectedLocation, breakpointActions, breakpoint));
   }
 
   items.push({
@@ -164,11 +168,15 @@ function breakpointItems(cx, breakpoint, selectedLocation, breakpointActions) {
   return items;
 }
 
-function createBreakpointItems(cx, location, breakpointActions) {
+function createBreakpointItems(cx, location, breakpointActions, lineText) {
   const items = [addBreakpointItem(cx, location, breakpointActions), addConditionalBreakpointItem(location, breakpointActions)];
 
   if (_prefs.features.logPoints) {
     items.push(addLogPointItem(location, breakpointActions));
+  }
+
+  if (lineText && lineText.startsWith("debugger")) {
+    items.push(toggleDbgStatementItem(cx, location, breakpointActions));
   }
 
   return items;

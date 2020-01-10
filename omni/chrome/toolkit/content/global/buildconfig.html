@@ -11,7 +11,7 @@
 <body class="aboutPageWideContainer">
 <h1>Build Configuration</h1>
 <h2>Source</h2>
-<p>Built from <a href="https://hg.mozilla.org/mozilla-central/rev/aa8f530a1a35ba9b1c84303dbe15107d0026d77c">https://hg.mozilla.org/mozilla-central/rev/aa8f530a1a35ba9b1c84303dbe15107d0026d77c</a></p>
+<p>Built from <a href="https://hg.mozilla.org/mozilla-central/rev/feb7d997f96164b028c9cf57a74878095cdad0d3">https://hg.mozilla.org/mozilla-central/rev/feb7d997f96164b028c9cf57a74878095cdad0d3</a></p>
 <h2>Build platform</h2>
 <table>
   <tbody>
@@ -33,22 +33,22 @@
     </tr>
     <tr>
       <td>/builds/worker/fetches/clang/bin/clang -std=gnu99</td>
-      <td>8.0.1</td>
-      <td>-fcrash-diagnostics-dir=/builds/worker/artifacts -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fno-strict-aliasing -ffunction-sections -fdata-sections -fno-math-errno -pthread -fPIC -pipe</td>
+      <td>9.0.1</td>
+      <td>-fcrash-diagnostics-dir=/builds/worker/artifacts -fno-strict-aliasing -ffunction-sections -fdata-sections -fno-math-errno -pthread -fPIC -pipe</td>
     </tr>
     <tr>
-      <td>/builds/worker/fetches/clang/bin/clang++</td>
-      <td>8.0.1</td>
-      <td>-Qunused-arguments -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -fstack-protector-strong -Qunused-arguments -Wall -Wbitfield-enum-conversion -Wempty-body -Wignored-qualifiers -Woverloaded-virtual -Wpointer-arith -Wshadow-field-in-constructor-modified -Wsign-compare -Wtype-limits -Wunreachable-code -Wunreachable-code-return -Wwrite-strings -Wno-invalid-offsetof -Wclass-varargs -Wfloat-overflow-conversion -Wfloat-zero-conversion -Wloop-analysis -Wc++1z-compat -Wc++2a-compat -Wcomma -Wimplicit-fallthrough -Werror=non-literal-null-conversion -Wstring-conversion -Wtautological-overlap-compare -Wtautological-unsigned-enum-zero-compare -Wtautological-unsigned-zero-compare -Wno-error=tautological-type-limit-compare -Wno-inline-new-delete -Wno-error=deprecated-declarations -Wno-error=array-bounds -Wno-error=backend-plugin -Wno-error=return-std-move -Wno-error=atomic-alignment -Wformat -Wformat-security -Wno-gnu-zero-variadic-macro-arguments -Wno-unknown-warning-option -Wno-return-type-c-linkage -D_GLIBCXX_USE_CXX11_ABI=0 -fno-sized-deallocation -fno-aligned-new -fcrash-diagnostics-dir=/builds/worker/artifacts -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fno-exceptions -fno-strict-aliasing -fno-rtti -ffunction-sections -fdata-sections -fno-exceptions -fno-math-errno -pthread -pipe -g -O3 -fno-omit-frame-pointer -funwind-tables</td>
+      <td>/builds/worker/fetches/clang/bin/clang++ -std=gnu++17</td>
+      <td>9.0.1</td>
+      <td>-Qunused-arguments -Qunused-arguments -Wall -Wbitfield-enum-conversion -Wempty-body -Wignored-qualifiers -Woverloaded-virtual -Wpointer-arith -Wshadow-field-in-constructor-modified -Wsign-compare -Wtype-limits -Wunreachable-code -Wunreachable-code-return -Wwrite-strings -Wno-invalid-offsetof -Wclass-varargs -Wempty-init-stmt -Wfloat-overflow-conversion -Wfloat-zero-conversion -Wloop-analysis -Wc++2a-compat -Wcomma -Wimplicit-fallthrough -Werror=non-literal-null-conversion -Wstring-conversion -Wtautological-overlap-compare -Wtautological-unsigned-enum-zero-compare -Wtautological-unsigned-zero-compare -Wno-error=tautological-type-limit-compare -Wno-inline-new-delete -Wno-error=deprecated-declarations -Wno-error=array-bounds -Wno-error=backend-plugin -Wno-error=return-std-move -Wno-error=atomic-alignment -Wformat -Wformat-security -Wno-gnu-zero-variadic-macro-arguments -Wno-unknown-warning-option -Wno-return-type-c-linkage -D_GLIBCXX_USE_CXX11_ABI=0 -fno-sized-deallocation -fno-aligned-new -fcrash-diagnostics-dir=/builds/worker/artifacts -fno-exceptions -fno-strict-aliasing -fno-rtti -ffunction-sections -fdata-sections -fno-exceptions -fno-math-errno -pthread -pipe -g -O3 -fno-omit-frame-pointer -funwind-tables</td>
     </tr>
     <tr>
       <td>/builds/worker/fetches/rustc/bin/rustc</td>
-      <td>1.37.0</td>
+      <td>1.39.0</td>
       <td></td>
     </tr>
   </tbody>
 </table>
 <h2>Configure options</h2>
-<p>MOZ_AUTOMATION=1 MOZILLA_OFFICIAL=1 --enable-update-channel=nightly MOZBUILD_STATE_PATH=/builds/worker/.mozbuild CC=/builds/worker/fetches/clang/bin/clang CXX=/builds/worker/fetches/clang/bin/clang++ NASM=/builds/worker/fetches/nasm/nasm ENABLE_CLANG_PLUGIN=1 MOZ_STDCXX_COMPAT=1 AR=/builds/worker/fetches/clang/bin/llvm-ar MOZ_NO_PIE_COMPAT=1 RUSTC=/builds/worker/fetches/rustc/bin/rustc CARGO=/builds/worker/fetches/rustc/bin/cargo RUSTDOC=/builds/worker/fetches/rustc/bin/rustdoc CBINDGEN=/builds/worker/fetches/cbindgen/cbindgen RUSTFMT=/builds/worker/fetches/rustc/bin/rustfmt LLVM_PROFDATA=/builds/worker/fetches/clang/bin/llvm-profdata --enable-profile-use=cross --with-pgo-profile-path=/builds/worker/fetches/merged.profdata --with-pgo-jarlog=/builds/worker/fetches/en-US.log MOZ_LTO=cross --enable-js-shell --enable-rust-simd NODEJS=/builds/worker/fetches/node/bin/node --enable-default-toolkit=cairo-gtk3-wayland --with-mozilla-api-keyfile=/builds/mozilla-desktop-geoloc-api.key --with-google-location-service-api-keyfile=/builds/gls-gapi.data --with-google-safebrowsing-api-keyfile=/builds/sb-gapi.data MAKE=/usr/bin/make --enable-crashreporter --with-branding=browser/branding/nightly</p>
+<p>MOZ_AUTOMATION=1 MOZILLA_OFFICIAL=1 --enable-update-channel=nightly MOZBUILD_STATE_PATH=/builds/worker/.mozbuild CC=/builds/worker/fetches/clang/bin/clang CXX=/builds/worker/fetches/clang/bin/clang++ NASM=/builds/worker/fetches/nasm/nasm ENABLE_CLANG_PLUGIN=1 MOZ_STDCXX_COMPAT=1 AR=/builds/worker/fetches/clang/bin/llvm-ar MOZ_NO_PIE_COMPAT=1 RUSTC=/builds/worker/fetches/rustc/bin/rustc CARGO=/builds/worker/fetches/rustc/bin/cargo RUSTDOC=/builds/worker/fetches/rustc/bin/rustdoc CBINDGEN=/builds/worker/fetches/cbindgen/cbindgen RUSTFMT=/builds/worker/fetches/rustc/bin/rustfmt LLVM_PROFDATA=/builds/worker/fetches/clang/bin/llvm-profdata --enable-profile-use=cross --with-pgo-profile-path=/builds/worker/fetches/merged.profdata --with-pgo-jarlog=/builds/worker/fetches/en-US.log MOZ_LTO=cross --enable-js-shell --enable-rust-simd NODEJS=/builds/worker/fetches/node/bin/node --enable-default-toolkit=cairo-gtk3-wayland --with-mozilla-api-keyfile=/builds/mozilla-desktop-geoloc-api.key --with-google-location-service-api-keyfile=/builds/gls-gapi.data --with-google-safebrowsing-api-keyfile=/builds/sb-gapi.data WASM_SANDBOXED_LIBRARIES=graphite LUCETC=/builds/worker/fetches/lucetc/lucetc WASI_SYSROOT=/builds/worker/fetches/wasi-sysroot/share/wasi-sysroot 'WASM_CC=/builds/worker/fetches/clang/bin/clang --target=wasm32-wasi' 'WASM_CXX=/builds/worker/fetches/clang/bin/clang++ --target=wasm32-wasi' MAKE=/usr/bin/make --enable-crashreporter --with-branding=browser/branding/nightly</p>
 </body>
 </html>

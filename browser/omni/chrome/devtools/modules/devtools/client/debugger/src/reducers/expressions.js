@@ -69,7 +69,7 @@ function update(state = createExpressionState(), action) {
         results
       } = action;
       return (0, _lodash.zip)(inputs, results).reduce((_state, [input, result]) => updateExpressionInList(_state, input, {
-        input: input,
+        input,
         value: result,
         updating: false
       }), state);

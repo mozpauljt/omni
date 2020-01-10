@@ -22,6 +22,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+const expressionRegex = /\bfp\(\)/g;
+
 async function buildOriginalScopes(frame, client, cx, frameId, generatedScopes) {
   if (!frame.originalVariables) {
     throw new TypeError("(frame.originalVariables: XScopeVariables)");
@@ -32,8 +34,9 @@ async function buildOriginalScopes(frame, client, cx, frameId, generatedScopes) 
   const inputs = [];
 
   for (let i = 0; i < originalVariables.vars.length; i++) {
-    const expr = originalVariables.vars[i].expr || "void 0";
-    inputs[i] = expr.replace(/\bfp\(\)/g, frameBase);
+    const expr = originalVariables.vars[i].expr;
+    const expression = expr ? expr.replace(expressionRegex, frameBase) : "void 0";
+    inputs[i] = expression;
   }
 
   const results = await client.evaluateExpressions(inputs, {
@@ -47,14 +50,15 @@ async function buildOriginalScopes(frame, client, cx, frameId, generatedScopes) 
     variables[name] = {
       value: results[i].result
     };
-    console.log("!Variable", name, inputs[i]);
   }
 
   const bindings = {
     arguments: [],
     variables
   };
-  const actor = (await generatedScopes).actor;
+  const {
+    actor
+  } = await generatedScopes;
   const scope = {
     type: "function",
     scopeKind: "",

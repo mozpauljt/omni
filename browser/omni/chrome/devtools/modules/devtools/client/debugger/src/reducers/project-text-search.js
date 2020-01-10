@@ -45,8 +45,6 @@ function update(state = initialProjectTextSearchState(), action) {
       };
 
     case "ADD_SEARCH_RESULT":
-      const results = state.results;
-
       if (action.result.matches.length === 0) {
         return state;
       }
@@ -60,7 +58,7 @@ function update(state = initialProjectTextSearchState(), action) {
         }))
       };
       return { ...state,
-        results: [...results, result]
+        results: [...state.results, result]
       };
 
     case "UPDATE_STATUS":

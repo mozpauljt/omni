@@ -33,6 +33,20 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+function haveTabSourcesChanged(tabSources, prevTabSources) {
+  if (tabSources.length !== prevTabSources.length) {
+    return true;
+  }
+
+  for (let i = 0; i < tabSources.length; ++i) {
+    if (tabSources[i].id !== prevTabSources[i].id) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 class Tabs extends _react.PureComponent {
   constructor(props) {
     super(props);
@@ -89,7 +103,7 @@ class Tabs extends _react.PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    if (!(prevProps === this.props)) {
+    if (this.props.selectedSource !== prevProps.selectedSource || haveTabSourcesChanged(this.props.tabSources, prevProps.tabSources)) {
       this.updateHiddenTabs();
     }
   }
@@ -110,7 +124,7 @@ class Tabs extends _react.PureComponent {
    */
 
 
-  toggleSourcesDropdown(e) {
+  toggleSourcesDropdown() {
     this.setState(prevState => ({
       dropdownShown: !prevState.dropdownShown
     }));

@@ -4,14 +4,16 @@
 
 "use strict";
 
-const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
 const {
   createFactory,
   PureComponent,
 } = require("devtools/client/shared/vendor/react");
 const { span } = require("devtools/client/shared/vendor/react-dom-factories");
 
-const ManifestItem = createFactory(require("./ManifestItem"));
+const Types = require("devtools/client/application/src/types/index");
+const ManifestItem = createFactory(
+  require("devtools/client/application/src/components/manifest/ManifestItem")
+);
 
 /**
  * This component displays a Manifest member which holds a color value
@@ -19,8 +21,7 @@ const ManifestItem = createFactory(require("./ManifestItem"));
 class ManifestColorItem extends PureComponent {
   static get propTypes() {
     return {
-      label: PropTypes.string.isRequired,
-      value: PropTypes.string,
+      ...Types.manifestItemColor, // { label, value }
     };
   }
 

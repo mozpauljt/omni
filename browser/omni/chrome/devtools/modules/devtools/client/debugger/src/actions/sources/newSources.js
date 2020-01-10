@@ -8,10 +8,12 @@ exports.newOriginalSource = newOriginalSource;
 exports.newOriginalSources = newOriginalSources;
 exports.newGeneratedSource = newGeneratedSource;
 exports.newGeneratedSources = newGeneratedSources;
+exports.ensureSourceActor = ensureSourceActor;
 
 var _lodash = require("devtools/client/shared/vendor/lodash");
 
 loader.lazyRequireGetter(this, "_sourceActors", "devtools/client/debugger/src/reducers/source-actors");
+loader.lazyRequireGetter(this, "_threads", "devtools/client/debugger/src/reducers/threads");
 loader.lazyRequireGetter(this, "_sourceActors2", "devtools/client/debugger/src/actions/source-actors");
 loader.lazyRequireGetter(this, "_create", "devtools/client/debugger/src/client/firefox/create");
 loader.lazyRequireGetter(this, "_blackbox", "devtools/client/debugger/src/actions/sources/blackbox");
@@ -134,10 +136,16 @@ function checkSelectedSource(cx, sourceId) {
     dispatch,
     getState
   }) => {
-    const source = (0, _selectors.getSource)(getState(), sourceId);
-    const pendingLocation = (0, _selectors.getPendingSelectedLocation)(getState());
+    const state = getState();
+    const pendingLocation = (0, _selectors.getPendingSelectedLocation)(state);
 
-    if (!pendingLocation || !pendingLocation.url || !source || !source.url) {
+    if (!pendingLocation || !pendingLocation.url) {
+      return;
+    }
+
+    const source = (0, _selectors.getSource)(state, sourceId);
+
+    if (!source || !source.url) {
       return;
     }
 
@@ -182,6 +190,7 @@ function checkPendingBreakpoints(cx, sourceId) {
       cx,
       source
     }));
+    await dispatch((0, _sources.setBreakableLines)(cx, source.id));
     await Promise.all(pendingBreakpoints.map(bp => {
       return dispatch((0, _breakpoints.syncBreakpoint)(cx, sourceId, bp));
     }));
@@ -245,28 +254,35 @@ function newOriginalSources(sourceInfo) {
     dispatch,
     getState
   }) => {
-    sourceInfo = sourceInfo.filter(({
-      id
-    }) => !(0, _selectors.getSource)(getState(), id));
-    sourceInfo = (0, _lodash.uniqBy)(sourceInfo, ({
-      id
-    }) => id);
-    const sources = sourceInfo.map(({
+    const state = getState();
+    const seen = new Set();
+    const sources = [];
+
+    for (const {
       id,
       url
-    }) => ({
-      id,
-      url,
-      relativeUrl: url,
-      isPrettyPrinted: false,
-      isWasm: false,
-      isBlackBoxed: false,
-      introductionUrl: null,
-      introductionType: undefined,
-      isExtension: false,
-      extensionName: null
-    }));
-    const cx = (0, _selectors.getContext)(getState());
+    } of sourceInfo) {
+      if (seen.has(id) || (0, _selectors.getSource)(state, id)) {
+        continue;
+      }
+
+      seen.add(id);
+      sources.push({
+        id,
+        url,
+        relativeUrl: url,
+        isPrettyPrinted: false,
+        isWasm: false,
+        isBlackBoxed: false,
+        introductionUrl: null,
+        introductionType: undefined,
+        isExtension: false,
+        extensionName: null,
+        isOriginal: true
+      });
+    }
+
+    const cx = (0, _selectors.getContext)(state);
     dispatch(addSources(cx, sources));
     await dispatch(checkNewSources(cx, sources));
 
@@ -293,17 +309,17 @@ function newGeneratedSources(sourceInfo) {
     getState,
     client
   }) => {
-    const supportsWasm = client.hasWasmSupport();
     const resultIds = [];
     const newSourcesObj = {};
     const newSourceActors = [];
 
     for (const {
       thread,
+      isServiceWorker,
       source,
       id
     } of sourceInfo) {
-      const newId = id || (0, _create.makeSourceId)(source);
+      const newId = id || (0, _create.makeSourceId)(source, isServiceWorker);
 
       if (!(0, _selectors.getSource)(getState(), newId) && !newSourcesObj[newId]) {
         newSourcesObj[newId] = {
@@ -315,8 +331,9 @@ function newGeneratedSources(sourceInfo) {
           introductionUrl: source.introductionUrl,
           introductionType: source.introductionType,
           isBlackBoxed: false,
-          isWasm: !!supportsWasm && source.introductionType === "wasm",
-          isExtension: source.url && (0, _source.isUrlExtension)(source.url) || false
+          isWasm: !!(0, _threads.supportsWasm)(getState()) && source.introductionType === "wasm",
+          isExtension: source.url && (0, _source.isUrlExtension)(source.url) || false,
+          isOriginal: false
         };
       }
 
@@ -364,8 +381,10 @@ function newGeneratedSources(sourceInfo) {
       // loading source maps as sometimes generated and original
       // files share the same paths.
 
-      for (const source of newSources) {
-        dispatch(checkPendingBreakpoints(cx, source.id));
+      for (const {
+        source
+      } of newSourceActors) {
+        dispatch(checkPendingBreakpoints(cx, source));
       }
     })();
 
@@ -397,5 +416,22 @@ function checkNewSources(cx, sources) {
 
     dispatch(restoreBlackBoxedSources(cx, sources));
     return sources;
+  };
+}
+
+function ensureSourceActor(thread, sourceActor) {
+  return async function ({
+    dispatch,
+    getState,
+    client
+  }) {
+    await _sourceQueue.default.flush();
+
+    if ((0, _selectors.hasSourceActor)(getState(), sourceActor)) {
+      return Promise.resolve();
+    }
+
+    const sources = await client.fetchThreadSources(thread);
+    await dispatch(newGeneratedSources(sources));
   };
 }

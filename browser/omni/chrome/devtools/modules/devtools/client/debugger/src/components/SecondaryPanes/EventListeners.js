@@ -34,7 +34,7 @@ class EventListeners extends _react.Component {
 
     _defineProperty(this, "onInputChange", event => {
       this.setState({
-        searchText: event.target.value
+        searchText: event.currentTarget.value
       });
     });
 
@@ -243,14 +243,14 @@ class EventListeners extends _react.Component {
     }
 
     return _react.default.createElement("ul", null, category.events.map(event => {
-      return this.renderListenerEvent(event, category);
+      return this.renderListenerEvent(event, category.name);
     }));
   }
 
   renderCategory(category) {
     return _react.default.createElement("span", {
       className: "category-label"
-    }, category.toString(), " \u25B8 ");
+    }, category, " \u25B8 ");
   }
 
   renderListenerEvent(event, category) {

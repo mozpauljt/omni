@@ -10,8 +10,10 @@ const EventEmitter = require("devtools/shared/event-emitter");
 
 const Telemetry = require("devtools/client/shared/telemetry");
 
-const { Picker } = require("./picker");
-const { A11Y_SERVICE_DURATION } = require("./constants");
+const { Picker } = require("devtools/client/accessibility/picker");
+const {
+  A11Y_SERVICE_DURATION,
+} = require("devtools/client/accessibility/constants");
 
 // The panel's window global is an EventEmitter firing the following events:
 const EVENTS = {
@@ -86,17 +88,10 @@ AccessibilityPanel.prototype = {
     );
 
     this.shouldRefresh = true;
-    this.panelWin.gToolbox = this._toolbox;
 
     await this.startup.initAccessibility();
-    if (this.supports.enableDisable) {
-      this.picker = new Picker(this);
-    }
-
-    if (this.supports.simulation) {
-      this.simulator = await this.front.getSimulator();
-    }
-
+    this.picker = new Picker(this);
+    this.simulator = await this.front.getSimulator();
     this.fluentBundles = await this.createFluentBundles();
 
     this.updateA11YServiceDurationTimer();
@@ -177,6 +172,7 @@ AccessibilityPanel.prototype = {
       supports: this.supports,
       fluentBundles: this.fluentBundles,
       simulator: this.simulator,
+      toolbox: this._toolbox,
     });
   },
 
@@ -201,12 +197,7 @@ AccessibilityPanel.prototype = {
       );
     }
 
-    this.postContentMessage(
-      "selectNodeAccessible",
-      this.walker,
-      nodeFront,
-      this.supports
-    );
+    this.postContentMessage("selectNodeAccessible", this.walker, nodeFront);
   },
 
   highlightAccessible(accessibleFront) {
@@ -283,6 +274,8 @@ AccessibilityPanel.prototype = {
     }
     this._destroyed = true;
 
+    this.postContentMessage("destroy");
+
     this.target.off("navigate", this.onTabNavigated);
     this._toolbox.off("select", this.onPanelVisibilityChange);
 
@@ -310,7 +303,6 @@ AccessibilityPanel.prototype = {
     }
 
     this._telemetry = null;
-    this.panelWin.gToolbox = null;
     this.panelWin.gTelemetry = null;
 
     this.emit("destroyed");

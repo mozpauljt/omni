@@ -38,7 +38,7 @@ menulist label {
   font-weight: unset;
 }
 
-:root > * {
+dialog > * {
   font-size: 1.05em;
 }
 

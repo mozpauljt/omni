@@ -8,12 +8,16 @@ exports.default = update;
 exports.getWorkerByThread = getWorkerByThread;
 exports.getMainThread = getMainThread;
 exports.getDebuggeeUrl = getDebuggeeUrl;
+exports.getCanRewind = getCanRewind;
+exports.supportsWasm = supportsWasm;
 exports.startsWithThreadActor = startsWithThreadActor;
 exports.getAllThreads = exports.getWorkerCount = exports.getThreads = void 0;
 
 var _lodash = require("devtools/client/shared/vendor/lodash");
 
 var _reselect = require("devtools/client/shared/vendor/reselect");
+
+loader.lazyRequireGetter(this, "_prefs", "devtools/client/debugger/src/utils/prefs");
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -32,6 +36,7 @@ function initialThreadsState() {
       type: "mainThread",
       name: ""
     },
+    traits: {},
     isWebExtension: false
   };
 }
@@ -41,6 +46,7 @@ function update(state = initialThreadsState(), action) {
     case "CONNECT":
       return { ...state,
         mainThread: action.mainThread,
+        traits: action.traits,
         isWebExtension: action.isWebExtension
       };
 
@@ -55,6 +61,23 @@ function update(state = initialThreadsState(), action) {
       } = action;
       return { ...state,
         threads: state.threads.filter(w => !threads.includes(w.actor))
+      };
+
+    case "UPDATE_SERVICE_WORKER_STATUS":
+      const {
+        thread,
+        status
+      } = action;
+      return { ...state,
+        threads: state.threads.map(t => {
+          if (t.actor == thread) {
+            return { ...t,
+              serviceWorkerStatus: status
+            };
+          }
+
+          return t;
+        })
       };
 
     case "NAVIGATE":
@@ -87,10 +110,18 @@ function getDebuggeeUrl(state) {
   return getMainThread(state).url;
 }
 
-const getAllThreads = (0, _reselect.createSelector)(getMainThread, getThreads, (mainThread, threads) => [mainThread, ...(0, _lodash.sortBy)(threads, thread => thread.name)]); // checks if a path begins with a thread actor
+const getAllThreads = (0, _reselect.createSelector)(getMainThread, getThreads, (mainThread, threads) => [mainThread, ...(0, _lodash.sortBy)(threads, thread => thread.name)]);
+exports.getAllThreads = getAllThreads;
+
+function getCanRewind(state) {
+  return state.threads.traits.canRewind;
+}
+
+function supportsWasm(state) {
+  return _prefs.features.wasm && state.threads.traits.wasmBinarySource;
+} // checks if a path begins with a thread actor
 // e.g "server1.conn0.child1/workerTarget22/context1/dbg-workers.glitch.me"
 
-exports.getAllThreads = getAllThreads;
 
 function startsWithThreadActor(state, path) {
   const threadActors = getAllThreads(state).map(t => t.actor);

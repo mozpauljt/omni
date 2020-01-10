@@ -47,6 +47,8 @@ var _DOMMutationBreakpoints = _interopRequireDefault(require("./DOMMutationBreak
 
 var _WhyPaused = _interopRequireDefault(require("./WhyPaused"));
 
+var _FrameTimeline = _interopRequireDefault(require("./FrameTimeline"));
+
 var _Scopes = _interopRequireDefault(require("./Scopes"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -264,7 +266,9 @@ class SecondaryPanes extends _react.Component {
     return {
       header: L10N.getStr("callStack.header"),
       className: "call-stack-pane",
-      component: _react.default.createElement(_Frames.default, null),
+      component: _react.default.createElement(_Frames.default, {
+        panel: "debugger"
+      }),
       opened: _prefs.prefs.callStackVisible,
       onToggle: opened => {
         _prefs.prefs.callStackVisible = opened;
@@ -447,7 +451,7 @@ class SecondaryPanes extends _react.Component {
       className: "secondary-panes-wrapper"
     }, _react.default.createElement(_CommandBar.default, {
       horizontal: this.props.horizontal
-    }), _react.default.createElement("div", {
+    }), _react.default.createElement(_FrameTimeline.default, null), _react.default.createElement("div", {
       className: (0, _classnames.default)("secondary-panes", skipPausing && "skip-pausing")
     }, this.props.horizontal ? this.renderHorizontalLayout() : this.renderVerticalLayout()), this.renderUtilsBar());
   }

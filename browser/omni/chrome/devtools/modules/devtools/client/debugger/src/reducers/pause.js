@@ -16,7 +16,6 @@ exports.isEvaluatingExpression = isEvaluatingExpression;
 exports.getIsWaitingOnBreak = getIsWaitingOnBreak;
 exports.getShouldPauseOnExceptions = getShouldPauseOnExceptions;
 exports.getShouldPauseOnCaughtExceptions = getShouldPauseOnCaughtExceptions;
-exports.getCanRewind = getCanRewind;
 exports.getFrames = getFrames;
 exports.getCurrentThreadFrames = getCurrentThreadFrames;
 exports.getGeneratedFrameScope = getGeneratedFrameScope;
@@ -69,7 +68,6 @@ function createPauseState(thread = "UnknownThread") {
     },
     previewLocation: null,
     threads: {},
-    canRewind: false,
     skipPausing: _prefs.prefs.skipPausing,
     mapScopes: _prefs.prefs.mapScopes,
     shouldPauseOnExceptions: _prefs.prefs.pauseOnExceptions,
@@ -79,6 +77,7 @@ function createPauseState(thread = "UnknownThread") {
 
 const resumedPauseState = {
   frames: null,
+  framesLoading: false,
   frameScopes: {
     generated: {},
     original: {},
@@ -91,7 +90,6 @@ const resumedPauseState = {
 
 const createInitialPauseState = () => ({ ...resumedPauseState,
   isWaitingOnBreak: false,
-  canRewind: false,
   command: null,
   lastCommand: null,
   previousLocation: null,
@@ -146,8 +144,7 @@ function update(state = createPauseState(), action) {
       {
         const {
           thread,
-          selectedFrameId,
-          frames,
+          frame,
           why
         } = action;
         state = { ...state,
@@ -160,11 +157,23 @@ function update(state = createPauseState(), action) {
         };
         return updateThreadState({
           isWaitingOnBreak: false,
-          selectedFrameId,
-          frames,
+          selectedFrameId: frame ? frame.id : undefined,
+          frames: frame ? [frame] : undefined,
+          framesLoading: true,
           frameScopes: { ...resumedPauseState.frameScopes
           },
           why
+        });
+      }
+
+    case "FETCHED_FRAMES":
+      {
+        const {
+          frames
+        } = action;
+        return updateThreadState({
+          frames,
+          framesLoading: false
         });
       }
 
@@ -240,6 +249,13 @@ function update(state = createPauseState(), action) {
         });
       }
 
+    case "SET_FRAME_POSITIONS":
+      return updateThreadState({
+        replayFramePositions: { ...threadState().replayFramePositions,
+          [action.frame]: action.positions
+        }
+      });
+
     case "BREAK_ON_NEXT":
       return updateThreadState({
         isWaitingOnBreak: true
@@ -251,8 +267,7 @@ function update(state = createPauseState(), action) {
       });
 
     case "CONNECT":
-      return { ...createPauseState(action.mainThread.actor),
-        canRewind: action.canRewind
+      return { ...createPauseState(action.mainThread.actor)
       };
 
     case "PAUSE_ON_EXCEPTIONS":
@@ -325,24 +340,6 @@ function update(state = createPauseState(), action) {
               ...resumedPauseState
             }
           }
-        };
-      }
-    // Disable skipPausing if a breakpoint is enabled or added
-
-    case "SET_BREAKPOINT":
-      {
-        return action.breakpoint.disabled ? state : { ...state,
-          skipPausing: false
-        };
-      }
-
-    case "UPDATE_EVENT_LISTENERS":
-    case "REMOVE_BREAKPOINT":
-    case "SET_XHR_BREAKPOINT":
-    case "ENABLE_XHR_BREAKPOINT":
-      {
-        return { ...state,
-          skipPausing: false
         };
       }
 
@@ -481,16 +478,20 @@ function getShouldPauseOnCaughtExceptions(state) {
   return state.pause.shouldPauseOnCaughtExceptions;
 }
 
-function getCanRewind(state) {
-  return state.pause.canRewind;
-}
-
 function getFrames(state, thread) {
-  return getThreadPauseState(state.pause, thread).frames;
+  const {
+    frames,
+    framesLoading
+  } = getThreadPauseState(state.pause, thread);
+  return framesLoading ? null : frames;
 }
 
 function getCurrentThreadFrames(state) {
-  return getThreadPauseState(state.pause, getCurrentThread(state)).frames;
+  const {
+    frames,
+    framesLoading
+  } = getThreadPauseState(state.pause, getCurrentThread(state));
+  return framesLoading ? null : frames;
 }
 
 function getGeneratedFrameId(frameId) {

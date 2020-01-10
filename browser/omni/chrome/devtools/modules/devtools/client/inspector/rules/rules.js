@@ -53,6 +53,12 @@ loader.lazyRequireGetter(
 );
 loader.lazyRequireGetter(
   this,
+  "COLOR_SCHEMES",
+  "devtools/client/inspector/rules/constants",
+  true
+);
+loader.lazyRequireGetter(
+  this,
   "StyleInspectorMenu",
   "devtools/client/inspector/shared/style-inspector-menu"
 );
@@ -156,6 +162,9 @@ function CssRuleView(inspector, document, store) {
   this._onTogglePseudoClassPanel = this._onTogglePseudoClassPanel.bind(this);
   this._onTogglePseudoClass = this._onTogglePseudoClass.bind(this);
   this._onToggleClassPanel = this._onToggleClassPanel.bind(this);
+  this._onToggleColorSchemeSimulation = this._onToggleColorSchemeSimulation.bind(
+    this
+  );
   this._onTogglePrintSimulation = this._onTogglePrintSimulation.bind(this);
   this.highlightElementRule = this.highlightElementRule.bind(this);
   this.highlightProperty = this.highlightProperty.bind(this);
@@ -170,9 +179,12 @@ function CssRuleView(inspector, document, store) {
   this.pseudoClassToggle = doc.getElementById("pseudo-class-panel-toggle");
   this.classPanel = doc.getElementById("ruleview-class-panel");
   this.classToggle = doc.getElementById("class-panel-toggle");
+  this.colorSchemeSimulationButton = doc.getElementById(
+    "color-scheme-simulation-toggle"
+  );
   this.printSimulationButton = doc.getElementById("print-simulation-toggle");
 
-  this._initPrintSimulation();
+  this._initSimulationFeatures();
 
   this.searchClearButton.hidden = true;
 
@@ -274,10 +286,6 @@ CssRuleView.prototype = {
   // Get the dummy elemenet.
   get dummyElement() {
     return this._dummyElement;
-  },
-
-  get emulationFront() {
-    return this._emulationFront;
   },
 
   // Get the highlighters overlay from the Inspector.
@@ -393,30 +401,61 @@ CssRuleView.prototype = {
   },
 
   /**
-   * Check the print emulation actor's backwards-compatibility via the target actor's
-   * actorHasMethod.
+   * Initializes the content-viewer front and enable the print and color scheme simulation
+   * if they are supported in the current target.
    */
-  async _initPrintSimulation() {
-    // In order to query if the emulation actor's print simulation methods are supported,
-    // we have to call the emulation front so that the actor is lazily loaded. This allows
-    // us to use `actorHasMethod`. Please see `getActorDescription` for more information.
-    this._emulationFront = await this.currentTarget.getFront("emulation");
+  async _initSimulationFeatures() {
+    // In order to query if the content-viewer actor's print and color simulation methods are
+    // supported, we have to call the content-viewer front so that the actor is lazily loaded.
+    // This allows us to use `actorHasMethod`. Please see `getActorDescription` for more
+    // information.
+    try {
+      this.contentViewerFront = await this.currentTarget.getFront(
+        "contentViewer"
+      );
+    } catch (e) {
+      console.error(e);
+    }
 
-    // Show the toggle button if:
-    // - Print simulation is supported for the current target.
-    // - Not debugging content document.
-    if (
-      (await this.currentTarget.actorHasMethod(
-        "emulation",
-        "getIsPrintSimulationEnabled"
-      )) &&
-      !this.currentTarget.chrome
-    ) {
+    // Bug 1606852: For backwards compatibility, we need to get the emulation actor. The ContentViewer
+    // actor is only available in Firefox 73 or newer. We can remove this call when Firefox 73
+    // is on release.
+    if (!this.contentViewerFront) {
+      this.contentViewerFront = await this.currentTarget.getFront("emulation");
+    }
+
+    if (!this.currentTarget.chrome) {
       this.printSimulationButton.removeAttribute("hidden");
-
       this.printSimulationButton.addEventListener(
         "click",
         this._onTogglePrintSimulation
+      );
+    }
+
+    // Show the color scheme simulation toggle button if:
+    // - The feature pref is enabled.
+    // - Color scheme simulation is supported for the current target.
+    const isEmulateColorSchemeSupported =
+      (await this.currentTarget.actorHasMethod(
+        "contentViewer",
+        "getEmulatedColorScheme"
+      )) ||
+      // Bug 1606852: We can removed this check when Firefox 73 is on release.
+      (await this.currentTarget.actorHasMethod(
+        "emulation",
+        "getEmulatedColorScheme"
+      ));
+
+    if (
+      Services.prefs.getBoolPref(
+        "devtools.inspector.color-scheme-simulation.enabled"
+      ) &&
+      isEmulateColorSchemeSupported
+    ) {
+      this.colorSchemeSimulationButton.removeAttribute("hidden");
+      this.colorSchemeSimulationButton.addEventListener(
+        "click",
+        this._onToggleColorSchemeSimulation
       );
     }
   },
@@ -433,7 +472,7 @@ CssRuleView.prototype = {
    * - value {Object} Depends on the type of the node
    * returns null of the node isn't anything we care about
    */
-  /* eslint-disable complexity */
+  // eslint-disable-next-line complexity
   getNodeInfo: function(node) {
     if (!node) {
       return null;
@@ -559,7 +598,6 @@ CssRuleView.prototype = {
       value,
     };
   },
-  /* eslint-enable complexity */
 
   /**
    * Retrieve the RuleEditor instance.
@@ -826,16 +864,21 @@ CssRuleView.prototype = {
     }
 
     // Clean-up for print simulation.
-    if (this._emulationFront) {
+    if (this.contentViewerFront) {
+      this.colorSchemeSimulationButton.removeEventListener(
+        "click",
+        this._onToggleColorSchemeSimulation
+      );
       this.printSimulationButton.removeEventListener(
         "click",
         this._onTogglePrintSimulation
       );
 
-      this._emulationFront.destroy();
+      this.contentViewerFront.destroy();
 
+      this.colorSchemeSimulationButton = null;
       this.printSimulationButton = null;
-      this._emulationFront = null;
+      this.contentViewerFront = null;
     }
 
     this.tooltips.destroy();
@@ -1276,7 +1319,7 @@ CssRuleView.prototype = {
   /**
    * Creates editor UI for each of the rules in _elementStyle.
    */
-  /* eslint-disable complexity */
+  // eslint-disable-next-line complexity
   _createEditors: function() {
     // Run through the current list of rules, attaching
     // their editors in order.  Create editors if needed.
@@ -1359,7 +1402,6 @@ CssRuleView.prototype = {
 
     return promise.all(editorReadyPromises);
   },
-  /* eslint-enable complexity */
 
   /**
    * Highlight rules that matches the filter search value and returns a
@@ -1713,15 +1755,30 @@ CssRuleView.prototype = {
     }
   },
 
+  async _onToggleColorSchemeSimulation() {
+    const currentState = await this.contentViewerFront.getEmulatedColorScheme();
+    const index = COLOR_SCHEMES.indexOf(currentState);
+    const nextState = COLOR_SCHEMES[(index + 1) % COLOR_SCHEMES.length];
+
+    if (nextState) {
+      this.colorSchemeSimulationButton.setAttribute("state", nextState);
+    } else {
+      this.colorSchemeSimulationButton.removeAttribute("state");
+    }
+
+    await this.contentViewerFront.setEmulatedColorScheme(nextState);
+    this.refreshPanel();
+  },
+
   async _onTogglePrintSimulation() {
-    const enabled = await this.emulationFront.getIsPrintSimulationEnabled();
+    const enabled = await this.contentViewerFront.getIsPrintSimulationEnabled();
 
     if (!enabled) {
       this.printSimulationButton.classList.add("checked");
-      await this.emulationFront.startPrintMediaSimulation();
+      await this.contentViewerFront.startPrintMediaSimulation();
     } else {
       this.printSimulationButton.classList.remove("checked");
-      await this.emulationFront.stopPrintMediaSimulation(false);
+      await this.contentViewerFront.stopPrintMediaSimulation(false);
     }
 
     // Refresh the current element's rules in the panel.
@@ -1736,7 +1793,7 @@ CssRuleView.prototype = {
    */
   _flashElement(element) {
     flashElementOn(element, {
-      backgroundClass: "theme-bg-yellow-contrast",
+      backgroundClass: "theme-bg-contrast",
     });
 
     if (this._flashMutationTimer) {
@@ -1746,7 +1803,7 @@ CssRuleView.prototype = {
 
     this._flashMutationTimer = setTimeout(() => {
       flashElementOff(element, {
-        backgroundClass: "theme-bg-yellow-contrast",
+        backgroundClass: "theme-bg-contrast",
       });
 
       // Emit "scrolled-to-property" for use by tests.

@@ -77,18 +77,16 @@ class XHRBreakpoints extends _react.Component {
     });
 
     _defineProperty(this, "handleChange", e => {
-      const target = e.target;
       this.setState({
-        inputValue: target.value
+        inputValue: e.target.value
       });
     });
 
     _defineProperty(this, "handleMethodChange", e => {
-      const target = e.target;
       this.setState({
         focused: true,
         editing: true,
-        inputMethod: target.value
+        inputMethod: e.target.value
       });
     });
 
@@ -129,12 +127,12 @@ class XHRBreakpoints extends _react.Component {
         return;
       }
 
-      if (e.target.nodeName === "INPUT") {
+      if (e.currentTarget.nodeName === "INPUT") {
         this.setState({
           clickedOnFormElement: true,
           editing: false
         });
-      } else if (e.target.nodeName === "SELECT" && !e.shiftKey) {
+      } else if (e.currentTarget.nodeName === "SELECT" && !e.shiftKey) {
         // The user has tabbed off the select and we should
         // cancel the edit
         this.hideInput();

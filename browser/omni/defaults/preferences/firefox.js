@@ -33,15 +33,11 @@ pref("extensions.webextOptionalPermissionPrompts", true);
 // Preferences for AMO integration
 pref("extensions.getAddons.cache.enabled", true);
 pref("extensions.getAddons.get.url", "https://services.addons.mozilla.org/api/v3/addons/search/?guid=%IDS%&lang=%LOCALE%");
-pref("extensions.getAddons.compatOverides.url", "https://services.addons.mozilla.org/api/v3/addons/compat-override/?guid=%IDS%&lang=%LOCALE%");
 pref("extensions.getAddons.search.browseURL", "https://addons.mozilla.org/%LOCALE%/firefox/search?q=%TERMS%&platform=%OS%&appver=%VERSION%");
 pref("extensions.webservice.discoverURL", "https://discovery.addons.mozilla.org/%LOCALE%/firefox/discovery/pane/%VERSION%/%OS%/%COMPATIBILITY_MODE%");
 pref("extensions.getAddons.link.url", "https://addons.mozilla.org/%LOCALE%/firefox/");
 pref("extensions.getAddons.langpacks.url", "https://services.addons.mozilla.org/api/v3/addons/language-tools/?app=firefox&type=language&appversion=%VERSION%");
 pref("extensions.getAddons.discovery.api_url", "https://services.addons.mozilla.org/api/v4/discovery/?lang=%LOCALE%&edition=%DISTRIBUTION%");
-
-// Enable the HTML-based discovery panel at about:addons.
-pref("extensions.htmlaboutaddons.discover.enabled", true);
 
 // The URL for the privacy policy related to recommended extensions.
 pref("extensions.recommendations.privacyPolicyUrl", "https://www.mozilla.org/privacy/firefox/?utm_source=firefox-browser&utm_medium=firefox-browser&utm_content=privacy-policy-link#addons");
@@ -70,16 +66,13 @@ pref("extensions.webextensions.default-content-security-policy", "script-src 'se
 pref("extensions.webextensions.remote", true);
 pref("extensions.webextensions.background-delayed-startup", true);
 
-// Extensions that should not be flagged as legacy in about:addons
-pref("extensions.legacy.exceptions", "testpilot@cliqz.com,@testpilot-containers,jid1-NeEaf3sAHdKHPA@jetpack,@activity-streams,pulse@mozilla.com,@testpilot-addon,@min-vid,tabcentertest1@mozilla.com,snoozetabs@mozilla.com,speaktome@mozilla.com,hoverpad@mozilla.com");
-
 // Require signed add-ons by default
 pref("extensions.langpacks.signatures.required", true);
 pref("xpinstall.signatures.required", true);
 pref("xpinstall.signatures.devInfoURL", "https://wiki.mozilla.org/Addons/Extension_Signing");
 
-// Disable extensionStorage storage actor by default
-pref("devtools.storage.extensionStorage.enabled", false);
+// Enable extensionStorage storage actor by default
+pref("devtools.storage.extensionStorage.enabled", true);
 
 // Dictionary download preference
 pref("browser.dictionaries.download.url", "https://addons.mozilla.org/%LOCALE%/firefox/language-tools/");
@@ -137,9 +130,9 @@ pref("app.update.elevation.promptMaxAttempts", 2);
 // (which is in a file in the update directory). Because of this, this pref
 // should no longer be used directly. Instead, getAppUpdateAutoEnabled and
 // getAppUpdateAutoEnabled from UpdateUtils.jsm should be used.
-//@line 145 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 138 "$SRCDIR/browser/app/profile/firefox.js"
   pref("app.update.auto", true);
-//@line 147 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 140 "$SRCDIR/browser/app/profile/firefox.js"
 
 // If set to true, the Update Service will apply updates in the background
 // when it finishes downloading them.
@@ -155,9 +148,9 @@ pref("app.update.url", "https://aus5.mozilla.org/update/6/%PRODUCT%/%VERSION%/%B
 // app.update.promptWaitTime is in branding section
 
 // Whether or not to attempt using the service for updates.
-//@line 165 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 158 "$SRCDIR/browser/app/profile/firefox.js"
 
-//@line 171 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 164 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Symmetric (can be overridden by individual extensions) update preferences.
 // e.g.
@@ -173,9 +166,9 @@ pref("extensions.update.interval", 86400);  // Check for updates to Extensions a
 
 pref("lightweightThemes.getMoreURL", "https://addons.mozilla.org/%LOCALE%/firefox/themes");
 
-//@line 187 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 180 "$SRCDIR/browser/app/profile/firefox.js"
   pref("browser.eme.ui.enabled", true);
-//@line 191 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 184 "$SRCDIR/browser/app/profile/firefox.js"
 
 // UI tour experience.
 pref("browser.uitour.enabled", true);
@@ -189,10 +182,9 @@ pref("browser.uitour.surveyDuration", 7200);
 pref("keyword.enabled", true);
 pref("browser.fixup.domainwhitelist.localhost", true);
 
-pref("general.smoothScroll", true);
-//@line 206 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 198 "$SRCDIR/browser/app/profile/firefox.js"
   pref("general.autoScroll", false);
-//@line 210 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 202 "$SRCDIR/browser/app/profile/firefox.js"
 
 pref("browser.stopReloadAnimation.enabled", true);
 
@@ -222,9 +214,9 @@ pref("browser.startup.firstrunSkipsHomepage", true);
 // Show an about:blank window as early as possible for quick startup feedback.
 // Held to nightly on Linux due to bug 1450626.
 // Disabled on Mac because the bouncing dock icon already provides feedback.
-//@line 240 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 232 "$SRCDIR/browser/app/profile/firefox.js"
   pref("browser.startup.blankWindow", true);
-//@line 244 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 236 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Don't create the hidden window during startup on
 // platforms that don't always need it (Win/Linux).
@@ -241,11 +233,11 @@ pref("browser.warnOnQuit", true);
 pref("browser.fullscreen.autohide", true);
 pref("browser.overlink-delay", 80);
 
-//@line 261 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 253 "$SRCDIR/browser/app/profile/firefox.js"
   pref("browser.urlbar.clickSelectsAll", false);
-//@line 266 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 258 "$SRCDIR/browser/app/profile/firefox.js"
   pref("browser.urlbar.doubleClickSelectsAll", true);
-//@line 270 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 262 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Whether using `ctrl` when hitting return/enter in the URL bar
 // (or clicking 'go') should prefix 'www.' and suffix
@@ -279,11 +271,6 @@ pref("browser.urlbar.suggest.bookmark",             true);
 pref("browser.urlbar.suggest.openpage",             true);
 pref("browser.urlbar.suggest.searches",             true);
 
-// Whether the user made a choice in the old search suggestions opt-in bar.
-pref("browser.urlbar.userMadeSearchSuggestionsChoice", false);
-// The suggestion opt-out hint will be hidden after being shown 4 times.
-pref("browser.urlbar.timesBeforeHidingSuggestionsHint", 4);
-
 // Limit the number of characters sent to the current search engine to fetch
 // suggestions.
 pref("browser.urlbar.maxCharsForSearchSuggestions", 20);
@@ -309,10 +296,17 @@ pref("browser.urlbar.openintab", false);
 pref("browser.urlbar.usepreloadedtopurls.enabled", false);
 pref("browser.urlbar.usepreloadedtopurls.expire_days", 14);
 
-// Whether the quantum bar displays the major design update.
-pref("browser.urlbar.megabar", false);
+//@line 321 "$SRCDIR/browser/app/profile/firefox.js"
+  // Whether the quantum bar displays design update 1.
+  pref("browser.urlbar.update1", true);
+  // Whether the urlbar should strip https from urls in the view.
+  pref("browser.urlbar.update1.view.stripHttps", true);
+  pref("browser.urlbar.openViewOnFocus", true);
+//@line 331 "$SRCDIR/browser/app/profile/firefox.js"
+// Whether we expand the font size when when the urlbar is
+// focused in design update 1.
+pref("browser.urlbar.update1.expandTextOnFocus", false);
 
-pref("browser.urlbar.openViewOnFocus", false);
 pref("browser.urlbar.eventTelemetry.enabled", false);
 
 pref("browser.altClickSave", false);
@@ -342,9 +336,9 @@ pref("browser.download.panel.shown", false);
 // on whether there are downloads to show.
 pref("browser.download.autohideButton", true);
 
-//@line 367 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 365 "$SRCDIR/browser/app/profile/firefox.js"
   pref("browser.helperApps.deleteTempFileOnExit", true);
-//@line 369 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 367 "$SRCDIR/browser/app/profile/firefox.js"
 
 // search engines URL
 pref("browser.search.searchEnginesURL",      "https://addons.mozilla.org/%LOCALE%/firefox/search-engines/");
@@ -365,6 +359,14 @@ pref("browser.search.hiddenOneOffs", "");
 // Mirrors whether the search-container widget is in the navigation toolbar.
 pref("browser.search.widget.inNavBar", false);
 
+// Enables display of the options for the user using a separate default search
+// engine in private browsing mode.
+//@line 390 "$SRCDIR/browser/app/profile/firefox.js"
+  pref("browser.search.separatePrivateDefault.ui.enabled", true);
+//@line 392 "$SRCDIR/browser/app/profile/firefox.js"
+// The maximum amount of times the private default banner is shown.
+pref("browser.search.separatePrivateDefault.ui.banner.max", 0);
+
 pref("browser.sessionhistory.max_entries", 50);
 
 // Built-in default permissions.
@@ -375,23 +377,16 @@ pref("permissions.manager.defaultsUrl", "resource://app/defaults/permissions");
 pref("permissions.default.camera", 0);
 pref("permissions.default.microphone", 0);
 pref("permissions.default.geo", 0);
+pref("permissions.default.xr", 0);
 pref("permissions.default.desktop-notification", 0);
 pref("permissions.default.shortcuts", 0);
 
-//@line 403 "$SRCDIR/browser/app/profile/firefox.js"
-  pref("permissions.desktop-notification.postPrompt.enabled", true);
-//@line 407 "$SRCDIR/browser/app/profile/firefox.js"
-
+pref("permissions.desktop-notification.postPrompt.enabled", true);
 pref("permissions.desktop-notification.notNow.enabled", false);
 
 pref("permissions.fullscreen.allowed", false);
 
 pref("permissions.postPrompt.animate", true);
-
-// This is primarily meant to be enabled for studies.
-//@line 416 "$SRCDIR/browser/app/profile/firefox.js"
-  pref("permissions.eventTelemetry.enabled", true);
-//@line 420 "$SRCDIR/browser/app/profile/firefox.js"
 
 // handle links targeting new windows
 // 1=current window/tab, 2=new window, 3=new tab in most recent window
@@ -412,9 +407,9 @@ pref("browser.link.open_newwindow.restriction", 2);
 // window.open arguments) when the browser is in fullscreen mode.
 // We set this differently on Mac because the fullscreen implementation there is
 // different.
-//@line 443 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 438 "$SRCDIR/browser/app/profile/firefox.js"
   pref("browser.link.open_newwindow.disabled_in_fullscreen", false);
-//@line 445 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 440 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Tabbed browser
 pref("browser.tabs.multiselect", true);
@@ -442,7 +437,10 @@ pref("browser.tabs.tabClipWidth", 140);
 pref("browser.tabs.tabMinWidth", 76);
 // Initial titlebar state is managed by -moz-gtk-csd-hide-titlebar-by-default
 // on Linux.
-//@line 475 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 470 "$SRCDIR/browser/app/profile/firefox.js"
+
+//Control the visibility of Tab Manager Menu.
+pref("browser.tabs.tabmanager.enabled", false);
 
 // Offer additional drag space to the user. The drag space
 // will only be shown if browser.tabs.drawInTitlebar is true.
@@ -459,7 +457,7 @@ pref("browser.tabs.showAudioPlayingIcon", true);
 // This should match Chromium's audio indicator delay.
 pref("browser.tabs.delayHidingAudioPlayingIconMS", 3000);
 
-//@line 492 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 490 "$SRCDIR/browser/app/profile/firefox.js"
   // Pref to control whether we use a separate privileged content process
   // for about: pages. This pref name did not age well: we will have multiple
   // types of privileged content processes, each with different privileges.
@@ -472,17 +470,14 @@ pref("browser.tabs.delayHidingAudioPlayingIconMS", 3000);
   // This pref will cause assertions when a remoteType triggers a process switch
   // to a new remoteType it should not be able to trigger.
   pref("browser.tabs.remote.enforceRemoteTypeRestrictions", true);
-//@line 505 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 503 "$SRCDIR/browser/app/profile/firefox.js"
 
 // allow_eval_* is enabled on Firefox Desktop only at this
 // point in time
 pref("security.allow_eval_with_system_principal", false);
 pref("security.allow_eval_in_parent_process", false);
 
-//@line 512 "$SRCDIR/browser/app/profile/firefox.js"
-  pref("browser.tabs.remote.useHTTPResponseProcessSelection", true);
-//@line 517 "$SRCDIR/browser/app/profile/firefox.js"
-
+pref("security.allow_parent_unrestricted_js_loads", false);
 
 // Unload tabs when available memory is running low
 pref("browser.tabs.unloadOnLowMemory", false);
@@ -557,7 +552,6 @@ pref("privacy.history.custom",              false);
 // 5 - Last 5 minutes
 // 6 - Last 24 hours
 pref("privacy.sanitize.timeSpan", 1);
-pref("privacy.sanitize.sanitizeOnShutdown", false);
 
 pref("privacy.sanitize.migrateFx3Prefs",    false);
 
@@ -566,12 +560,6 @@ pref("privacy.panicButton.enabled",         true);
 // Time until temporary permissions expire, in ms
 pref("privacy.temporary_permission_expire_time_ms",  3600000);
 
-// If Accept-Language should be spoofed by en-US
-// 0 - will prompt
-// 1 - don't spoof
-// 2 - spoof
-pref("privacy.spoof_english", 0);
-
 pref("network.proxy.share_proxy_settings",  false); // use the same proxy settings for all protocols
 
 // simple gestures support
@@ -579,16 +567,16 @@ pref("browser.gesture.swipe.left", "Browser:BackOrBackDuplicate");
 pref("browser.gesture.swipe.right", "Browser:ForwardOrForwardDuplicate");
 pref("browser.gesture.swipe.up", "cmd_scrollTop");
 pref("browser.gesture.swipe.down", "cmd_scrollBottom");
-//@line 618 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 603 "$SRCDIR/browser/app/profile/firefox.js"
   pref("browser.gesture.pinch.latched", false);
   pref("browser.gesture.pinch.threshold", 25);
-//@line 622 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 607 "$SRCDIR/browser/app/profile/firefox.js"
   // Enabled for touch input display zoom.
   pref("browser.gesture.pinch.out", "cmd_fullZoomEnlarge");
   pref("browser.gesture.pinch.in", "cmd_fullZoomReduce");
   pref("browser.gesture.pinch.out.shift", "cmd_fullZoomReset");
   pref("browser.gesture.pinch.in.shift", "cmd_fullZoomReset");
-//@line 634 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 619 "$SRCDIR/browser/app/profile/firefox.js"
 pref("browser.gesture.twist.latched", false);
 pref("browser.gesture.twist.threshold", 0);
 pref("browser.gesture.twist.right", "cmd_gestureRotateRight");
@@ -604,7 +592,7 @@ pref("browser.history_swipe_animation.disabled", false);
 // 3: Zoom in or out (reflowing zoom).
 // 4: Treat vertical wheel as horizontal scroll
 // 5: Zoom in or out (pinch zoom).
-//@line 666 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 651 "$SRCDIR/browser/app/profile/firefox.js"
   // On the other platforms (non-macOS), user may use legacy mouse which
   // supports only vertical wheel but want to scroll horizontally.  For such
   // users, we should provide horizontal scroll with shift+wheel (same as
@@ -614,7 +602,7 @@ pref("browser.history_swipe_animation.disabled", false);
   pref("mousewheel.with_shift.action", 4);
   pref("mousewheel.with_alt.action", 2);
   pref("mousewheel.with_meta.action", 1); // win key on Win, Super/Hyper on Linux
-//@line 676 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 661 "$SRCDIR/browser/app/profile/firefox.js"
 pref("mousewheel.with_control.action",3);
 pref("mousewheel.with_win.action", 1);
 
@@ -632,14 +620,14 @@ pref("network.protocol-handler.external.mailto", true); // for mail
 pref("network.protocol-handler.external.news", true);   // for news
 pref("network.protocol-handler.external.snews", true);  // for secure news
 pref("network.protocol-handler.external.nntp", true);   // also news
-//@line 696 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 681 "$SRCDIR/browser/app/profile/firefox.js"
 
 // ...without warning dialogs
 pref("network.protocol-handler.warn-external.mailto", false);
 pref("network.protocol-handler.warn-external.news", false);
 pref("network.protocol-handler.warn-external.snews", false);
 pref("network.protocol-handler.warn-external.nntp", false);
-//@line 705 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 690 "$SRCDIR/browser/app/profile/firefox.js"
 
 // By default, all protocol handlers are exposed.  This means that
 // the browser will respond to openURL commands for all URL types.
@@ -665,17 +653,9 @@ pref("plugins.testmode", false);
 // Should plugins that are hidden show the infobar UI?
 pref("plugins.show_infobar", false);
 
-//@line 733 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 718 "$SRCDIR/browser/app/profile/firefox.js"
   pref("plugin.default.state", 1);
-//@line 735 "$SRCDIR/browser/app/profile/firefox.js"
-
-// Plugins bundled in XPIs are enabled by default.
-pref("plugin.defaultXpi.state", 2);
-
-// Flash is Click-to-Activate by default on all channels. Disabled for ARM builds.
-//@line 743 "$SRCDIR/browser/app/profile/firefox.js"
-  pref("plugin.state.flash", 1);
-//@line 745 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 720 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Enables the download and use of the flash blocklists.
 pref("plugins.flashBlock.enabled", true);
@@ -688,9 +668,9 @@ pref("plugins.flashBlock.enabled", true);
 pref("plugins.favorfallback.mode", "follow-ctp");
 pref("plugins.favorfallback.rules", "nosrc,video");
 
-//@line 760 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 735 "$SRCDIR/browser/app/profile/firefox.js"
   pref("browser.preferences.instantApply", true);
-//@line 762 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 737 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Toggling Search bar on and off in about:preferences
 pref("browser.preferences.search", true);
@@ -704,9 +684,9 @@ pref("browser.download.hide_plugins_without_extensions", true);
 // 0 goes Back/Forward
 // 1 act like PgUp/PgDown
 // 2 and other values, nothing
-//@line 776 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 751 "$SRCDIR/browser/app/profile/firefox.js"
   pref("browser.backspace_action", 2);
-//@line 780 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 755 "$SRCDIR/browser/app/profile/firefox.js"
 
 // this will automatically enable inline spellchecking (if it is available) for
 // editable elements in HTML
@@ -769,6 +749,7 @@ pref("gecko.handlerService.schemes.ircs.3.name", "chrome://browser-region/locale
 pref("gecko.handlerService.schemes.ircs.3.uriTemplate", "chrome://browser-region/locale/region.properties");
 
 pref("browser.geolocation.warning.infoURL", "https://www.mozilla.org/%LOCALE%/firefox/geolocation/");
+pref("browser.xr.warning.infoURL", "https://www.mozilla.org/%LOCALE%/firefox/xr/");
 
 pref("browser.sessionstore.resume_from_crash", true);
 pref("browser.sessionstore.resume_session_once", false);
@@ -906,9 +887,9 @@ pref("toolkit.crashreporter.infoURL",
 pref("app.support.baseURL", "https://support.mozilla.org/1/firefox/%VERSION%/%OS%/%LOCALE%/");
 
 // base url for web-based feedback pages
-//@line 982 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 958 "$SRCDIR/browser/app/profile/firefox.js"
   pref("app.feedback.baseURL", "https://input.mozilla.org/%LOCALE%/feedback/%APP%/%VERSION%/");
-//@line 984 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 960 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Name of alternate about: page for certificate errors (when undefined, defaults to about:neterror)
 pref("security.alternate_certificate_error_page", "certerror");
@@ -918,9 +899,8 @@ pref("security.certerrors.permanentOverride", true);
 pref("security.certerrors.mitm.priming.enabled", true);
 pref("security.certerrors.mitm.priming.endpoint", "https://mitmdetection.services.mozilla.com/");
 pref("security.certerrors.mitm.auto_enable_enterprise_roots", true);
-//@line 994 "$SRCDIR/browser/app/profile/firefox.js"
+
 pref("security.aboutcertificate.enabled", true);
-//@line 998 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Whether to start the private browsing mode at application startup
 pref("browser.privatebrowsing.autostart", false);
@@ -931,6 +911,9 @@ pref("browser.bookmarks.editDialog.showForNewBookmarks", true);
 // Don't try to alter this pref, it'll be reset the next time you use the
 // bookmarking dialog
 pref("browser.bookmarks.editDialog.firstEditField", "namePicker");
+
+// The number of recently selected folders in the edit bookmarks dialog.
+pref("browser.bookmarks.editDialog.maxRecentFolders", 7);
 
 pref("dom.ipc.plugins.flash.disable-protected-mode", false);
 
@@ -945,11 +928,11 @@ pref("browser.in-content.dark-mode", true);
 
 pref("dom.ipc.shims.enabledWarnings", false);
 
-//@line 1069 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1045 "$SRCDIR/browser/app/profile/firefox.js"
 
-//@line 1113 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1085 "$SRCDIR/browser/app/profile/firefox.js"
 
-//@line 1115 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1087 "$SRCDIR/browser/app/profile/firefox.js"
   // This pref is introduced as part of bug 742434, the naming is inspired from
   // its Windows/Mac counterpart, but on Linux it's an integer which means:
   // 0 -> "no sandbox"
@@ -966,11 +949,11 @@ pref("dom.ipc.shims.enabledWarnings", false);
   pref("security.sandbox.content.write_path_whitelist", "");
   pref("security.sandbox.content.read_path_whitelist", "");
   pref("security.sandbox.content.syscall_whitelist", "");
-//@line 1132 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1104 "$SRCDIR/browser/app/profile/firefox.js"
 
-//@line 1140 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1108 "$SRCDIR/browser/app/profile/firefox.js"
 
-//@line 1142 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1110 "$SRCDIR/browser/app/profile/firefox.js"
   // ID (a UUID when set by gecko) that is used to form the name of a
   // sandbox-writable temporary directory to be used by content processes
   // when a temporary writable file is required in a level 1 sandbox.
@@ -979,7 +962,7 @@ pref("dom.ipc.shims.enabledWarnings", false);
 
   // This pref determines if messages relevant to sandbox violations are
   // logged.
-//@line 1154 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1122 "$SRCDIR/browser/app/profile/firefox.js"
 
 // This pref governs whether we attempt to work around problems caused by
 // plugins using OS calls to manipulate the cursor while running out-of-
@@ -988,9 +971,9 @@ pref("dom.ipc.shims.enabledWarnings", false);
 // in the browser process.  Eventually plugins will be required to use the
 // NPAPI to manipulate the cursor, and these workarounds will be removed.
 // See bug 621117.
-//@line 1165 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1133 "$SRCDIR/browser/app/profile/firefox.js"
 
-//@line 1177 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1145 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Preferences to be synced by default
 pref("services.sync.prefs.sync.accessibility.blockautorefresh", true);
@@ -1105,13 +1088,10 @@ pref("prompts.tab_modal.enabled", true);
 // Activates preloading of the new tab url.
 pref("browser.newtab.preload", true);
 
-// Indicates if about:newtab shows content (enabled) or just blank
-pref("browser.newtabpage.enabled", true);
-
 // Activity Stream prefs that control to which page to redirect
-//@line 1296 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1261 "$SRCDIR/browser/app/profile/firefox.js"
   pref("browser.newtabpage.activity-stream.debug", false);
-//@line 1298 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1263 "$SRCDIR/browser/app/profile/firefox.js"
 
 pref("browser.library.activity-stream.enabled", true);
 
@@ -1124,27 +1104,38 @@ pref("browser.newtabpage.activity-stream.improvesearch.topSiteSearchShortcuts", 
 // ASRouter provider configuration
 pref("browser.newtabpage.activity-stream.asrouter.providers.cfr", "{\"id\":\"cfr\",\"enabled\":true,\"type\":\"remote-settings\",\"bucket\":\"cfr\",\"frequency\":{\"custom\":[{\"period\":\"daily\",\"cap\":1}]},\"categories\":[\"cfrAddons\",\"cfrFeatures\"],\"updateCycleInMs\":3600000}");
 pref("browser.newtabpage.activity-stream.asrouter.providers.whats-new-panel", "{\"id\":\"whats-new-panel\",\"enabled\":true,\"type\":\"remote-settings\",\"bucket\":\"whats-new-panel\",\"updateCycleInMs\":3600000}");
+pref("browser.newtabpage.activity-stream.asrouter.providers.message-groups", "{\"id\":\"message-groups\",\"enabled\":true,\"type\":\"remote-settings\",\"bucket\":\"message-groups\",\"updateCycleInMs\":3600000}");
 // This url, if changed, MUST continue to point to an https url. Pulling arbitrary content to inject into
 // this page over http opens us up to a man-in-the-middle attack that we'd rather not face. If you are a downstream
 // repackager of this code using an alternate snippet url, please keep your users safe
 pref("browser.newtabpage.activity-stream.asrouter.providers.snippets", "{\"id\":\"snippets\",\"enabled\":true,\"type\":\"remote\",\"url\":\"https://snippets.cdn.mozilla.net/%STARTPAGE_VERSION%/%NAME%/%VERSION%/%APPBUILDID%/%BUILD_TARGET%/%LOCALE%/%CHANNEL%/%OS_VERSION%/%DISTRIBUTION%/%DISTRIBUTION_VERSION%/\",\"updateCycleInMs\":14400000}");
+//@line 1281 "$SRCDIR/browser/app/profile/firefox.js"
+  pref("browser.newtabpage.activity-stream.asrouter.useReleaseSnippets", true);
+//@line 1283 "$SRCDIR/browser/app/profile/firefox.js"
+
+// The pref that controls if ASRouter uses the remote fluent files.
+// It's enabled by default, but could be disabled to force ASRouter to use the local files.
+pref("browser.newtabpage.activity-stream.asrouter.useRemoteL10n", true);
 
 // These prefs control if Discovery Stream is enabled.
 pref("browser.newtabpage.activity-stream.discoverystream.enabled", true);
 pref("browser.newtabpage.activity-stream.discoverystream.hardcoded-basic-layout", false);
 pref("browser.newtabpage.activity-stream.discoverystream.spocs-endpoint", "");
+// List of langs that get the 7 row layout.
+pref("browser.newtabpage.activity-stream.discoverystream.lang-layout-config", "en");
 
 // The pref controls if search hand-off is enabled for Activity Stream.
-//@line 1322 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1297 "$SRCDIR/browser/app/profile/firefox.js"
   pref("browser.newtabpage.activity-stream.improvesearch.handoffToAwesomebar", true);
-//@line 1326 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1301 "$SRCDIR/browser/app/profile/firefox.js"
 
-pref("trailhead.firstrun.branches", "join-supercharge");
+pref("trailhead.firstrun.branches", "");
 
 // The pref that controls if the What's New panel is enabled.
 pref("browser.messaging-system.whatsNewPanel.enabled", true);
-// Whether to use Messaging System to add a badge to the FxA toolbar button
-pref("browser.messaging-system.fxatoolbarbadge.enabled", true);
+// Used for CFR messages with scores. See Bug 1594422.
+pref("browser.messaging-system.personalized-cfr.scores", "{}");
+pref("browser.messaging-system.personalized-cfr.score-threshold", 5000);
 
 // Enable the DOM fullscreen API.
 pref("full-screen-api.enabled", true);
@@ -1156,7 +1147,7 @@ pref("toolkit.startup.max_resumed_crashes", 3);
 
 // Whether to use RegisterApplicationRestart to restart the browser and resume
 // the session on next Windows startup
-//@line 1347 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1323 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Completely disable pdf.js as an option to preview pdfs within firefox.
 // Note: if this is not disabled it does not necessarily mean pdf.js is the pdf
@@ -1175,6 +1166,7 @@ pref("sidebar.position_start", true);
 
 pref("security.identitypopup.recordEventTelemetry", true);
 pref("security.protectionspopup.recordEventTelemetry", true);
+pref("security.app_menu.recordEventTelemetry", true);
 
 // Block insecure active content on https pages
 pref("security.mixed_content.block_active_content", true);
@@ -1210,17 +1202,17 @@ pref("dom.debug.propagate_gesture_events_through_content", false);
 
 // All the Geolocation preferences are here.
 //
-//@line 1403 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1380 "$SRCDIR/browser/app/profile/firefox.js"
   // Use MLS on Nightly and early Beta.
   pref("geo.wifi.uri", "https://location.services.mozilla.com/v1/geolocate?key=%MOZILLA_API_KEY%");
-//@line 1406 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1383 "$SRCDIR/browser/app/profile/firefox.js"
 
-//@line 1410 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1387 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Set to false if things are really broken.
-//@line 1415 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1392 "$SRCDIR/browser/app/profile/firefox.js"
 
-//@line 1419 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1396 "$SRCDIR/browser/app/profile/firefox.js"
 
 // CustomizableUI debug logging.
 pref("browser.uiCustomization.debug", false);
@@ -1269,9 +1261,9 @@ pref("identity.mobilepromo.ios", "https://www.mozilla.org/firefox/ios/?utm_sourc
 
 // Migrate any existing Firefox Account data from the default profile to the
 // Developer Edition profile.
-//@line 1470 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1447 "$SRCDIR/browser/app/profile/firefox.js"
   pref("identity.fxaccounts.migrateToDevEdition", false);
-//@line 1472 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1449 "$SRCDIR/browser/app/profile/firefox.js"
 
 // If activated, send tab will use the new FxA commands backend.
 pref("identity.fxaccounts.commands.enabled", true);
@@ -1280,9 +1272,9 @@ pref("identity.fxaccounts.commands.enabled", true);
 pref("identity.fxaccounts.commands.missed.fetch_interval", 86400);
 
 // On GTK, we now default to showing the menubar only when alt is pressed:
-//@line 1481 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1458 "$SRCDIR/browser/app/profile/firefox.js"
   pref("ui.key.menuAccessKeyFocuses", true);
-//@line 1483 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1460 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Whether we should run a test-pattern through EME GMPs before assuming they'll
 // decode H.264.
@@ -1296,10 +1288,10 @@ pref("media.gmp.trial-create.enabled", true);
 // to enable the CDM if its disabled; it's as if the keysystem is completely
 // unsupported.
 
-//@line 1497 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1474 "$SRCDIR/browser/app/profile/firefox.js"
   pref("media.gmp-widevinecdm.visible", true);
   pref("media.gmp-widevinecdm.enabled", true);
-//@line 1500 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1477 "$SRCDIR/browser/app/profile/firefox.js"
 
 pref("media.gmp-gmpopenh264.visible", true);
 pref("media.gmp-gmpopenh264.enabled", true);
@@ -1309,12 +1301,18 @@ pref("media.autoplay.enabled.user-gestures-needed", true);
 // Set Firefox to block autoplay, asking for permission by default.
 pref("media.autoplay.default", 1); // 0=Allowed, 1=Blocked, 5=All Blocked
 
-//@line 1510 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1487 "$SRCDIR/browser/app/profile/firefox.js"
   // Block WebAudio from playing automatically.
   pref("media.autoplay.block-webaudio", true);
-//@line 1515 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1492 "$SRCDIR/browser/app/profile/firefox.js"
 
-//@line 1522 "$SRCDIR/browser/app/profile/firefox.js"
+pref("media.videocontrols.picture-in-picture.enabled", true);
+pref("media.videocontrols.picture-in-picture.video-toggle.enabled", true);
+
+// Show the audio toggle for Picture-in-Picture.
+//@line 1498 "$SRCDIR/browser/app/profile/firefox.js"
+  pref("media.videocontrols.picture-in-picture.audio-toggle.enabled", true);
+//@line 1502 "$SRCDIR/browser/app/profile/firefox.js"
 
 pref("browser.translation.detectLanguage", false);
 pref("browser.translation.neverForLanguages", "");
@@ -1338,28 +1336,23 @@ pref("toolkit.telemetry.newProfilePing.enabled", true);
 pref("toolkit.telemetry.updatePing.enabled", true);
 // Enables sending 'bhr' pings when the browser hangs.
 pref("toolkit.telemetry.bhrPing.enabled", true);
-// Enables using Hybrid Content Telemetry from Mozilla privileged pages.
-pref("toolkit.telemetry.hybridContent.enabled", true);
 // Whether to enable Ecosystem Telemetry, requires a restart.
-//@line 1549 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1527 "$SRCDIR/browser/app/profile/firefox.js"
   pref("toolkit.telemetry.ecosystemtelemetry.enabled", true);
-//@line 1553 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1531 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Ping Centre Telemetry settings.
 pref("browser.ping-centre.telemetry", true);
 pref("browser.ping-centre.log", false);
-pref("browser.ping-centre.staging.endpoint", "https://onyx_tiles.stage.mozaws.net/v3/links/ping-centre");
-pref("browser.ping-centre.production.endpoint", "https://tiles.services.mozilla.com/v3/links/ping-centre");
 
 // Enable GMP support in the addon manager.
 pref("media.gmp-provider.enabled", true);
 
 // Enable blocking access to storage from tracking resources by default.
 pref("network.cookie.cookieBehavior", 4 /* BEHAVIOR_REJECT_TRACKER */);
-//@line 1566 "$SRCDIR/browser/app/profile/firefox.js"
-  // Enable fingerprinting blocking by default only in nightly and early beta.
-  pref("privacy.trackingprotection.fingerprinting.enabled", true);
-//@line 1569 "$SRCDIR/browser/app/profile/firefox.js"
+
+// Enable fingerprinting blocking by default for all channels, only on desktop.
+pref("privacy.trackingprotection.fingerprinting.enabled", true);
 
 // Enable cryptomining blocking by default for all channels, only on desktop.
 pref("privacy.trackingprotection.cryptomining.enabled", true);
@@ -1419,9 +1412,9 @@ pref("browser.contentblocking.report.proxy.enabled", false);
 
 pref("browser.contentblocking.report.monitor.url", "https://monitor.firefox.com/?entrypoint=protection_report_monitor&utm_source=about-protections");
 pref("browser.contentblocking.report.monitor.sign_in_url", "https://monitor.firefox.com/oauth/init?entrypoint=protection_report_monitor&utm_source=about-protections&email=");
-pref("browser.contentblocking.report.lockwise.url", "https://lockwise.firefox.com/");
+pref("browser.contentblocking.report.lockwise.url", "https://lockwise.firefox.com/?utm_source=firefox-desktop&utm_medium=referral&utm_campaign=about-protections&utm_content=about-protections");
 pref("browser.contentblocking.report.manage_devices.url", "https://accounts.firefox.com/settings/clients");
-pref("browser.contentblocking.report.proxy_extension.url", "https://private-network.firefox.com/");
+pref("browser.contentblocking.report.proxy_extension.url", "https://fpn.firefox.com/browser?utm_source=firefox-desktop&utm_medium=referral&utm_campaign=about-protections&utm_content=about-protections");
 
 // Protection Report's SUMO urls
 pref("browser.contentblocking.report.monitor.how_it_works.url", "https://support.mozilla.org/1/firefox/%VERSION%/%OS%/%LOCALE%/monitor-faq");
@@ -1432,23 +1425,28 @@ pref("browser.contentblocking.report.tracker.url", "https://support.mozilla.org/
 pref("browser.contentblocking.report.fingerprinter.url", "https://support.mozilla.org/1/firefox/%VERSION%/%OS%/%LOCALE%/fingerprinters-report");
 pref("browser.contentblocking.report.cryptominer.url", "https://support.mozilla.org/1/firefox/%VERSION%/%OS%/%LOCALE%/cryptominers-report");
 
+pref("browser.contentblocking.cfr-milestone.enabled", true);
+pref("browser.contentblocking.cfr-milestone.milestone-achieved", 0);
+// Milestones should always be in increasing order
+pref("browser.contentblocking.cfr-milestone.milestones", "[1000, 5000, 10000, 25000, 50000, 100000, 500000]");
+
 // Enables the new Protections Panel.
-//@line 1643 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1623 "$SRCDIR/browser/app/profile/firefox.js"
   pref("browser.protections_panel.enabled", true);
   pref("browser.protections_panel.infoMessage.seen", false);
-//@line 1646 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1626 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Always enable newtab segregation using containers
 pref("privacy.usercontext.about_newtab_segregation.enabled", true);
 // Enable Contextual Identity Containers
-//@line 1651 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1631 "$SRCDIR/browser/app/profile/firefox.js"
   pref("privacy.userContext.enabled", true);
   pref("privacy.userContext.ui.enabled", true);
 
   // 0 disables long press, 1 when clicked, the menu is shown, 2 the menu is
   // shown after X milliseconds.
   pref("privacy.userContext.longPressBehavior", 2);
-//@line 1665 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1645 "$SRCDIR/browser/app/profile/firefox.js"
 pref("privacy.userContext.extension", "");
 
 // Start the browser in e10s mode
@@ -1456,17 +1454,17 @@ pref("browser.tabs.remote.autostart", true);
 pref("browser.tabs.remote.desktopbehavior", true);
 
 // Run media transport in a separate process?
-//@line 1673 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1653 "$SRCDIR/browser/app/profile/firefox.js"
   pref("media.peerconnection.mtransport_process", true);
-//@line 1677 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1657 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Start a separate socket process. Performing networking on the socket process
 // is control by a sepparate pref
 // ("network.http.network_access_on_socket_process.enabled").
 // Changing these prefs requires a restart.
-//@line 1683 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1663 "$SRCDIR/browser/app/profile/firefox.js"
   pref("network.process.enabled", true);
-//@line 1687 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1667 "$SRCDIR/browser/app/profile/firefox.js"
 
 // For speculatively warming up tabs to improve perceived
 // performance while using the async tab switcher.
@@ -1488,22 +1486,10 @@ pref("browser.tabs.crashReporting.email", "");
 
 pref("extensions.legacy.enabled", false);
 
-// How often to check for CPOW timeouts. CPOWs are only timed out by
-// the hang monitor.
-pref("dom.ipc.cpow.timeout", 500);
-
 // Causes access on unsafe CPOWs from browser code to throw by default.
 pref("dom.ipc.cpows.forbid-unsafe-from-browser", true);
 
-// Enable e10s hang monitoring (slow script checking and plugin hang
-// detection).
-pref("dom.ipc.processHangMonitor", true);
-
-//@line 1723 "$SRCDIR/browser/app/profile/firefox.js"
-
-//@line 1729 "$SRCDIR/browser/app/profile/firefox.js"
-  pref("dom.ipc.reportProcessHangs", true);
-//@line 1731 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1695 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Don't limit how many nodes we care about on desktop:
 pref("reader.parse-node-limit", 0);
@@ -1546,19 +1532,9 @@ pref("extensions.pocket.enabled", true);
 pref("extensions.pocket.oAuthConsumerKey", "40249-e88c401e1b1f2242d9e441c4");
 pref("extensions.pocket.site", "getpocket.com");
 
-pref("signon.generation.available", true);
-pref("signon.generation.enabled", true);
-pref("signon.schemeUpgrades", true);
-pref("signon.privateBrowsingCapture.enabled", true);
-pref("signon.showAutoCompleteFooter", true);
-pref("signon.management.page.enabled", true);
 pref("signon.management.page.breach-alerts.enabled", true);
+pref("signon.management.page.sort", "name");
 pref("signon.management.overrideURI", "about:logins?filter=%DOMAIN%");
-//@line 1782 "$SRCDIR/browser/app/profile/firefox.js"
-  // Bug 1563330 tracks shipping this by default.
-  pref("signon.showAutoCompleteOrigins", true);
-  pref("signon.includeOtherSubdomainsInLookup", true);
-//@line 1786 "$SRCDIR/browser/app/profile/firefox.js"
 // The utm_creative value is appended within the code (specific to the location on
 // where it is clicked). Be sure that if these two prefs are updated, that
 // the utm_creative param be last.
@@ -1566,8 +1542,8 @@ pref("signon.management.page.mobileAndroidURL", "https://app.adjust.com/6tteyjo?
 pref("signon.management.page.mobileAppleURL", "https://app.adjust.com/6tteyjo?redirect=https%3A%2F%2Fitunes.apple.com%2Fapp%2Fid1314000270%3Fmt%3D8&utm_campaign=Desktop&utm_adgroup=InProduct&utm_creative=");
 pref("signon.management.page.breachAlertUrl",
      "https://monitor.firefox.com/breach-details/");
-
 pref("signon.management.page.hideMobileFooter", false);
+pref("signon.management.page.showPasswordSyncNotification", true);
 
 // Enable the "Simplify Page" feature in Print Preview. This feature
 // is disabled by default in toolkit.
@@ -1580,9 +1556,9 @@ pref("webchannel.allowObject.urlWhitelist", "https://content.cdn.mozilla.net htt
 // Whether or not the browser should scan for unsubmitted
 // crash reports, and then show a notification for submitting
 // those reports.
-//@line 1808 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1762 "$SRCDIR/browser/app/profile/firefox.js"
   pref("browser.crashReports.unsubmittedCheck.enabled", true);
-//@line 1812 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1766 "$SRCDIR/browser/app/profile/firefox.js"
 
 // chancesUntilSuppress is how many times we'll show the unsubmitted
 // crash report notification across different days and shutdown
@@ -1595,9 +1571,9 @@ pref("browser.crashReports.unsubmittedCheck.autoSubmit2", false);
 // The truthy values of "extensions.formautofill.available" are "on" and "detect",
 // any other value means autofill isn't available.
 // "detect" means it's enabled if conditions defined in the extension are met.
-//@line 1825 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1779 "$SRCDIR/browser/app/profile/firefox.js"
   pref("extensions.formautofill.available", "on");
-//@line 1829 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1783 "$SRCDIR/browser/app/profile/firefox.js"
 pref("extensions.formautofill.creditCards.available", false);
 pref("extensions.formautofill.addresses.enabled", true);
 pref("extensions.formautofill.creditCards.enabled", true);
@@ -1616,11 +1592,11 @@ pref("extensions.formautofill.reauth.enabled", false);
 pref("extensions.formautofill.section.enabled", true);
 pref("extensions.formautofill.loglevel", "Warn");
 
-//@line 1848 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1802 "$SRCDIR/browser/app/profile/firefox.js"
   // Comma separated list of countries Form Autofill is available in.
   pref("extensions.formautofill.supportedCountries", "US,CA,DE");
   pref("extensions.formautofill.supportRTL", true);
-//@line 1855 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1809 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Whether or not to restore a session with lazy-browser tabs.
 pref("browser.sessionstore.restore_tabs_lazily", true);
@@ -1645,16 +1621,18 @@ pref("app.normandy.first_run", true);
 pref("app.normandy.logging.level", 50); // Warn
 pref("app.normandy.run_interval_seconds", 21600); // 6 hours
 pref("app.normandy.shieldLearnMoreUrl", "https://support.mozilla.org/1/firefox/%VERSION%/%OS%/%LOCALE%/shield");
-//@line 1880 "$SRCDIR/browser/app/profile/firefox.js"
+pref("app.normandy.last_seen_buildid", "");
+pref("app.normandy.onsync_skew_sec", 600);
+//@line 1836 "$SRCDIR/browser/app/profile/firefox.js"
   pref("app.shield.optoutstudies.enabled", true);
-//@line 1884 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1840 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Multi-lingual preferences
-//@line 1890 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1846 "$SRCDIR/browser/app/profile/firefox.js"
   pref("intl.multilingual.enabled", false);
   // AMO only serves language packs for release and beta versions.
   pref("intl.multilingual.downloadEnabled", false);
-//@line 1894 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1850 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Simulate conditions that will happen when the browser
 // is running with Fission enabled. This is meant to assist
@@ -1693,9 +1671,9 @@ pref("identity.fxaccounts.service.sendLoginUrl", "https://send.firefox.com/login
 pref("identity.fxaccounts.service.monitorLoginUrl", "https://monitor.firefox.com/");
 
 // Check bundled omni JARs for corruption.
-//@line 1935 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1891 "$SRCDIR/browser/app/profile/firefox.js"
   pref("corroborator.enabled", true);
-//@line 1937 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1893 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Toolbox preferences
 pref("devtools.toolbox.footer.height", 250);
@@ -1709,23 +1687,38 @@ pref("devtools.toolbox.splitconsoleEnabled", false);
 pref("devtools.toolbox.splitconsoleHeight", 100);
 pref("devtools.toolbox.tabsOrder", "");
 
-// The fission pref is enabling the "Omniscient Browser Toolbox", which will
+// The fission pref for enabling the "Multiprocess Browser Toolbox", which will
 // make it possible to debug anything in Firefox (See Bug 1570639 for more
 // information).
+//@line 1910 "$SRCDIR/browser/app/profile/firefox.js"
+pref("devtools.browsertoolbox.fission", true);
+//@line 1914 "$SRCDIR/browser/app/profile/firefox.js"
+
+// The fission pref for enabling Fission frame debugging directly from the
+// regular web/content toolbox.
 // ⚠ This is a work in progress. Expect weirdness when the pref is enabled. ⚠
-pref("devtools.browsertoolbox.fission", false);
+pref("devtools.contenttoolbox.fission", false);
+
+// This pref is also related to fission, but not only. It allows the toolbox
+// to stay open even if the debugged tab switches to another process.
+// It can happen between two documents, one running in the parent process like
+// about:sessionrestore and another one running in the content process like
+// any web page. Or between two distinct domain when running with fission turned
+// on. See bug 1565263.
+// ⚠ This is a work in progress. Expect weirdness when the pref is flipped on ⚠
+pref("devtools.target-switching.enabled", false);
 
 // Toolbox Button preferences
 pref("devtools.command-button-pick.enabled", true);
 pref("devtools.command-button-frames.enabled", true);
 pref("devtools.command-button-splitconsole.enabled", true);
 pref("devtools.command-button-paintflashing.enabled", false);
-pref("devtools.command-button-scratchpad.enabled", false);
 pref("devtools.command-button-responsive.enabled", true);
 pref("devtools.command-button-screenshot.enabled", false);
 pref("devtools.command-button-rulers.enabled", false);
 pref("devtools.command-button-measure.enabled", false);
 pref("devtools.command-button-noautohide.enabled", false);
+//@line 1942 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Inspector preferences
 // Enable the Inspector
@@ -1750,6 +1743,12 @@ pref("devtools.inspector.showAllAnonymousContent", false);
 pref("devtools.inspector.showUserAgentShadowRoots", false);
 // Enable the new Rules View
 pref("devtools.inspector.new-rulesview.enabled", false);
+// Enable the compatibility tool in the inspector.
+pref("devtools.inspector.compatibility.enabled", false);
+// Enable the new Box Model Highlighter with renderer in parent process
+pref("devtools.inspector.use-new-box-model-highlighter", false);
+// Enable color scheme simulation in the inspector.
+pref("devtools.inspector.color-scheme-simulation.enabled", false);
 
 // Grid highlighter preferences
 pref("devtools.gridinspector.gridOutlineMaxColumns", 50);
@@ -1773,9 +1772,9 @@ pref("devtools.layout.grid.opened", true);
 
 // Enable hovering Box Model values and jumping to their source CSS rule in the
 // rule-view.
-//@line 2015 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 1996 "$SRCDIR/browser/app/profile/firefox.js"
   pref("devtools.layout.boxmodel.highlightProperty", true);
-//@line 2019 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 2000 "$SRCDIR/browser/app/profile/firefox.js"
 
 // By how many times eyedropper will magnify pixels
 pref("devtools.eyedropper.zoom", 6);
@@ -1832,20 +1831,9 @@ pref("devtools.performance.ui.show-triggers-for-gc-types",
 pref("devtools.performance.ui.enable-memory-flame", false);
 
 // Enable experimental options in the UI only in Nightly
-//@line 2076 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 2057 "$SRCDIR/browser/app/profile/firefox.js"
   pref("devtools.performance.ui.experimental", true);
-//@line 2080 "$SRCDIR/browser/app/profile/firefox.js"
-
-// Preferences for the new performance panel. This pref configures the base URL
-// for the profiler.firefox.com instance to use. This is useful so that a
-// developer can change it while working on profiler.firefox.com, or in tests.
-// This isn't exposed directly to the user.
-pref("devtools.performance.recording.ui-base-url", "https://profiler.firefox.com");
-
-// A JSON array of strings, where each string is a file path to an objdir on
-// the host machine. This is used in order to look up symbol information from
-// build artifacts of local builds.
-pref("devtools.performance.recording.objdirs", "[]");
+//@line 2061 "$SRCDIR/browser/app/profile/firefox.js"
 
 // The default cache UI setting
 pref("devtools.cache.disabled", false);
@@ -1856,11 +1844,8 @@ pref("devtools.serviceWorkers.testing.enabled", false);
 // Enable the Network Monitor
 pref("devtools.netmonitor.enabled", true);
 
-// Enable Network Search in Nightly builds.
-//@line 2103 "$SRCDIR/browser/app/profile/firefox.js"
-  pref("devtools.netmonitor.features.search", true);
-//@line 2107 "$SRCDIR/browser/app/profile/firefox.js"
-pref("devtools.netmonitor.features.requestBlocking", false);
+pref("devtools.netmonitor.features.search", true);
+pref("devtools.netmonitor.features.requestBlocking", true);
 
 // Enable the Application panel
 pref("devtools.application.enabled", false);
@@ -1898,27 +1883,7 @@ pref("devtools.netmonitor.har.forceExport", false);
 pref("devtools.netmonitor.har.pageLoadedTimeout", 1500);
 pref("devtools.netmonitor.har.enableAutoExportToFile", false);
 
-// Enable WebSocket monitoring in Nightly and DevEdition/Beta builds.
-//@line 2147 "$SRCDIR/browser/app/profile/firefox.js"
-  pref("devtools.netmonitor.features.webSockets", true);
-//@line 2151 "$SRCDIR/browser/app/profile/firefox.js"
-
-// Scratchpad settings
-// - recentFileMax: The maximum number of recently-opened files
-//                  stored. Setting this preference to 0 will not
-//                  clear any recent files, but rather hide the
-//                  'Open Recent'-menu.
-// - lineNumbers: Whether to show line numbers or not.
-// - wrapText: Whether to wrap text or not.
-// - showTrailingSpace: Whether to highlight trailing space or not.
-// - editorFontSize: Editor font size configuration.
-// - enableAutocompletion: Whether to enable JavaScript autocompletion.
-pref("devtools.scratchpad.recentFilesMax", 10);
-pref("devtools.scratchpad.lineNumbers", true);
-pref("devtools.scratchpad.wrapText", false);
-pref("devtools.scratchpad.showTrailingSpace", false);
-pref("devtools.scratchpad.editorFontSize", 12);
-pref("devtools.scratchpad.enableAutocompletion", true);
+pref("devtools.netmonitor.features.webSockets", true);
 
 // Enable the Storage Inspector
 pref("devtools.storage.enabled", true);
@@ -1934,9 +1899,6 @@ pref("devtools.styleeditor.transitions", true);
 // Screenshot Option Settings.
 pref("devtools.screenshot.clipboard.enabled", false);
 pref("devtools.screenshot.audio.enabled", true);
-
-// Enable Scratchpad
-pref("devtools.scratchpad.enabled", false);
 
 // Make sure the DOM panel is hidden by default
 pref("devtools.dom.enabled", false);
@@ -1956,6 +1918,10 @@ pref("devtools.webconsole.filter.netxhr", false);
 
 // Webconsole autocomplete preference
 pref("devtools.webconsole.input.autocomplete",true);
+
+// Set to true to eagerly show the results of webconsole terminal evaluations
+// when they don't have side effects.
+pref("devtools.webconsole.input.eagerEvaluation", false);
 
 // Browser console filters
 pref("devtools.browserconsole.filter.error", true);
@@ -1982,14 +1948,9 @@ pref("devtools.netmonitor.persistlog", false);
 pref("devtools.webconsole.timestampMessages", false);
 
 // Enable the webconsole sidebar toggle in Nightly builds.
-//@line 2232 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 2176 "$SRCDIR/browser/app/profile/firefox.js"
   pref("devtools.webconsole.sidebarToggle", true);
-//@line 2236 "$SRCDIR/browser/app/profile/firefox.js"
-
-// Enable editor mode in the console in Nightly and DevEdition builds.
-//@line 2239 "$SRCDIR/browser/app/profile/firefox.js"
-  pref("devtools.webconsole.features.editor", true);
-//@line 2243 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 2180 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Saved editor mode state in the console.
 pref("devtools.webconsole.input.editor", false);
@@ -2052,21 +2013,21 @@ pref("devtools.responsive.reloadNotification.enabled", true);
 pref("devtools.responsive.touchSimulation.enabled", false);
 // Whether or not meta viewport is enabled, if and only if touchSimulation
 // is also enabled.
-pref("devtools.responsive.metaViewport.enabled", false);
+pref("devtools.responsive.metaViewport.enabled", true);
 // The user agent of the viewport.
 pref("devtools.responsive.userAgent", "");
 // Whether or not the RDM UI is embedded in the browser.
 pref("devtools.responsive.browserUI.enabled", false);
 
 // Show the custom user agent input in Nightly builds.
-//@line 2313 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 2250 "$SRCDIR/browser/app/profile/firefox.js"
   pref("devtools.responsive.showUserAgentInput", true);
-//@line 2317 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 2254 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Show tab debug targets for This Firefox (on by default for local builds).
-//@line 2320 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 2257 "$SRCDIR/browser/app/profile/firefox.js"
   pref("devtools.aboutdebugging.local-tab-debugging", false);
-//@line 2324 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 2261 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Show process debug targets.
 pref("devtools.aboutdebugging.process-debugging", true);
@@ -2082,9 +2043,9 @@ pref("devtools.aboutdebugging.collapsibilities.temporaryExtension", false);
 
 // about:debugging: only show system and hidden extensions in local builds by
 // default.
-//@line 2340 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 2277 "$SRCDIR/browser/app/profile/firefox.js"
   pref("devtools.aboutdebugging.showHiddenAddons", false);
-//@line 2344 "$SRCDIR/browser/app/profile/firefox.js"
+//@line 2281 "$SRCDIR/browser/app/profile/firefox.js"
 
 // Map top-level await expressions in the console
 pref("devtools.debugger.features.map-await-expression", true);
@@ -2100,6 +2061,13 @@ pref("devtools.popup.disable_autohide", false);
 // tests that started failing when using type=content, but this ultimately
 // should be removed.
 pref("devtools.toolbox.content-frame", true);
+
+// Visibility switch preference for the WhatsNew panel.
+pref("devtools.whatsnew.enabled", true);
+
+// Temporary preference to fully disable the WhatsNew panel on any target.
+// Should be removed in https://bugzilla.mozilla.org/show_bug.cgi?id=1596037
+pref("devtools.whatsnew.feature-enabled", true);
 
 // FirstStartup service time-out in ms
 pref("first-startup.timeout", 30000);

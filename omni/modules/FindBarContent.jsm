@@ -16,7 +16,7 @@ ChromeUtils.defineModuleGetter(
   "resource://gre/modules/Services.jsm"
 );
 
-/* Please keep in sync with toolkit/content/widgets/findbar.xml */
+/* Please keep in sync with toolkit/content/widgets/findbar.js */
 const FIND_NORMAL = 0;
 const FIND_TYPEAHEAD = 1;
 const FIND_LINKS = 2;
@@ -58,6 +58,14 @@ class FindBarContent {
     // to ensure we pass any further keypresses, too.
     this.findMode = mode;
     this.passKeyToParent(event);
+  }
+
+  updateState(data) {
+    this.findMode = data.findMode;
+    this.inQuickFind = data.hasQuickFindTimeout;
+    if (data.isOpenAndFocused) {
+      this.inPassThrough = false;
+    }
   }
 
   handleEvent(event) {

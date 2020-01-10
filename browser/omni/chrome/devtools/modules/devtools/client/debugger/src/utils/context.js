@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.validateNavigateContext = validateNavigateContext;
 exports.validateThreadContext = validateThreadContext;
 exports.validateContext = validateContext;
+exports.isValidThreadContext = isValidThreadContext;
 exports.ContextError = void 0;
 loader.lazyRequireGetter(this, "_selectors", "devtools/client/debugger/src/selectors/index");
 
@@ -42,4 +43,9 @@ function validateContext(state, cx) {
   if ("thread" in cx) {
     validateThreadContext(state, cx);
   }
+}
+
+function isValidThreadContext(state, cx) {
+  const newcx = (0, _selectors.getThreadContext)(state);
+  return cx.thread == newcx.thread && cx.pauseCounter == newcx.pauseCounter;
 }

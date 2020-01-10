@@ -146,16 +146,11 @@ class App extends _react.Component {
       }, _react.default.createElement(_Tabs.default, {
         startPanelCollapsed: startPanelCollapsed,
         endPanelCollapsed: endPanelCollapsed,
-        horizontal: horizontal,
-        startPanelSize: startPanelSize,
-        endPanelSize: endPanelSize
-      }), _react.default.createElement(_Editor.default, {
-        horizontal: horizontal,
-        startPanelSize: startPanelSize,
-        endPanelSize: endPanelSize
-      }), this.props.endPanelCollapsed ? _react.default.createElement(_WhyPaused.default, {
         horizontal: horizontal
-      }) : null, !this.props.selectedSource ? _react.default.createElement(_WelcomeBox.default, {
+      }), _react.default.createElement(_Editor.default, {
+        startPanelSize: startPanelSize,
+        endPanelSize: endPanelSize
+      }), this.props.endPanelCollapsed ? _react.default.createElement(_WhyPaused.default, null) : null, !this.props.selectedSource ? _react.default.createElement(_WelcomeBox.default, {
         horizontal: horizontal,
         toggleShortcutsModal: () => this.toggleShortcutsModal()
       }) : null, _react.default.createElement(_Footer.default, {

@@ -379,17 +379,15 @@ SearchBar.contextTypes = {
   shortcuts: _propTypes.default.object
 };
 
-const mapStateToProps = state => {
+const mapStateToProps = (state, p) => {
   const selectedSource = (0, _selectors.getSelectedSource)(state);
   return {
     cx: (0, _selectors.getContext)(state),
     searchOn: (0, _selectors.getActiveSearch)(state) === "file",
     selectedSource,
-    selectedContentLoaded: selectedSource ? !!(0, _selectors.getSourceContent)(state, selectedSource.id) : null,
-    selectedLocation: (0, _selectors.getSelectedLocation)(state),
+    selectedContentLoaded: selectedSource ? !!(0, _selectors.getSourceContent)(state, selectedSource.id) : false,
     query: (0, _selectors.getFileSearchQuery)(state),
     modifiers: (0, _selectors.getFileSearchModifiers)(state),
-    highlightedLineRange: (0, _selectors.getHighlightedLineRange)(state),
     searchResults: (0, _selectors.getFileSearchResults)(state)
   };
 };

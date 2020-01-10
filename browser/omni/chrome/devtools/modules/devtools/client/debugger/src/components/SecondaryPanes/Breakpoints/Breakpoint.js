@@ -200,7 +200,7 @@ const getFormattedFrame = (0, _reselect.createSelector)(_selectors.getSelectedSo
   };
 });
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state, p) => ({
   cx: (0, _selectors.getContext)(state),
   breakpoints: (0, _selectors.getBreakpointsList)(state),
   frame: getFormattedFrame(state, (0, _selectors.getCurrentThread)(state))

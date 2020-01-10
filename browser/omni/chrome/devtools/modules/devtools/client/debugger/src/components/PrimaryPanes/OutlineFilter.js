@@ -54,7 +54,7 @@ class OutlineFilter extends _react.Component {
     return _react.default.createElement("div", {
       className: "outline-filter"
     }, _react.default.createElement("form", null, _react.default.createElement("input", {
-      className: (0, _classnames.default)("outline-filter-input", {
+      className: (0, _classnames.default)("outline-filter-input devtools-filterinput", {
         focused
       }),
       onFocus: () => this.setFocus(true),

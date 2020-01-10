@@ -45,7 +45,9 @@ function getScope(scope, selectedFrame, frameScopes, why, scopeIndex) {
   const key = `${actor}-${scopeIndex}`;
 
   if (type === "function" || type === "block") {
-    const bindings = scope.bindings;
+    const {
+      bindings
+    } = scope;
     let vars = (0, _getVariables.getBindingVariables)(bindings, key); // show exception, return, and this variables in innermost scope
 
     if (isLocalScope) {

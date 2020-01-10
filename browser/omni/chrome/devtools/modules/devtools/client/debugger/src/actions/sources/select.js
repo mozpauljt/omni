@@ -21,6 +21,7 @@ loader.lazyRequireGetter(this, "_ui", "devtools/client/debugger/src/actions/ui")
 loader.lazyRequireGetter(this, "_prettyPrint", "devtools/client/debugger/src/actions/sources/prettyPrint");
 loader.lazyRequireGetter(this, "_tabs2", "devtools/client/debugger/src/actions/tabs");
 loader.lazyRequireGetter(this, "_loadSourceText", "devtools/client/debugger/src/actions/sources/loadSourceText");
+loader.lazyRequireGetter(this, "_", "devtools/client/debugger/src/actions/sources/index");
 loader.lazyRequireGetter(this, "_prefs", "devtools/client/debugger/src/utils/prefs");
 loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
 loader.lazyRequireGetter(this, "_location", "devtools/client/debugger/src/utils/location");
@@ -47,8 +48,9 @@ exports.setSelectedLocation = setSelectedLocation;
 const setPendingSelectedLocation = (cx, url, options) => ({
   type: "SET_PENDING_SELECTED_LOCATION",
   cx,
-  url: url,
-  line: options.location ? options.location.line : null
+  url,
+  line: options ? options.line : null,
+  column: options ? options.column : null
 });
 
 exports.setPendingSelectedLocation = setPendingSelectedLocation;
@@ -72,7 +74,7 @@ const clearSelectedLocation = cx => ({
 
 exports.clearSelectedLocation = clearSelectedLocation;
 
-function selectSourceURL(cx, url, options = {}) {
+function selectSourceURL(cx, url, options) {
   return async ({
     dispatch,
     getState,
@@ -147,14 +149,12 @@ function selectLocation(cx, location, {
 
     const selectedSource = (0, _selectors.getSelectedSource)(getState());
 
-    if (keepContext && selectedSource && (0, _devtoolsSourceMap.isOriginalId)(selectedSource.id) != (0, _devtoolsSourceMap.isOriginalId)(location.sourceId)) {
+    if (keepContext && selectedSource && selectedSource.isOriginal != (0, _devtoolsSourceMap.isOriginalId)(location.sourceId)) {
       location = await (0, _sourceMaps.mapLocation)(getState(), sourceMaps, location);
       source = (0, _sources.getSourceFromId)(getState(), location.sourceId);
     }
 
-    const tabSources = (0, _tabs.getSourcesForTabs)(getState());
-
-    if (!tabSources.includes(source)) {
+    if ((0, _tabs.tabExists)(getState(), source.id)) {
       dispatch((0, _tabs2.addTab)(source));
     }
 
@@ -163,6 +163,7 @@ function selectLocation(cx, location, {
       cx,
       source
     }));
+    await dispatch((0, _.setBreakableLines)(cx, source.id));
     const loadedSource = (0, _selectors.getSource)(getState(), source.id);
 
     if (!loadedSource) {

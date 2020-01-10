@@ -18,6 +18,10 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
+function getThreadFront(dbg) {
+  return dbg.connection.targetList.targetFront.threadFront;
+}
+
 function findSource(dbg, url) {
   const sources = dbg.selectors.getSourceList();
   return sources.find(s => (s.url || "").includes(url));
@@ -34,7 +38,7 @@ function sendPacket(dbg, packet) {
 
 function sendPacketToThread(dbg, packet) {
   return sendPacket(dbg, {
-    to: dbg.connection.tabConnection.threadFront.actor,
+    to: getThreadFront(dbg).actor,
     ...packet
   });
 }
@@ -96,7 +100,7 @@ function setupHelper(obj) {
       evaluate: expression => evaluate(dbg, expression),
       sendPacketToThread: packet => sendPacketToThread(dbg, packet),
       sendPacket: packet => sendPacket(dbg, packet),
-      dumpThread: () => dbg.connection.tabConnection.threadFront.dumpThread(),
+      dumpThread: () => getThreadFront(dbg).dumpThread(),
       getDocument: url => getDocumentForUrl(dbg, url)
     },
     formatters: {

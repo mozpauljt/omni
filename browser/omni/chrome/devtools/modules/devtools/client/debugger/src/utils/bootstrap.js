@@ -18,6 +18,8 @@ var _storeProvider = _interopRequireDefault(require("devtools/client/framework/s
 
 var _devtoolsEnvironment = require("devtools/client/debugger/dist/vendors").vendored["devtools-environment"];
 
+var _AppConstants = _interopRequireDefault(require("resource://gre/modules/AppConstants.jsm"));
+
 var _devtoolsSourceMap = _interopRequireWildcard(require("devtools/client/shared/source-map/index.js"));
 
 var search = _interopRequireWildcard(require("../workers/search/index"));
@@ -35,6 +37,7 @@ var selectors = _interopRequireWildcard(require("../selectors/index"));
 var _App = _interopRequireDefault(require("../components/App"));
 
 loader.lazyRequireGetter(this, "_prefs", "devtools/client/debugger/src/utils/prefs");
+loader.lazyRequireGetter(this, "_tabs", "devtools/client/debugger/src/utils/tabs");
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
@@ -69,9 +72,10 @@ function renderPanel(component, store, panel) {
 }
 
 function bootstrapStore(client, workers, panel, initialState) {
+  const debugJsModules = _AppConstants.default.AppConstants.DEBUG_JS_MODULES == "1";
   const createStore = (0, _createStore.default)({
     log: _prefs.prefs.logging || (0, _devtoolsEnvironment.isTesting)(),
-    timing: (0, _devtoolsEnvironment.isDevelopment)(),
+    timing: debugJsModules || (0, _devtoolsEnvironment.isDevelopment)(),
     makeThunkArgs: (args, state) => {
       return { ...args,
         client,
@@ -136,14 +140,17 @@ function bootstrapApp(store, panel) {
 let currentPendingBreakpoints;
 let currentXHRBreakpoints;
 let currentEventBreakpoints;
+let currentTabs;
 
 function updatePrefs(state) {
   const previousPendingBreakpoints = currentPendingBreakpoints;
   const previousXHRBreakpoints = currentXHRBreakpoints;
   const previousEventBreakpoints = currentEventBreakpoints;
+  const previousTabs = currentTabs;
   currentPendingBreakpoints = selectors.getPendingBreakpoints(state);
   currentXHRBreakpoints = selectors.getXHRBreakpoints(state);
   currentEventBreakpoints = state.eventListenerBreakpoints;
+  currentTabs = selectors.getTabs(state);
 
   if (previousPendingBreakpoints && currentPendingBreakpoints !== previousPendingBreakpoints) {
     _prefs.asyncStore.pendingBreakpoints = currentPendingBreakpoints;
@@ -151,6 +158,10 @@ function updatePrefs(state) {
 
   if (previousEventBreakpoints && previousEventBreakpoints !== currentEventBreakpoints) {
     _prefs.asyncStore.eventListenerBreakpoints = currentEventBreakpoints;
+  }
+
+  if (previousTabs && previousTabs !== currentTabs) {
+    _prefs.asyncStore.tabs = (0, _tabs.persistTabs)(currentTabs);
   }
 
   if (currentXHRBreakpoints !== previousXHRBreakpoints) {

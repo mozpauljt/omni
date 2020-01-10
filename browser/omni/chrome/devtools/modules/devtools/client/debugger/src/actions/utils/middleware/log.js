@@ -51,26 +51,12 @@ function cloneAction(action) {
   return action;
 }
 
-function formatFrame(frame) {
-  const {
-    id,
-    location,
-    displayName
-  } = frame;
-  return {
-    id,
-    location,
-    displayName
-  };
-}
-
 function formatPause(pause) {
   return { ...pause,
     pauseInfo: {
       why: pause.why
     },
     scopes: [],
-    frames: pause.frames.map(formatFrame),
     loadedObjects: []
   };
 }
@@ -85,10 +71,19 @@ function serializeAction(action) {
 
     if (action.type === "PAUSED") {
       action = formatPause(action);
-    } // dump(`> ${action.type}...\n ${JSON.stringify(action)}\n`);
+    }
+
+    const serializer = function (key, value) {
+      // Serialize Object/LongString fronts
+      if (value && value.getGrip) {
+        return value.getGrip();
+      }
+
+      return value;
+    }; // dump(`> ${action.type}...\n ${JSON.stringify(action, serializer)}\n`);
 
 
-    return JSON.stringify(action);
+    return JSON.stringify(action, serializer);
   } catch (e) {
     console.error(e);
     return "";

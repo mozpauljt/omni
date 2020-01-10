@@ -7,9 +7,7 @@ exports.getPendingBreakpoints = getPendingBreakpoints;
 exports.getPendingBreakpointList = getPendingBreakpointList;
 exports.getPendingBreakpointsForSource = getPendingBreakpointsForSource;
 exports.default = void 0;
-loader.lazyRequireGetter(this, "_sources", "devtools/client/debugger/src/reducers/sources");
 loader.lazyRequireGetter(this, "_breakpoint", "devtools/client/debugger/src/utils/breakpoint/index");
-loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -78,13 +76,6 @@ function getPendingBreakpointList(state) {
 }
 
 function getPendingBreakpointsForSource(state, source) {
-  const sources = (0, _sources.getSourcesByURL)(state, source.url);
-
-  if (sources.length > 1 && (0, _source.isGenerated)(source)) {
-    // Don't return pending breakpoints for duplicated generated sources
-    return [];
-  }
-
   return getPendingBreakpointList(state).filter(pendingBreakpoint => {
     return pendingBreakpoint.location.sourceUrl === source.url || pendingBreakpoint.generatedLocation.sourceUrl == source.url;
   });

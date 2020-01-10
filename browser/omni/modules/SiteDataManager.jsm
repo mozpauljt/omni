@@ -178,7 +178,7 @@ var SiteDataManager = {
   },
 
   _getAllCookies() {
-    for (let cookie of Services.cookies.enumerator) {
+    for (let cookie of Services.cookies.cookies) {
       let site = this._getOrInsertSite(cookie.rawHost);
       site.cookies.push(cookie);
       if (site.lastAccessed < cookie.lastAccessed) {
@@ -437,10 +437,8 @@ var SiteDataManager = {
   // we consider part of "site data and cookies".
   _getDeletablePermissions() {
     let perms = [];
-    let enumerator = Services.perms.enumerator;
 
-    while (enumerator.hasMoreElements()) {
-      let permission = enumerator.getNext().QueryInterface(Ci.nsIPermission);
+    for (let permission of Services.perms.all) {
       if (
         permission.type == "persistent-storage" ||
         permission.type == "storage-access"
@@ -463,24 +461,31 @@ var SiteDataManager = {
     let perms = this._getDeletablePermissions();
     let promises = [];
     for (let host of hosts) {
+      const kFlags =
+        Ci.nsIClearDataService.CLEAR_COOKIES |
+        Ci.nsIClearDataService.CLEAR_DOM_STORAGES |
+        Ci.nsIClearDataService.CLEAR_SECURITY_SETTINGS |
+        Ci.nsIClearDataService.CLEAR_PLUGIN_DATA |
+        Ci.nsIClearDataService.CLEAR_EME |
+        Ci.nsIClearDataService.CLEAR_ALL_CACHES;
       promises.push(
         new Promise(function(resolve) {
-          Services.clearData.deleteDataFromHost(
-            host,
-            true,
-            Ci.nsIClearDataService.CLEAR_COOKIES |
-              Ci.nsIClearDataService.CLEAR_DOM_STORAGES |
-              Ci.nsIClearDataService.CLEAR_SECURITY_SETTINGS |
-              Ci.nsIClearDataService.CLEAR_PLUGIN_DATA |
-              Ci.nsIClearDataService.CLEAR_EME |
-              Ci.nsIClearDataService.CLEAR_ALL_CACHES,
-            resolve
-          );
+          const { clearData } = Services;
+          if (host) {
+            clearData.deleteDataFromHost(host, true, kFlags, resolve);
+          } else {
+            clearData.deleteDataFromLocalFiles(true, kFlags, resolve);
+          }
         })
       );
 
       for (let perm of perms) {
-        if (Services.eTLD.hasRootDomain(perm.principal.URI.host, host)) {
+        // Specialcase local file permissions.
+        if (!host) {
+          if (perm.principal.URI.schemeIs("file")) {
+            Services.perms.removePermission(perm);
+          }
+        } else if (Services.eTLD.hasRootDomain(perm.principal.URI.host, host)) {
           Services.perms.removePermission(perm);
         }
       }
@@ -508,7 +513,7 @@ var SiteDataManager = {
       };
       let features = "centerscreen,chrome,modal,resizable=no";
       win.docShell.rootTreeItem.domWindow.openDialog(
-        "chrome://browser/content/preferences/siteDataRemoveSelected.xul",
+        "chrome://browser/content/preferences/siteDataRemoveSelected.xhtml",
         "",
         features,
         args

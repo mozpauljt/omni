@@ -9,8 +9,6 @@ exports.continueToHereItem = void 0;
 
 var _redux = require("devtools/client/shared/vendor/redux");
 
-var _devtoolsSourceMap = require("devtools/client/shared/source-map/index.js");
-
 loader.lazyRequireGetter(this, "_clipboard", "devtools/client/debugger/src/utils/clipboard");
 loader.lazyRequireGetter(this, "_source", "devtools/client/debugger/src/utils/source");
 loader.lazyRequireGetter(this, "_utils", "devtools/client/debugger/src/utils/utils");
@@ -27,7 +25,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 const continueToHereItem = (cx, location, isPaused, editorActions) => ({
   accesskey: L10N.getStr("editor.continueToHere.accesskey"),
   disabled: !isPaused,
-  click: () => editorActions.continueToHere(cx, location.line, location.column),
+  click: () => editorActions.continueToHere(cx, location),
   id: "node-menu-continue-to-here",
   label: L10N.getStr("editor.continueToHere.label")
 }); // menu items
@@ -61,7 +59,7 @@ const copySourceUri2Item = (selectedSource, editorActions) => ({
 
 const jumpToMappedLocationItem = (cx, selectedSource, location, hasMappedLocation, editorActions) => ({
   id: "node-menu-jump",
-  label: L10N.getFormatStr("editor.jumpToMappedLocation1", (0, _devtoolsSourceMap.isOriginalId)(selectedSource.id) ? L10N.getStr("generated") : L10N.getStr("original")),
+  label: L10N.getFormatStr("editor.jumpToMappedLocation1", selectedSource.isOriginal ? L10N.getStr("generated") : L10N.getStr("original")),
   accesskey: L10N.getStr("editor.jumpToMappedLocation1.accesskey"),
   disabled: !hasMappedLocation,
   click: () => editorActions.jumpToMappedLocation(cx, location)

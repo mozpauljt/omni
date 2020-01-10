@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", {
 exports.getHiddenTabs = getHiddenTabs;
 exports.getFramework = getFramework;
 exports.getTabMenuItems = getTabMenuItems;
+exports.isSimilarTab = isSimilarTab;
+exports.persistTabs = persistTabs;
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -108,4 +110,17 @@ function getTabMenuItems() {
       disabled: false
     }
   };
+}
+
+function isSimilarTab(tab, url, isOriginal) {
+  return tab.url === url && tab.isOriginal === isOriginal;
+}
+
+function persistTabs(tabs) {
+  return [...tabs].filter(tab => tab.url).map(tab => {
+    const newTab = { ...tab
+    };
+    newTab.sourceId = null;
+    return newTab;
+  });
 }

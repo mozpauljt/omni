@@ -2,6 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 .identity-color-blue {
   --identity-tab-color: #37adff;
   --identity-icon-color: #37adff;
@@ -117,6 +121,7 @@
 .tabbrowser-tab[usercontextid] > .tab-stack > .tab-background > .tab-bottom-line {
   background: linear-gradient(to right, transparent 10%, var(--identity-tab-color) 10%, var(--identity-tab-color) 90%, transparent 90%);
   height: 2px;
+  margin-bottom: 2px;
 }
 
 .tabbrowser-tab[pinned][usercontextid] > .tab-stack > .tab-background > .tab-bottom-line {
@@ -124,7 +129,7 @@
 }
 
 .userContext-icon-inprefs {
-  margin-right: 10px;
+  margin-inline: 4px 10px;
 }
 
 .userContext-icon,
@@ -155,10 +160,7 @@
 }
 
 #containersView richlistitem {
-  margin: 0px;
-  margin-inline-end: 8px;
-  padding: 0;
-  padding-block-end: 8px;
+  padding-block: 4px;
   border-block-end: 1px solid var(--in-content-box-border-color);
 }
 

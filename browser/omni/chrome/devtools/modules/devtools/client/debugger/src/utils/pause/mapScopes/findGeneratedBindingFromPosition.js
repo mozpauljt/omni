@@ -287,6 +287,7 @@ async function readDescriptorProperty(desc, property) {
     return desc;
   }
 
-  const objectClient = (0, _firefox.createObjectClient)(desc.value);
-  return (await objectClient.getProperty(property)).descriptor;
+  const objectFront = _firefox.clientCommands.createObjectFront(desc.value);
+
+  return (await objectFront.getProperty(property)).descriptor;
 }

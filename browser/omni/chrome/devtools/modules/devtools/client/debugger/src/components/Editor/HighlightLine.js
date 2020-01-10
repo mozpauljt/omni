@@ -26,6 +26,12 @@ function isDocumentReady(selectedSource, selectedLocation) {
   return selectedLocation && selectedSource && selectedSource.content && (0, _sourceDocuments.hasDocument)(selectedLocation.sourceId);
 }
 
+function getCSSTiming(style, variable) {
+  const value = style.getPropertyValue(variable);
+  const variableNumber = value.match(/\d+/);
+  return variableNumber.length ? Number(variableNumber[0]) : 0;
+}
+
 class HighlightLine extends _react.Component {
   constructor(...args) {
     super(...args);
@@ -122,10 +128,9 @@ class HighlightLine extends _react.Component {
     }
 
     const style = getComputedStyle(editorWrapper);
-    const durationString = style.getPropertyValue("--highlight-line-duration");
-    let duration = durationString.match(/\d+/);
-    duration = duration.length ? Number(duration[0]) : 0;
-    setTimeout(() => doc && doc.removeLineClass(editorLine, "line", "highlight-line"), duration);
+    const duration = getCSSTiming(style, "--highlight-line-duration");
+    const delay = getCSSTiming(style, "--highlight-line-delay");
+    setTimeout(() => doc && doc.removeLineClass(editorLine, "line", "highlight-line"), duration + delay);
   }
 
   clearHighlightLine(selectedLocation, selectedSource) {
@@ -150,11 +155,19 @@ class HighlightLine extends _react.Component {
 
 exports.HighlightLine = HighlightLine;
 
-var _default = (0, _connect.connect)(state => ({
-  pauseCommand: (0, _selectors.getPauseCommand)(state, (0, _selectors.getCurrentThread)(state)),
-  selectedFrame: (0, _selectors.getVisibleSelectedFrame)(state),
-  selectedLocation: (0, _selectors.getSelectedLocation)(state),
-  selectedSource: (0, _selectors.getSelectedSourceWithContent)(state)
-}))(HighlightLine);
+var _default = (0, _connect.connect)(state => {
+  const selectedLocation = (0, _selectors.getSelectedLocation)(state);
+
+  if (!selectedLocation) {
+    throw new Error("must have selected location");
+  }
+
+  return {
+    pauseCommand: (0, _selectors.getPauseCommand)(state, (0, _selectors.getCurrentThread)(state)),
+    selectedFrame: (0, _selectors.getVisibleSelectedFrame)(state),
+    selectedLocation,
+    selectedSource: (0, _selectors.getSelectedSourceWithContent)(state)
+  };
+})(HighlightLine);
 
 exports.default = _default;
